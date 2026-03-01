@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "16.1.6",
@@ -21,6 +24,12 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "prettier": "^3",
+    "husky": "^9",
+    "lint-staged": "^15"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown"
   }
 }
