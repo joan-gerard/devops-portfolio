@@ -18,6 +18,10 @@ This document summarizes the project’s security posture and practices.
 4. **Keep dependencies updated** and run `pnpm audit` before releases.
 5. **Restrict DB usage to server** (e.g. API routes, Server Components); do not import `lib/db` from client components.
 
+## Security scan report
+
+A detailed security scan report (findings and recommendations, no code changes) is in [security-scan-report.md](security-scan-report.md). Review it periodically and address items as needed.
+
 ## Reporting issues
 
 If you find a security issue, please report it privately (e.g. via maintainer contact or a private channel) rather than in a public issue.
