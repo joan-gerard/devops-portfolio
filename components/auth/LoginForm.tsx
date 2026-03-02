@@ -7,7 +7,7 @@ import {
   LoginLayout,
   LoginSubmitButton,
 } from "@/components/auth";
-import { submitLogin } from "@/lib/login";
+import { submitLogin } from "@/lib/submitLogin";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

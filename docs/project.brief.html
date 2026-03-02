@@ -1300,27 +1300,32 @@
     <div class="dir-tree">
       <div><span class="dir">/app</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/api</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Route handlers (replaces Express)</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/roadmap</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/auth/[...nextauth]</span>&nbsp;&nbsp;<span class="comment">← NextAuth API route</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/pages</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/projects</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/health</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Health check endpoint</span></div>
-      <div>&nbsp;&nbsp;<span class="dir">/(public)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Public portfolio routes</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/roadmap</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/projects/[slug]</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/notes/[slug]</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/about</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← The app & your story</span></div>
-      <div>&nbsp;&nbsp;<span class="dir">/(admin)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Protected editor routes</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/login</span>&nbsp;&nbsp;&nbsp;<span class="comment">← Login page (guests only; signed-in users redirect to dashboard)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/pages/[id]</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
+      <div>&nbsp;&nbsp;<span class="file">/page</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Root / (home)</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/(auth)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Auth flow (guests only)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/login</span>&nbsp;&nbsp;&nbsp;<span class="comment">← Login page; signed-in users redirect to dashboard</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/(admin)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Protected admin routes</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/dashboard</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/editor/[id]</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/roadmap/edit</span></div>
       <div><span class="dir">/components</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/auth</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← LoginForm, SignOutButton, etc.</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/dashboard</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AdminHeader, AdminSidebar, AdminDashboardOverview</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/providers</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AuthSessionProvider - used in /app/(admin)/admin/layout.tsx</span></div>
       <div><span class="dir">/lib</span></div>
-      <div>&nbsp;&nbsp;<span class="file">db.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← postgres.js client</span></div>
       <div>&nbsp;&nbsp;<span class="file">auth.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← NextAuth config</span></div>
+      <div>&nbsp;&nbsp;<span class="file">db.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← postgres.js client</span></div>
+      <div>&nbsp;&nbsp;<span class="file">submitLogin.ts</span></div>
+      <div>&nbsp;&nbsp;<span class="file">slugify.ts</span></div>
       <div><span class="dir">/migrations</span></div>
       <div>&nbsp;&nbsp;<span class="file">001_init.sql</span></div>
-      <div>&nbsp;&nbsp;<span class="file">002_roadmap.sql</span></div>
+      <div>&nbsp;&nbsp;<span class="file">README.md</span></div>
+      <div><span class="dir">/types</span></div>
+      <div>&nbsp;&nbsp;<span class="file">next-auth.d.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← NextAuth type extensions</span></div>
+      <div><span class="file">proxy.ts</span></div>
     </div>
   </div>
 
