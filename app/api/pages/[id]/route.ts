@@ -1,3 +1,4 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -6,7 +7,7 @@ import { NextResponse } from "next/server";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     const isAdmin = !!session;
 
     const [page] = isAdmin
@@ -30,7 +31,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 // PATCH /api/pages/[id] — update a note
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
@@ -65,7 +66,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 // DELETE /api/pages/[id] — delete a note
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
