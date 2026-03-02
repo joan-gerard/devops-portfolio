@@ -10,7 +10,7 @@ const pageTitles: Record<string, string> = {
   "/admin/roadmap/edit": "Roadmap",
 };
 
-export default function AdminHeader() {
+export function AdminHeader() {
   const pathname = usePathname();
 
   const title =

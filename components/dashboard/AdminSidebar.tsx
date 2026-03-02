@@ -86,7 +86,7 @@ const navItems = [
   },
 ];
 
-export default function AdminSidebar() {
+export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
