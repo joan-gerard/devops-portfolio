@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 export function SignOutButton() {
   return (
     <button
+      type="button"
       onClick={() => signOut({ callbackUrl: "/admin/login" })}
       style={{
         background: "transparent",
@@ -20,12 +21,14 @@ export function SignOutButton() {
         transition: "border-color 0.15s, color 0.15s",
       }}
       onMouseEnter={(e) => {
-        (e.target as HTMLButtonElement).style.borderColor = "#f87171";
-        (e.target as HTMLButtonElement).style.color = "#f87171";
+        const el = e.currentTarget as HTMLButtonElement;
+        el.style.borderColor = "#f87171";
+        el.style.color = "#f87171";
       }}
       onMouseLeave={(e) => {
-        (e.target as HTMLButtonElement).style.borderColor = "#232838";
-        (e.target as HTMLButtonElement).style.color = "#6b7280";
+        const el = e.currentTarget as HTMLButtonElement;
+        el.style.borderColor = "#232838";
+        el.style.color = "#6b7280";
       }}
     >
       Sign out
