@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -13,11 +14,23 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const hash = process.env.ADMIN_PASSWORD_HASH;
+        if (!hash || hash.trim() === "") {
+          console.error("[Auth] ADMIN_PASSWORD_HASH is not set or empty; sign-in rejected.");
+          throw new Error(AUTH_ERROR_SERVICE_UNAVAILABLE);
+        }
+
         const isValidEmail = credentials.email === process.env.ADMIN_EMAIL;
-        const isValidPassword = await bcrypt.compare(
-          credentials.password,
-          process.env.ADMIN_PASSWORD_HASH!
-        );
+        let isValidPassword = false;
+        try {
+          isValidPassword = await bcrypt.compare(credentials.password, hash);
+        } catch (err) {
+          console.error(
+            "[Auth] Password hash comparison failed:",
+            err instanceof Error ? err.message : err
+          );
+          throw new Error(AUTH_ERROR_SERVICE_UNAVAILABLE);
+        }
 
         if (!isValidEmail || !isValidPassword) return null;
 

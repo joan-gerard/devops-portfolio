@@ -7,6 +7,7 @@ import {
   LoginLayout,
   LoginSubmitButton,
 } from "@/components/auth";
+import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,7 +33,11 @@ export function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(
+        result.error === AUTH_ERROR_SERVICE_UNAVAILABLE
+          ? "Sign-in is temporarily unavailable. Please try again later."
+          : "Invalid email or password"
+      );
       setLoading(false);
       return;
     }
