@@ -6,10 +6,17 @@ import { NextResponse } from "next/server";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const [page] = await sql`
-      SELECT * FROM pages
-      WHERE id = ${id}
-    `;
+    const session = await getServerSession();
+    const isAdmin = !!session;
+
+    const [page] = isAdmin
+      ? await sql`
+          SELECT * FROM pages WHERE id = ${id}
+        `
+      : await sql`
+          SELECT * FROM pages WHERE id = ${id} AND published = true
+        `;
+
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
