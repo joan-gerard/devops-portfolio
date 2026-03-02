@@ -49,9 +49,13 @@ export async function POST(request: Request) {
       RETURNING *
     `;
     return NextResponse.json(page, { status: 201 });
-  } catch (error: any) {
-    // Catch duplicate slug
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    // Catch duplicate slug (PostgreSQL unique violation)
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code: string }).code
+        : undefined;
+    if (code === "23505") {
       return NextResponse.json({ error: "A note with this slug already exists" }, { status: 409 });
     }
     console.error("POST /api/pages error:", error);

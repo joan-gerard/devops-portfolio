@@ -54,8 +54,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
     return NextResponse.json(page);
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code: string }).code
+        : undefined;
+    if (code === "23505") {
       return NextResponse.json({ error: "A note with this slug already exists" }, { status: 409 });
     }
     console.error("PATCH /api/pages/[id] error:", error);
