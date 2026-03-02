@@ -160,7 +160,7 @@ export default function AdminSidebar() {
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+            (item.href !== "/admin/dashboard" && pathname.startsWith(`${item.href}/`));
 
           return (
             <Link
