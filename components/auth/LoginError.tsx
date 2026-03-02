@@ -6,5 +6,9 @@ const errorStyle: React.CSSProperties = {
 };
 
 export function LoginError({ message }: { message: string }) {
-  return <p style={errorStyle}>{message}</p>;
+  return (
+    <p style={errorStyle} role="alert" aria-live="assertive">
+      {message}
+    </p>
+  );
 }
