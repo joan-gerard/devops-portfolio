@@ -1,7 +1,6 @@
-import { SignOutButton } from "@/components/auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -9,54 +8,66 @@ export default async function DashboardPage() {
   if (!session) redirect("/admin/login");
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#0d0f14",
-        padding: "40px",
-        fontFamily: "monospace",
-      }}
-    >
-      <div
+    <div>
+      <p
         style={{
-          maxWidth: "860px",
-          margin: "0 auto",
+          fontSize: "12px",
+          color: "var(--text-muted)",
+          marginBottom: "32px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "40px",
-            paddingBottom: "20px",
-            borderBottom: "1px solid #232838",
-          }}
-        >
-          <div>
-            <p
+        Welcome back, <span style={{ color: "var(--accent)" }}>{session.user?.email}</span>
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+          gap: "12px",
+        }}
+      >
+        {[
+          { label: "Notes", value: "0", hint: "published" },
+          { label: "Projects", value: "0", hint: "live" },
+          { label: "Roadmap", value: "0", hint: "completed" },
+          { label: "Media", value: "0", hint: "files" },
+        ].map((card) => (
+          <div
+            key={card.label}
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "6px",
+              padding: "20px",
+            }}
+          >
+            <div
               style={{
-                fontSize: "10px",
-                color: "#6b7280",
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                marginBottom: "4px",
+                fontFamily: "var(--font-syne)",
+                fontSize: "28px",
+                fontWeight: "800",
+                color: "var(--text)",
+                lineHeight: 1,
+                marginBottom: "6px",
               }}
             >
-              Signed in as
-            </p>
-            <p style={{ fontSize: "13px", color: "#00e5a0" }}>{session.user?.email}</p>
+              {card.value}
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--text-dim)" }}>{card.label}</div>
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--text-muted)",
+                marginTop: "2px",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              {card.hint}
+            </div>
           </div>
-          <SignOutButton />
-        </div>
-
-        <h1 style={{ fontSize: "28px", fontWeight: "800", color: "#e8eaf0", marginBottom: "8px" }}>
-          Dashboard
-        </h1>
-        <p style={{ fontSize: "13px", color: "#6b7280" }}>
-          Phase 3 coming next — notes, projects, and the editor.
-        </p>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }
