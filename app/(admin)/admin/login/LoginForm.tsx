@@ -7,8 +7,7 @@ import {
   LoginLayout,
   LoginSubmitButton,
 } from "@/components/auth";
-import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
-import { signIn } from "next-auth/react";
+import { submitLogin } from "@/lib/login";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -26,23 +25,18 @@ export function LoginForm() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError(
-        result.error === AUTH_ERROR_SERVICE_UNAVAILABLE
-          ? "Sign-in is temporarily unavailable. Please try again later."
-          : "Invalid email or password"
-      );
+    try {
+      const result = await submitLogin(email, password);
+      if (result.ok) {
+        router.push("/admin/dashboard");
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push("/admin/dashboard");
   }
 
   return (
