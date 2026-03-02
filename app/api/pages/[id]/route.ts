@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 // GET /api/pages/[id] — fetch a single note
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const [page] = await sql`
       SELECT * FROM pages
-      WHERE id = ${params.id}
+      WHERE id = ${id}
     `;
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
@@ -20,7 +21,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // PATCH /api/pages/[id] — update a note
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
@@ -37,7 +39,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         content   = COALESCE(${content},   content),
         tags      = COALESCE(${tags},      tags),
         published = COALESCE(${published}, published)
-      WHERE id = ${params.id}
+      WHERE id = ${id}
       RETURNING *
     `;
     if (!page) {
@@ -54,7 +56,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE /api/pages/[id] — delete a note
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
@@ -63,13 +66,13 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
   try {
     const [deleted] = await sql`
       DELETE FROM pages
-      WHERE id = ${params.id}
+      WHERE id = ${id}
       RETURNING id
     `;
     if (!deleted) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
-    return NextResponse.json({ deleted: true, id: params.id });
+    return NextResponse.json({ deleted: true, id });
   } catch (error) {
     console.error("DELETE /api/pages/[id] error:", error);
     return NextResponse.json({ error: "Failed to delete page" }, { status: 500 });
