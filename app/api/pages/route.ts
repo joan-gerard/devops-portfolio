@@ -3,27 +3,30 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 // GET /api/pages — fetch all notes
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const pages = await sql`
-      SELECT 
-        id,
-        title,
-        slug,
-        tags,
-        published,
-        created_at,
-        updated_at
-      FROM pages
-      ORDER BY updated_at DESC
-    `;
+    const session = await getServerSession();
+    const isAdmin = !!session;
+
+    const pages = isAdmin
+      ? await sql`
+          SELECT id, title, slug, tags, published, created_at, updated_at
+          FROM pages
+          ORDER BY updated_at DESC
+        `
+      : await sql`
+          SELECT id, title, slug, tags, published, created_at, updated_at
+          FROM pages
+          WHERE published = true
+          ORDER BY updated_at DESC
+        `;
+
     return NextResponse.json(pages);
   } catch (error) {
     console.error("GET /api/pages error:", error);
     return NextResponse.json({ error: "Failed to fetch pages" }, { status: 500 });
   }
 }
-
 // POST /api/pages — create a new note
 export async function POST(request: Request) {
   const session = await getServerSession();
