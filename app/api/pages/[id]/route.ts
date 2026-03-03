@@ -1,4 +1,5 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -24,16 +25,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     }
     return NextResponse.json(page);
   } catch (error: unknown) {
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? (error as { code: string }).code
-        : undefined;
-
-    if (code === "22P02") {
-      return NextResponse.json({ error: "Page not found" }, { status: 404 });
-    }
-    console.error("GET /api/pages/[id] error:", error);
-    return NextResponse.json({ error: "Failed to fetch page" }, { status: 500 });
+    return handleDbError(error, {
+      logLabel: "GET /api/pages/[id]",
+      notFoundMessage: "Page not found",
+      serverErrorMessage: "Failed to fetch page",
+    });
   }
 }
 
@@ -83,19 +79,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     return NextResponse.json(page);
   } catch (error: unknown) {
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? (error as { code: string }).code
-        : undefined;
-
-    if (code === "22P02") {
-      return NextResponse.json({ error: "Page not found" }, { status: 404 });
-    }
-    if (code === "23505") {
-      return NextResponse.json({ error: "A note with this slug already exists" }, { status: 409 });
-    }
-    console.error("PATCH /api/pages/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update page" }, { status: 500 });
+    return handleDbError(error, {
+      logLabel: "PATCH /api/pages/[id]",
+      notFoundMessage: "Page not found",
+      conflictMessage: "A note with this slug already exists",
+      serverErrorMessage: "Failed to update page",
+    });
   }
 }
 
@@ -118,15 +107,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     }
     return NextResponse.json({ deleted: true, id });
   } catch (error: unknown) {
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? (error as { code: string }).code
-        : undefined;
-
-    if (code === "22P02") {
-      return NextResponse.json({ error: "Page not found" }, { status: 404 });
-    }
-    console.error("DELETE /api/pages/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete page" }, { status: 500 });
+    return handleDbError(error, {
+      logLabel: "DELETE /api/pages/[id]",
+      notFoundMessage: "Page not found",
+      serverErrorMessage: "Failed to delete page",
+    });
   }
 }

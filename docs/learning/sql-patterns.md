@@ -56,7 +56,7 @@ FROM employees
 GROUP BY department_id;
 ```
 
-**Partial update (PATCH):** Only change columns that are provided; keep existing values when the incoming value is NULL. Used in this project’s pages API (`app/api/pages/[id]/route.ts`):
+**Partial update (PATCH):** Only change columns that are provided; keep existing values when the incoming value is NULL. Used in this project’s pages API (`app/api/pages/[id]/route.ts`). Database errors in these API routes (e.g. invalid UUID, unique violation) are handled centrally via `lib/api/postgres-errors.ts`.
 
 ```sql
 UPDATE pages SET
