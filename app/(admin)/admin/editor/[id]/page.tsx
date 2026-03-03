@@ -1,4 +1,4 @@
-import EditorPageClient from "@/components/editor/EditorPageClient";
+import { EditorPageClient } from "@/components/editor";
 import { getPageById } from "@/lib/queries/page";
 import { Page } from "@/types/pages";
 import { getServerSession } from "next-auth";
