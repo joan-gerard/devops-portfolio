@@ -158,10 +158,7 @@ export function AdminSidebar() {
           Menu
         </div>
         {navItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/admin/dashboard" && pathname.startsWith(`${item.href}/`));
-
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}
