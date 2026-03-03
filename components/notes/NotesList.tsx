@@ -70,6 +70,7 @@ export function NotesList({ notes }: NotesListProps) {
             <span>Tags</span>
             <span>Status</span>
             <span>Updated</span>
+            <span></span>
           </div>
 
           {/* Rows */}

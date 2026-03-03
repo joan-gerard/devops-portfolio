@@ -3,12 +3,14 @@
 import TipTapEditor from "@/components/editor/TipTapEditor";
 import { Page } from "@/types/pages";
 import { useRef, useState } from "react";
+import DeleteNoteButton from "../notes/DeleteNoteButton";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 // --- EditorMetaBar: back link, save status, publish toggle ---
 type EditorMetaBarProps = {
   saveStatus: SaveStatus;
+  noteId: string;
   statusColor: string;
   statusLabel: string;
   published: boolean;
@@ -78,6 +80,7 @@ export function EditorPageClient({ note }: { note: Page }) {
     <div style={{ maxWidth: "860px", margin: "0 auto" }}>
       <EditorMetaBar
         saveStatus={saveStatus}
+        noteId={note.id}
         statusColor={statusColor}
         statusLabel={statusLabel}
         published={published}
@@ -91,6 +94,7 @@ export function EditorPageClient({ note }: { note: Page }) {
 
 function EditorMetaBar({
   saveStatus,
+  noteId,
   statusColor,
   statusLabel,
   published,
@@ -138,6 +142,7 @@ function EditorMetaBar({
           {published ? "Published" : "Publish"}
         </button>
       </div>
+      <DeleteNoteButton id={noteId} redirectTo="/admin/notes" />
     </div>
   );
 }

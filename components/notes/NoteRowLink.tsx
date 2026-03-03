@@ -2,6 +2,7 @@
 
 import { PageRow } from "@/lib/queries/page";
 import Link from "next/link";
+import DeleteNoteButton from "./DeleteNoteButton";
 
 function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -106,6 +107,10 @@ export function NoteRowLink({ note, isLast }: Props) {
       >
         {formatDate(note.updated_at)}
       </span>
+      {/* Delete */}
+      <div onClick={(e) => e.preventDefault()}>
+        <DeleteNoteButton id={note.id} />
+      </div>
     </Link>
   );
 }
