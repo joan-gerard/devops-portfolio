@@ -4,6 +4,7 @@ import TipTapEditor from "@/components/editor/TipTapEditor";
 import { Page } from "@/types/pages";
 import { useRef, useState } from "react";
 import DeleteNoteButton from "../notes/DeleteNoteButton";
+import { TagInput } from "./TagInput";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -87,6 +88,22 @@ export function EditorPageClient({ note }: { note: Page }) {
         onTogglePublished={togglePublished}
       />
       <EditorTitleInput value={title} onChange={handleTitleChange} />
+      <div style={{ marginBottom: "20px" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "10px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            marginBottom: "6px",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          Tags
+        </label>
+        <TagInput noteId={note.id} initial={note.tags} onSave={setSaveStatus} />
+      </div>
       <TipTapEditor noteId={note.id} content={note.content} onSave={setSaveStatus} />
     </div>
   );
