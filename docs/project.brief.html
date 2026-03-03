@@ -1277,7 +1277,7 @@
         <tr>
           <td class="layer">CI/CD</td>
           <td class="tool">GitHub Actions</td>
-          <td><span class="free-tag green">2,000 min/month free</span></td>
+          <td><span class="free-tag green">2,000 min/month (public), 500 min/month (private)</span></td>
         </tr>
         <tr>
           <td class="layer">Version Control</td>
@@ -1303,9 +1303,9 @@
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/auth/[...nextauth]</span>&nbsp;&nbsp;<span class="comment">← NextAuth API route</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/pages</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET all (public: published only), POST (admin)</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/pages/[id]</span></div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET one, PATCH, DELETE &#8212; 404 on unpublished for guests</span></div>
       <div>&nbsp;&nbsp;<span class="file">/page</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Root / (home)</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/(auth)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Auth flow (guests only)</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/login</span>&nbsp;&nbsp;&nbsp;<span class="comment">← Login page; signed-in users redirect to dashboard</span></div>
@@ -1314,18 +1314,18 @@
       <div><span class="dir">/components</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/auth</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← LoginForm, SignOutButton, etc.</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/dashboard</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AdminHeader, AdminSidebar, AdminDashboardOverview</span></div>
-      <div>&nbsp;&nbsp;<span class="dir">/providers</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AuthSessionProvider - used in /app/(admin)/admin/layout.tsx</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/providers</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AuthSessionProvider &#8212; used in /(admin)/admin/layout.tsx</span></div>
       <div><span class="dir">/lib</span></div>
       <div>&nbsp;&nbsp;<span class="file">auth.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← NextAuth config</span></div>
       <div>&nbsp;&nbsp;<span class="file">db.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← postgres.js client</span></div>
-      <div>&nbsp;&nbsp;<span class="file">submitLogin.ts</span></div>
-      <div>&nbsp;&nbsp;<span class="file">slugify.ts</span></div>
+      <div>&nbsp;&nbsp;<span class="file">submitLogin.ts</span>&nbsp;&nbsp;<span class="comment">← submitLogin() used by the login form</span></div>
+      <div>&nbsp;&nbsp;<span class="file">slugify.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← URL slug generator</span></div>
       <div><span class="dir">/migrations</span></div>
-      <div>&nbsp;&nbsp;<span class="file">001_init.sql</span></div>
-      <div>&nbsp;&nbsp;<span class="file">README.md</span></div>
+      <div>&nbsp;&nbsp;<span class="file">001_init.sql</span>&nbsp;&nbsp;&nbsp;<span class="comment">← pages, projects, media</span></div>
+      <div>&nbsp;&nbsp;<span class="file">README.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← migration conventions &amp; run instructions</span></div>
       <div><span class="dir">/types</span></div>
-      <div>&nbsp;&nbsp;<span class="file">next-auth.d.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← NextAuth type extensions</span></div>
-      <div><span class="file">proxy.ts</span></div>
+      <div>&nbsp;&nbsp;<span class="file">next-auth.d.ts</span>&nbsp;&nbsp;<span class="comment">← NextAuth type extensions</span></div>
+      <div><span class="file">proxy.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Auth middleware (Next.js convention)</span></div>
     </div>
   </div>
 
@@ -1339,10 +1339,12 @@
         <ul class="schema-fields">
           <li><span class="field-name">id</span><span class="field-type">uuid</span></li>
           <li><span class="field-name">title</span><span class="field-type">string</span></li>
-          <li><span class="field-name">content</span><span class="field-type">json</span><span class="field-note">TipTap blocks</span></li>
-          <li><span class="field-name">slug</span><span class="field-type">string</span></li>
+          <li><span class="field-name">slug</span><span class="field-type">string</span><span class="field-note">unique</span></li>
+          <li><span class="field-name">content</span><span class="field-type">jsonb</span><span class="field-note">TipTap blocks</span></li>
           <li><span class="field-name">tags</span><span class="field-type">string[]</span></li>
+          <li><span class="field-name">published</span><span class="field-type">boolean</span><span class="field-note">default false</span></li>
           <li><span class="field-name">created_at</span><span class="field-type">timestamp</span></li>
+          <li><span class="field-name">updated_at</span><span class="field-type">timestamp</span><span class="field-note">auto-updated via trigger</span></li>
         </ul>
       </div>
       <div class="schema-block">
@@ -1350,10 +1352,14 @@
         <ul class="schema-fields">
           <li><span class="field-name">id</span><span class="field-type">uuid</span></li>
           <li><span class="field-name">title</span><span class="field-type">string</span></li>
+          <li><span class="field-name">slug</span><span class="field-type">string</span><span class="field-note">unique</span></li>
           <li><span class="field-name">description</span><span class="field-type">text</span></li>
           <li><span class="field-name">tech_stack</span><span class="field-type">string[]</span></li>
           <li><span class="field-name">github_url</span><span class="field-type">string</span></li>
           <li><span class="field-name">live_url</span><span class="field-type">string</span></li>
+          <li><span class="field-name">published</span><span class="field-type">boolean</span><span class="field-note">default false</span></li>
+          <li><span class="field-name">created_at</span><span class="field-type">timestamp</span></li>
+          <li><span class="field-name">updated_at</span><span class="field-type">timestamp</span><span class="field-note">auto-updated via trigger</span></li>
         </ul>
       </div>
       <div class="schema-block">
@@ -1381,6 +1387,7 @@
         </ul>
       </div>
     </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:16px;font-family:var(--font-mono);">&#9432; Both <code>pages</code> and <code>projects</code> have an <code>update_updated_at</code> Postgres trigger that automatically maintains <code>updated_at</code> on every row change. Application code never needs to set it manually.</p>
   </div>
 
   <!-- DevOps angle -->
@@ -1494,7 +1501,7 @@
           <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Set up Neon</strong> — Create a Neon project, get your connection string, store it in <code>.env.local</code>.</div></li>
           <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Connect postgres.js</strong> — Create <code>/lib/db.ts</code> with the postgres.js client. Write a simple test query to confirm the connection works.</div></li>
           <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Write your first migration</strong> — Create <code>/migrations/001_init.sql</code> with your initial schema: <code>pages</code>, <code>projects</code>, <code>media</code> tables. Run it against Neon.</div></li>
-          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Set up GitHub Actions</strong> — Add a basic CI workflow that runs lint and build checks on every push. Confirm it passes.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Set up GitHub Actions</strong> — Add a CI workflow (<code>.github/workflows/ci.yml</code>) using <code>pnpm/action-setup@v4</code> that runs lint and build checks on every push. Confirm it passes.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Deploy to Vercel</strong> — Connect the GitHub repo to Vercel, add your environment variables, and get a live URL. From this point every push to <code>main</code> auto-deploys.</div></li>
         </ol>
       </div>
@@ -1510,8 +1517,9 @@
         <ol class="steps">
           <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>Install and configure NextAuth.js</strong> — Set up a credentials provider for a single admin user. Store hashed credentials in environment variables — no user table needed.</div></li>
           <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Create the login page</strong> — A simple <code>/admin/login</code> page with an email and password form.</div></li>
-          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Add route protection</strong> — Use Next.js middleware to redirect any unauthenticated request to <code>/(admin)</code> routes back to the login page.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Add route protection</strong> — Use <code>proxy.ts</code> (Next.js middleware convention) to redirect any unauthenticated request to <code>/(admin)</code> routes back to the login page.</div></li>
           <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Test the auth flow</strong> — Confirm login works, protected routes redirect correctly when logged out, and the session persists on refresh.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Add sign out</strong> — Build a <code>SignOutButton</code> client component using <code>signOut()</code> from NextAuth. Redirects to <code>/admin/login</code> on sign out. Placed in the admin header.</div></li>
         </ol>
       </div>
 
@@ -1525,8 +1533,8 @@
         </div>
         <ol class="steps">
           <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>Build the admin layout</strong> — Sidebar navigation, header, main content area. This is the Notion-style shell all admin pages will live inside.</div></li>
-          <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Notes API routes</strong> — Build <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> handlers under <code>/api/pages</code> using raw SQL queries.</div></li>
-          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/dashboard</code> — fetches and lists all notes with title, tags, and last updated date.</div></li>
+          <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Notes API routes</strong> — Build <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> handlers under <code>/api/pages</code> using raw SQL queries. <code>GET</code> filters by <code>published = true</code> for unauthenticated requests; admin sees all. Unpublished notes return <code>404</code> (not <code>403</code>) to guests — avoids leaking the existence of draft content.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/notes</code> — fetches and lists all notes with title, tags, and last updated date. Note: <code>/admin/dashboard</code> is a separate overview page showing stat cards for notes, projects, roadmap, and media counts.</div></li>
           <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Rich text editor</strong> — Install TipTap, build the <code>/admin/editor/[id]</code> page. Support headings, paragraphs, code blocks, and callouts. Wire save to the PATCH API route.</div></li>
           <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Projects API routes</strong> — Same pattern as notes: <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> under <code>/api/projects</code>.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Projects admin page</strong> — A form to create and edit project entries: title, description, tech stack tags, GitHub URL, live URL.</div></li>
