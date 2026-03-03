@@ -42,11 +42,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const [page] = await sql`
       UPDATE pages SET
-        title     = COALESCE(${title ?? null}},     title),
-        slug      = COALESCE(${slug ?? null}},      slug),
-        content   = COALESCE(${content ?? null}},   content),
-        tags      = COALESCE(${tags ?? null}},      tags),
-        published = COALESCE(${published ?? null}}, published)
+        title     = COALESCE(${title ?? null},     title),
+        slug      = COALESCE(${slug ?? null},      slug),
+        content   = COALESCE(${content ?? null},   content),
+        tags      = COALESCE(${tags ?? null},      tags),
+        published = COALESCE(${published ?? null}, published)
       WHERE id = ${id}
       RETURNING *
     `;
