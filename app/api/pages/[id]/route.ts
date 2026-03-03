@@ -23,7 +23,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
     return NextResponse.json(page);
-  } catch (error) {
+  } catch (error: unknown) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code: string }).code
+        : undefined;
+
+    if (code === "22P02") {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
     console.error("GET /api/pages/[id] error:", error);
     return NextResponse.json({ error: "Failed to fetch page" }, { status: 500 });
   }
@@ -79,6 +87,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       error && typeof error === "object" && "code" in error
         ? (error as { code: string }).code
         : undefined;
+
+    if (code === "22P02") {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
     if (code === "23505") {
       return NextResponse.json({ error: "A note with this slug already exists" }, { status: 409 });
     }
@@ -105,7 +117,15 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
     return NextResponse.json({ deleted: true, id });
-  } catch (error) {
+  } catch (error: unknown) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code: string }).code
+        : undefined;
+
+    if (code === "22P02") {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
     console.error("DELETE /api/pages/[id] error:", error);
     return NextResponse.json({ error: "Failed to delete page" }, { status: 500 });
   }
