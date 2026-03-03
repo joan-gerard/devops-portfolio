@@ -10,6 +10,7 @@ const overviewCards = [
 ] as const;
 
 export function AdminDashboardOverview({ userEmail }: AdminDashboardOverviewProps) {
+  const displayName = userEmail?.trim() || "Admin";
   return (
     <div>
       <p
@@ -19,7 +20,7 @@ export function AdminDashboardOverview({ userEmail }: AdminDashboardOverviewProp
           marginBottom: "32px",
         }}
       >
-        Welcome back, <span style={{ color: "var(--accent)" }}>{userEmail}</span>
+        Welcome back, <span style={{ color: "var(--accent)" }}>{displayName}</span>
       </p>
 
       <div
