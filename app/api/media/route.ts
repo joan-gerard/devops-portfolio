@@ -45,10 +45,13 @@ export async function POST(request: Request) {
     }
 
     // Fail fast if R2 is not configured (avoids opaque AWS errors)
-    const bucket = process.env.R2_BUCKET_NAME;
-    const publicUrl = process.env.R2_PUBLIC_URL;
-    if (!bucket?.trim() || !publicUrl?.trim()) {
-      console.error("POST /api/media: R2_BUCKET_NAME or R2_PUBLIC_URL is missing");
+    const bucket = process.env.R2_BUCKET_NAME?.trim();
+    const publicUrl = process.env.R2_PUBLIC_URL?.trim();
+    const endpoint = process.env.R2_S3_ENDPOINT?.trim();
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID?.trim();
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim();
+    if (!bucket || !publicUrl || !endpoint || !accessKeyId || !secretAccessKey) {
+      console.error("POST /api/media: R2 configuration is incomplete");
       return NextResponse.json({ error: "Media upload is not configured" }, { status: 503 });
     }
 
