@@ -5,6 +5,8 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
