@@ -7,6 +7,7 @@ This document describes the admin authentication setup introduced on the `set-up
 - **Provider**: [NextAuth.js](https://next-auth.js.org/) with the **Credentials** provider.
 - **Session**: JWT-based (`strategy: "jwt"`); no database session store.
 - **Credentials**: Single admin user defined via environment variables (`ADMIN_EMAIL` and a bcrypt-hashed `ADMIN_PASSWORD_HASH`).
+- **Role**: The signed-in admin user has `role: "admin"` in the session. API routes that perform or expose admin-only actions (create/update/delete pages, or listing unpublished pages) require `session.user.role === "admin"`; a plain authenticated session without the admin role is not sufficient.
 - **Routes**: `/admin/login` (sign-in page), `/admin/dashboard` (protected). Unauthenticated access to the dashboard redirects to login; authenticated access to login redirects to the dashboard.
 
 ## Environment variables
@@ -23,10 +24,12 @@ These must be set in `.env.local` (or your deployment environment). If `ADMIN_PA
 ### API route: `app/api/auth/[...nextauth]/route.ts`
 
 - Defines **`authOptions`** (NextAuth `AuthOptions`) and exports it so Server Components and other server code can call `getServerSession(authOptions)`.
-- Registers the Credentials provider: compares submitted email to `ADMIN_EMAIL` and password to `ADMIN_PASSWORD_HASH` via `bcrypt.compare`. On success returns a user object `{ id: "1", email }`.
+- Registers the Credentials provider: compares submitted email to `ADMIN_EMAIL` and password to `ADMIN_PASSWORD_HASH` via `bcrypt.compare`. On success returns a user object `{ id: "1", email, role: "admin" }`.
+- **Callbacks**: `jwt()` copies `user.role` onto the JWT; `session()` copies `token.role` onto `session.user.role`, so the role is available in `getServerSession()` and in client `useSession()`.
 - If `ADMIN_PASSWORD_HASH` is missing/empty or bcrypt comparison throws, the route throws an error with the code `AUTH_ERROR_SERVICE_UNAVAILABLE` (from `lib/auth`) so the client can show a distinct message without leaking configuration details.
 - Custom sign-in page: `pages.signIn: "/admin/login"`.
 - Exports `GET` and `POST` handlers by wrapping `NextAuth(authOptions)`.
+- **Types**: `types/next-auth.d.ts` augments NextAuth so `User` and `Session.user` include `role`, and the JWT type includes `role`.
 
 ### Shared auth constants: `lib/auth.ts`
 
@@ -66,10 +69,11 @@ All of these are re-exported from `components/auth/index.ts`.
 ## Key decisions
 
 1. **Exporting `authOptions`**: The NextAuth route exports `authOptions` so that `getServerSession(authOptions)` can be used in Server Components (dashboard, login page, admin layout) for consistent session checks and redirects.
-2. **Centralized login logic**: Submit logic lives in `lib/login.ts` (`submitLogin`) so the form stays thin and the same error handling and result contract can be reused or tested.
-3. **Distinct messages for misconfiguration**: When `ADMIN_PASSWORD_HASH` is missing or bcrypt fails, the server returns `AUTH_ERROR_SERVICE_UNAVAILABLE` and the client shows “Sign-in is temporarily unavailable” instead of a credential error or stack trace.
-4. **Accessibility**: Auth error messages are announced via `role="alert"` and `aria-live="assertive"` on **`LoginError`**.
-5. **SignOutButton**: Uses `type="button"` and explicit hover handlers (no form) so behavior is clear and predictable.
+2. **Role-based API authorization**: Admin-only behaviour (e.g. in `/api/pages` and `/api/pages/[id]`) is gated on `session?.user?.role === "admin"`, not on the mere presence of a session. This prevents any future non-admin authenticated user from being treated as an admin.
+3. **Centralized login logic**: Submit logic lives in `lib/login.ts` (`submitLogin`) so the form stays thin and the same error handling and result contract can be reused or tested.
+4. **Distinct messages for misconfiguration**: When `ADMIN_PASSWORD_HASH` is missing or bcrypt fails, the server returns `AUTH_ERROR_SERVICE_UNAVAILABLE` and the client shows “Sign-in is temporarily unavailable” instead of a credential error or stack trace.
+5. **Accessibility**: Auth error messages are announced via `role="alert"` and `aria-live="assertive"` on **`LoginError`**.
+6. **SignOutButton**: Uses `type="button"` and explicit hover handlers (no form) so behavior is clear and predictable.
 
 ## Commit history (set-up-authentication branch)
 

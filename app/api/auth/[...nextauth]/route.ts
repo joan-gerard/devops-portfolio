@@ -34,11 +34,21 @@ export const authOptions: AuthOptions = {
 
         if (!isValidEmail || !isValidPassword) return null;
 
-        return { id: "1", email: credentials.email };
+        return { id: "1", email: credentials.email, role: "admin" };
       },
     }),
   ],
   session: { strategy: "jwt" },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user?.role) token.role = user.role;
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user) session.user.role = token.role;
+      return session;
+    },
+  },
   pages: {
     signIn: "/admin/login",
   },

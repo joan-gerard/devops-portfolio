@@ -1,9 +1,26 @@
-import nextAuthMiddleware from "next-auth/middleware";
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export function proxy(...args: Parameters<typeof nextAuthMiddleware>) {
-  return nextAuthMiddleware(...args);
-}
+export default withAuth(
+  function middleware() {
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: "/admin/login",
+    },
+  }
+);
 
 export const config = {
-  matcher: ["/admin/dashboard/:path*", "/admin/editor/:path*", "/admin/roadmap/:path*"],
+  matcher: [
+    "/admin/dashboard/:path*",
+    "/admin/editor/:path*",
+    "/admin/roadmap/:path*",
+    "/admin/notes/:path*",
+    "/admin/projects/:path*",
+  ],
 };
