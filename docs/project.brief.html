@@ -1306,6 +1306,10 @@
       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET all (public: published only), POST (admin)</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/pages/[id]</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET one, PATCH, DELETE &#8212; 404 on unpublished for guests</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/projects</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET all (public: published only), POST (admin)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/projects/[id]</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← GET one, PATCH, DELETE &#8212; 22P02 catches malformed UUID as 404</span></div>
       <div>&nbsp;&nbsp;<span class="file">/page</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Root / (home)</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/(auth)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Auth flow (guests only)</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/admin/login</span>&nbsp;&nbsp;&nbsp;<span class="comment">← Login page; signed-in users redirect to dashboard</span></div>
@@ -1315,17 +1319,28 @@
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">/admin/editor/[id]</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">page.tsx</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← server component, fetches note, awaits params</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">EditorPageClient.tsx</span>&nbsp;<span class="comment">← client shell: title input, save status, publish toggle</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/(public)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Public portfolio routes (Phase 4)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Homepage</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/projects</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Projects index</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/projects/[slug]</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/notes</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Notes index, filterable by tag</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/notes/[slug]</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/roadmap</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/about</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← The app &amp; your story</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">/log</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Curated public work log (Phase 4 Step 8)</span></div>
       <div><span class="dir">/components</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/auth</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← LoginForm, SignOutButton, etc.</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/dashboard</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AdminHeader, AdminSidebar, AdminDashboardOverview</span></div>
-      <div>&nbsp;&nbsp;<span class="dir">/editor</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← TipTapEditor, EditorToolbar</span></div>
-      <div>&nbsp;&nbsp;<span class="dir">/notes</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← CreateNoteButton</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/editor</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← TipTapEditor, EditorToolbar, TagInput</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/notes</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← CreateNoteButton, DeleteNoteButton</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">/projects</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← CreateProjectButton, DeleteProjectButton (coming Phase 03 Step 6)</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/providers</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← AuthSessionProvider &#8212; used in /(admin)/admin/layout.tsx</span></div>
       <div><span class="dir">/lib</span></div>
       <div>&nbsp;&nbsp;<span class="file">auth.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← NextAuth config</span></div>
       <div>&nbsp;&nbsp;<span class="file">db.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← postgres.js client</span></div>
       <div>&nbsp;&nbsp;<span class="dir">/queries</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← DB query helpers (used by server components directly)</span></div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">pages.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← getAllPages(), getAllPublishedPages(), getPageById()</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">projects.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← getAllProjects(), getAllPublishedProjects(), getProjectById(), getProjectBySlug()</span></div>
       <div>&nbsp;&nbsp;<span class="file">submitLogin.ts</span>&nbsp;&nbsp;<span class="comment">← submitLogin() used by the login form</span></div>
       <div>&nbsp;&nbsp;<span class="file">slugify.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← URL slug generator</span></div>
       <div><span class="dir">/migrations</span></div>
@@ -1334,6 +1349,7 @@
       <div><span class="dir">/types</span></div>
       <div>&nbsp;&nbsp;<span class="file">next-auth.d.ts</span>&nbsp;&nbsp;<span class="comment">← NextAuth type extensions</span></div>
       <div>&nbsp;&nbsp;<span class="file">page.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Page type (id, title, slug, content, tags, published, timestamps)</span></div>
+      <div>&nbsp;&nbsp;<span class="file">project.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Project type (id, title, slug, description, tech_stack, urls, published, timestamps)</span></div>
       <div><span class="file">proxy.ts</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">← Auth middleware (Next.js convention)</span></div>
     </div>
   </div>
@@ -1393,6 +1409,19 @@
           <li><span class="field-name">size</span><span class="field-type">int</span></li>
           <li><span class="field-name">linked_to</span><span class="field-type">uuid</span></li>
           <li><span class="field-name">uploaded_at</span><span class="field-type">timestamp</span></li>
+        </ul>
+      </div>
+      <div class="schema-block">
+        <div class="schema-name">activity_log</div>
+        <ul class="schema-fields">
+          <li><span class="field-name">id</span><span class="field-type">uuid</span></li>
+          <li><span class="field-name">type</span><span class="field-type">enum</span><span class="field-note">session | decision | blocker | lesson</span></li>
+          <li><span class="field-name">title</span><span class="field-type">string</span></li>
+          <li><span class="field-name">body</span><span class="field-type">text</span></li>
+          <li><span class="field-name">phase</span><span class="field-type">string</span></li>
+          <li><span class="field-name">published</span><span class="field-type">boolean</span><span class="field-note">default false</span></li>
+          <li><span class="field-name">entry_date</span><span class="field-type">date</span></li>
+          <li><span class="field-name">created_at</span><span class="field-type">timestamp</span></li>
         </ul>
       </div>
     </div>
@@ -1543,9 +1572,9 @@
         <ol class="steps">
           <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>Build the admin layout</strong> — Sidebar navigation, header, main content area. This is the Notion-style shell all admin pages will live inside.</div></li>
           <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Notes API routes</strong> — Build <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> handlers under <code>/api/pages</code> using raw SQL queries. <code>GET</code> filters by <code>published = true</code> for unauthenticated requests; admin sees all. Unpublished notes return <code>404</code> (not <code>403</code>) to guests — avoids leaking the existence of draft content.</div></li>
-          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/notes</code> — fetches and lists all notes with title, tags, and last updated date. Note: <code>/admin/dashboard</code> is a separate overview page showing stat cards for notes, projects, roadmap, and media counts.</div></li>
-          <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Rich text editor</strong> — Install TipTap, build the <code>/admin/editor/[id]</code> page. Support headings, paragraphs, code blocks, and blockquotes. Autosave wired to <code>PATCH /api/pages/[id]</code> with a 1.5s debounce. Set <code>immediatelyRender: false</code> in <code>useEditor</code> to avoid SSR hydration mismatch. Page split into a server component (<code>page.tsx</code>) and client shell (<code>EditorPageClient.tsx</code>). Title editable inline with 1s debounced save. Publish toggle in meta bar.</div></li>
-          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Projects API routes</strong> — Same pattern as notes: <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> under <code>/api/projects</code>.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/notes</code> — fetches and lists all notes with title, tags, published status, and last updated date. Each row has a two-step delete confirmation via <code>DeleteNoteButton</code>. Delete is also available in the editor meta bar, redirecting to <code>/admin/notes</code> after deletion. Note: <code>/admin/dashboard</code> is a separate overview page showing stat cards.</div></li>
+          <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Rich text editor</strong> — Install TipTap, build the <code>/admin/editor/[id]</code> page. Support headings, paragraphs, code blocks, and blockquotes. Autosave wired to <code>PATCH /api/pages/[id]</code> with a 1.5s debounce. Set <code>immediatelyRender: false</code> in <code>useEditor</code> to avoid SSR hydration mismatch. Page split into a server component (<code>page.tsx</code>) and client shell (<code>EditorPageClient.tsx</code>). Title editable inline with 1s debounced save. Publish toggle in meta bar. <code>TagInput</code> component below the title — type and press Enter or comma to add tags, click × to remove, saves immediately via PATCH.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Projects API routes</strong> — <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> under <code>/api/projects</code>, same pattern as notes. All <code>[id]</code> handlers catch Postgres error <code>22P02</code> (invalid UUID syntax) and return 404 rather than 500. Query helpers in <code>lib/queries/projects.ts</code>: <code>getAllProjects()</code>, <code>getAllPublishedProjects()</code>, <code>getProjectById()</code>, <code>getProjectBySlug()</code>.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Projects admin page</strong> — A form to create and edit project entries: title, description, tech stack tags, GitHub URL, live URL.</div></li>
           <li><span class="step-num">7</span><div><span class="spriority medium">Medium</span><strong>File uploads</strong> — Wire Cloudflare R2 for image uploads inside the editor. Store the resulting URL in the <code>media</code> table.</div></li>
         </ol>
@@ -1553,7 +1582,8 @@
           <strong style="color:var(--text)">Next.js 15 conventions for this phase:</strong><br><br>
           <strong style="color:var(--text-dim)">params is a Promise</strong> — Dynamic route params must be awaited in every page component: <code>const &#123; id &#125; = await params</code>. Type as <code>params: Promise&lt;&#123; id: string &#125;&gt;</code>.<br><br>
           <strong style="color:var(--text-dim)">getServerSession requires authOptions</strong> — Always pass <code>authOptions</code> explicitly: <code>getServerSession(authOptions)</code> where <code>authOptions</code> is imported from <code>@/app/api/auth/[...nextauth]/route</code>. Calling it without arguments may return <code>null</code> unexpectedly.<br><br>
-          <strong style="color:var(--text-dim)">Server components query DB directly</strong> — Server components import from <code>lib/queries/</code> and call the database directly rather than fetching their own API routes. API routes are for browser/client consumers only.
+          <strong style="color:var(--text-dim)">Server components query DB directly</strong> — Server components import from <code>lib/queries/</code> and call the database directly rather than fetching their own API routes. API routes are for browser/client consumers only.<br><br>
+          <strong style="color:var(--text-dim)">Postgres error 22P02 — invalid UUID</strong> — Passing a non-UUID string to a UUID column throws before Postgres even attempts the query. Catch <code>22P02</code> in all <code>[id]</code> route handlers and return 404, same as a not-found row.
         </div>
       </div>
 
@@ -1573,6 +1603,7 @@
           <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Notes index page</strong> — <code>/notes</code> — list of published learning notes, filterable by tag.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Note detail page</strong> — <code>/notes/[slug]</code> — renders the TipTap JSON content as HTML. This is the page employers read.</div></li>
           <li><span class="step-num">7</span><div><span class="spriority high">High</span><strong>About page</strong> — <code>/about</code> — your personal intro, the story of why you built this app, the architecture and key technical decisions, how the app is deployed end to end, and an ongoing lessons-learned section. Written and published through your own TipTap editor — making it the first real end-to-end test of your notes and publishing flow.</div></li>
+          <li><span class="step-num">8</span><div><span class="spriority medium">Medium</span><strong>Public work log</strong> — <code>/log</code> — a curated, public-facing version of the internal work log. Not a direct mirror — entries are selectively published via a <code>published</code> flag. Shows sessions, decisions, blockers, and lessons in a readable timeline format. Requires a new <code>activity_log</code> table with a <code>published</code> boolean, an admin UI to create and publish entries, and a public <code>/log</code> page. Differentiating signal to employers — demonstrates the DevOps mindset of documentation, retrospection, and continuous improvement.</div></li>
         </ol>
       </div>
 
@@ -1653,9 +1684,29 @@
     </div>
   </div>
 
+  <!-- Slug Strategy -->
+  <div class="section" id="slug-strategy">
+    <div class="section-label">09 — Architecture Decision</div>
+    <h2>Slug Management Strategy</h2>
+    <p>When a project or note is created, the slug is auto-generated from the title using <code>slugify()</code> with a <code>Date.now()</code> suffix to guarantee uniqueness. The question is what happens after creation when the title changes.</p>
+
+    <div class="card-grid" style="margin-bottom:20px">
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option A — Auto-update slug with title</div>
+        <p class="card-desc">Simple to implement. But dangerous once content is published — renaming a project would silently break any bookmarked or linked URL. Rejected.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">Option B — Editable slug, manually controlled ✓</div>
+        <p class="card-desc">Slug is pre-filled from the title at creation but owned by the author from that point forward. A <strong>↺ from title</strong> button regenerates it on demand. A warning appears when editing the slug of a published item. This is the pattern used by Notion, Ghost, and most CMSes.</p>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">&#9432; Both the notes editor (<code>EditorPageClient.tsx</code>) and the projects editor (<code>ProjectEditClient.tsx</code>) include an editable slug field with the ↺ regenerate button and a published-state warning. Slug input sanitises on keypress — only <code>a-z</code>, <code>0-9</code>, and <code>-</code> are permitted.</p>
+  </div>
+
   <!-- Data Fetching Pattern -->
   <div class="section" id="fetching">
-    <div class="section-label">09 — Architecture Decision</div>
+    <div class="section-label">10 — Architecture Decision</div>
     <h2>Server Component Data Fetching</h2>
     <p>Server components fetch data by calling <strong style="color:var(--text)">query helpers in <code>lib/queries/</code> directly</strong> — not by calling their own API routes. This avoids an unnecessary HTTP round-trip from the server back to itself.</p>
     <div class="card-grid" style="margin-bottom:20px">
@@ -1673,7 +1724,7 @@
 
   <!-- Saving Strategy -->
   <div class="section" id="saving">
-    <div class="section-label">10 — Architecture Decision</div>
+    <div class="section-label">11 — Architecture Decision</div>
     <h2>How Notes Are Saved</h2>
     <p>TipTap produces a <strong style="color:var(--text)">JSON document</strong> — a structured tree of nodes representing the content (paragraphs, headings, code blocks, etc.). That JSON is what gets stored, not HTML or markdown. In Postgres, the <code>pages</code> table holds a <code>content</code> column of type <code>jsonb</code>. When the editor loads, TipTap receives the JSON back and reconstructs the document exactly. When the public note page renders, TipTap's <code>generateHTML()</code> converts the JSON to HTML server-side.</p>
 
@@ -1757,6 +1808,18 @@
     <p>These items aren't part of the core MVP but each adds meaningful value — either as a learning opportunity, a recruiter talking point, or both. Each is tagged with a priority and whether it should land before or after the initial launch.</p>
 
     <div class="enhancements">
+
+      <div class="enhancement-row">
+        <div class="enhancement-meta">
+          <div class="etag launch before">Before Launch</div>
+          <div class="epriority medium">Medium Priority</div>
+        </div>
+        <div class="enhancement-body">
+          <div class="enhancement-title">/log — Public Work Log</div>
+          <p class="enhancement-desc">A curated, public-facing work log at <code>/log</code>. Not a direct mirror of the internal worklog artifact — entries are selectively published via a <code>published</code> boolean. Shows sessions, decisions, blockers, and lessons in a readable timeline. The internal worklog is a private scratchpad; the public log is a curated professional narrative. Differentiates the portfolio significantly — most candidates show finished output, this shows the process, the thinking, and the self-awareness to document it. Directly signals the DevOps mindset: documentation, retrospection, and continuous improvement. Requires a new <code>activity_log</code> database table, admin UI to create and publish entries, and a public <code>/log</code> page.</p>
+          <div class="enhancement-tags"><span class="etool">Route: /log</span><span class="etool">activity_log table</span><span class="etool">Phase 4 Step 8</span></div>
+        </div>
+      </div>
 
       <div class="enhancement-row">
         <div class="enhancement-meta">
@@ -1878,12 +1941,24 @@
         </div>
       </div>
 
+      <div class="enhancement-row">
+        <div class="enhancement-meta">
+          <div class="etag launch before">Before Launch</div>
+          <div class="epriority medium">Medium Priority</div>
+        </div>
+        <div class="enhancement-body">
+          <div class="enhancement-title">Custom 404 / Not Found Page</div>
+          <p class="enhancement-desc">A purpose-built <code>not-found.tsx</code> page at the app root. Default Next.js 404 pages are plain and off-brand — a custom one keeps the terminal-native aesthetic intact and turns a dead end into a polished moment. Should include a clear message, a link back to the homepage, and optionally a link to the notes or projects index. Low effort, high polish. Add <code>app/not-found.tsx</code> — Next.js App Router picks it up automatically for any unmatched route or explicit <code>notFound()</code> call.</p>
+          <div class="enhancement-tags"><span class="etool">app/not-found.tsx</span><span class="etool">Phase 7 Pre-Launch</span></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <!-- Branding -->
   <div class="section" id="branding">
-    <div class="section-label">12 — Branding</div>
+    <div class="section-label">13 — Branding</div>
     <h2>Colours & UI Direction</h2>
     <p>The visual identity is <strong style="color:var(--text)">dark, terminal-native</strong> — the same world as Vercel's dashboard, Railway, and GitHub's dark theme. Deep near-black backgrounds, a single electric green accent, and tight typography. It signals immediately to a technical recruiter that you live in this space. The content — code blocks, CLI commands, architecture notes — renders better in dark mode, and the aesthetic is consistent with the tools you'll be writing about.</p>
 

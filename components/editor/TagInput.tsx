@@ -6,9 +6,17 @@ type Props = {
   noteId: string;
   initial: string[];
   onSave?: (status: "saving" | "saved" | "error") => void;
+  fieldName?: string; // defaults to 'tags'
+  apiPath?: string; // defaults to 'pages'
 };
 
-export function TagInput({ noteId, initial, onSave }: Props) {
+export function TagInput({
+  noteId,
+  initial,
+  onSave,
+  fieldName = "tags",
+  apiPath = "pages",
+}: Props) {
   const [tags, setTags] = useState<string[]>(initial ?? []);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -16,10 +24,10 @@ export function TagInput({ noteId, initial, onSave }: Props) {
   async function saveTags(updated: string[]) {
     onSave?.("saving");
     try {
-      const res = await fetch(`/api/pages/${noteId}`, {
+      const res = await fetch(`/api/${apiPath}/${noteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tags: updated }),
+        body: JSON.stringify({ [fieldName]: updated }),
       });
       if (!res.ok) throw new Error();
       onSave?.("saved");
