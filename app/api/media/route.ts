@@ -16,10 +16,17 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const linkedTo = formData.get("linked_to") as string | null;
+    const rawLinkedTo = formData.get("linked_to") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    // Normalise linked_to — treat empty string as null, validate UUID if present
+    const validLinkedTo = rawLinkedTo && rawLinkedTo.trim() !== "" ? rawLinkedTo.trim() : null;
+
+    if (validLinkedTo !== null && !UUID_REGEX.test(validLinkedTo)) {
+      return NextResponse.json({ error: "linked_to must be a valid UUID" }, { status: 400 });
     }
 
     // Validate file type
@@ -37,8 +44,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
     }
 
+    // Fail fast if R2 is not configured (avoids opaque AWS errors)
+    const bucket = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (!bucket?.trim() || !publicUrl?.trim()) {
+      console.error("POST /api/media: R2_BUCKET_NAME or R2_PUBLIC_URL is missing");
+      return NextResponse.json({ error: "Media upload is not configured" }, { status: 503 });
+    }
+
     // Build a unique filename
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const rawExt = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() : undefined;
+    const ext = rawExt ?? "jpg";
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const key = `uploads/${filename}`;
 
@@ -46,19 +62,19 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     await r2.send(
       new PutObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!,
+        Bucket: bucket,
         Key: key,
         Body: buffer,
         ContentType: file.type,
       })
     );
 
-    const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+    const url = `${publicUrl.replace(/\/$/, "")}/${key}`;
 
     // Record in media table
     await sql`
       INSERT INTO media (filename, url, size, linked_to)
-      VALUES (${filename}, ${url}, ${file.size}, ${linkedTo})
+      VALUES (${filename}, ${url}, ${file.size}, ${validLinkedTo})
     `;
 
     return NextResponse.json({ url, filename }, { status: 201 });
