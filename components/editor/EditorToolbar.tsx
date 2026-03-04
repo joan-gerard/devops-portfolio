@@ -105,6 +105,9 @@ export default function EditorToolbar({ editor, noteId }: Props) {
   return (
     <div
       style={{
+        position: "sticky",
+        top: "var(--header-height)",
+        zIndex: 8,
         display: "flex",
         alignItems: "center",
         gap: "4px",

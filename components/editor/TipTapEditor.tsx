@@ -83,12 +83,20 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
       style={{
         border: "1px solid var(--border)",
         borderRadius: "6px",
-        overflow: "hidden",
         background: "var(--surface)",
+        /* overflow: visible so EditorToolbar position:sticky can stick to viewport */
       }}
     >
       <EditorToolbar editor={editor} noteId={noteId} />
-      <EditorContent editor={editor} />
+      <div
+        style={{
+          overflow: "hidden",
+          borderBottomLeftRadius: "6px",
+          borderBottomRightRadius: "6px",
+        }}
+      >
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
