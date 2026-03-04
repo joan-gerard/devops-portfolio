@@ -206,5 +206,53 @@
     "body": "Completed full authentication flow for the admin area. Installed NextAuth.js with a credentials provider — no user table, admin credentials stored as environment variables. Password hashed with bcryptjs (cost factor 12) and stored in ADMIN_PASSWORD_HASH. Discovered that bcrypt hashes contain $ characters which the .env.local parser interprets as variable references, truncating the value — fixed by escaping each $ with a backslash.\nBuilt the login page at /(auth)/admin/login with email/password form, error messaging, and loading state. The login page lives in a separate /(auth) route group with a minimal layout — this was necessary after discovering that placing it inside /(admin) caused it to inherit the admin shell layout, triggering an infinite 307 redirect loop for unauthenticated users.\nSessionProvider required its own 'use client' wrapper component (AuthSessionProvider) since React Context is unavailable in Server Components. Admin layout at /(admin)/admin/layout.tsx renders this wrapper around all protected pages.\nRoute protection implemented via proxy.ts at the project root — the Next.js convention for this version of the framework (middleware.ts is deprecated). Uses withAuth from NextAuth with an explicit authorized callback. Login page is deliberately excluded from the matcher to prevent redirect loops.\nAdded SignOutButton client component in the admin header — calls signOut({ callbackUrl: '/admin/login' }) on click, styled with a red hover state to signal it as a destructive action. Confirmed full auth cycle: login, session persistence on refresh, protected route redirect when logged out, and sign out redirect.",
     "phase": "Phase 02",
     "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "id": "1772641209758",
+    "type": "session",
+    "title": "Projects admin page",
+    "body": "Built the full projects admin flow: CreateProjectButton creates a new project and redirects to /admin/projects/[id]. Projects list page at /admin/projects mirrors the notes list with title, tech stack tags, published status, and last updated date. Project edit page split into a server component (page.tsx) and client shell (ProjectEditClient.tsx) with fields for title, slug, description, tech stack, GitHub URL, and live URL. All fields autosave with a 1s debounce. Publish toggle and delete with redirect in the meta bar.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
+  },
+  {
+    "id": "1772641264173",
+    "type": "session",
+    "title": "Editable slug fields",
+    "body": "Added editable slug fields to both the notes editor (EditorPageClient.tsx) and the projects editor (ProjectEditClient.tsx). Slug input sanitises on keypress — only a-z, 0-9, and - permitted. An icon from title button regenerates the slug from the current title on demand. A yellow warning appears when editing the slug of a published item. Saves via PATCH with a 1s debounce.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
+  },
+  {
+    "id": "1772641323239",
+    "type": "decision",
+    "title": "Slug management - manually controlled after creation",
+    "body": "Two options were considered. Option A (auto-update slug with title) was rejected — silently breaking bookmarked URLs when a project is renamed is unacceptable once content is published. Option B (editable slug, pre-filled at creation, manually controlled thereafter) was chosen. This is the pattern used by Notion, Ghost, and most CMSes. A ↺ regenerate button provides convenience without removing control.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
+  },
+  {
+    "id": "1772641527254",
+    "type": "decision",
+    "title": "Project edit page uses form fields, not a rich text editor",
+    "body": "Notes use TipTap for freeform content. Projects use structured form fields (title, slug, description, tech stack, GitHub URL, live URL) — no rich text editor. Projects are structured data entries, not long-form writing. A textarea for description is sufficient and more appropriate than a block editor for short, factual content.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
+  },
+  {
+    "id": "1772641562703",
+    "type": "blocker",
+    "title": "Note and project slugs were never updated after creation",
+    "body": "Slugs were generated once at creation as untitled-{timestamp} and never changed, even after renaming the item. The public portfolio URLs would have been permanently broken for any renamed content. Fixed by adding an editable slug field to both editor pages with a sanitised input, debounced save, and a ↺ regenerate button.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
+  },
+  {
+    "id": "1772641601737",
+    "type": "lesson",
+    "title": "Reusable components should be parameterised early, not hardcoded",
+    "body": "TagInput was initially built for one specific use case. When the second use case (tech stack on projects) arrived, retrofitting the props was straightforward but could have been avoided by anticipating reuse from the start. Any component that interacts with a specific API endpoint or field name should accept those as props with sensible defaults rather than hardcoding them.",
+    "phase": "Phase 03",
+    "date": "2026-03-04T00:00:00.000Z"
   }
 ]

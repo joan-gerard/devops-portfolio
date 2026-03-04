@@ -36,6 +36,18 @@ SessionProvider required its own 'use client' wrapper component (AuthSessionProv
 Route protection implemented via proxy.ts at the project root — the Next.js convention for this version of the framework (middleware.ts is deprecated). Uses withAuth from NextAuth with an explicit authorized callback. Login page is deliberately excluded from the matcher to prevent redirect loops.
 Added SignOutButton client component in the admin header — calls signOut({ callbackUrl: '/admin/login' }) on click, styled with a red hover state to signal it as a destructive action. Confirmed full auth cycle: login, session persistence on refresh, protected route redirect when logged out, and sign out redirect.
 
+### Projects admin page
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+Built the full projects admin flow: CreateProjectButton creates a new project and redirects to /admin/projects/[id]. Projects list page at /admin/projects mirrors the notes list with title, tech stack tags, published status, and last updated date. Project edit page split into a server component (page.tsx) and client shell (ProjectEditClient.tsx) with fields for title, slug, description, tech stack, GitHub URL, and live URL. All fields autosave with a 1s debounce. Publish toggle and delete with redirect in the meta bar.
+
+### Editable slug fields
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+Added editable slug fields to both the notes editor (EditorPageClient.tsx) and the projects editor (ProjectEditClient.tsx). Slug input sanitises on keypress — only a-z, 0-9, and - permitted. An icon from title button regenerates the slug from the current title on demand. A yellow warning appears when editing the slug of a published item. Saves via PATCH with a 1s debounce.
+
 ## Decisions
 
 ### Complete Project Brief
@@ -105,6 +117,18 @@ _Phase 03 · 2026-03-03T00:00:00.000Z_
 
 Calling fetch('/api/projects') from a server component would be an HTTP request from the server to itself — unnecessary overhead. Server components call query helpers in lib/queries/ directly. API routes exist for browser/client consumers only.
 
+### Slug management - manually controlled after creation
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+Two options were considered. Option A (auto-update slug with title) was rejected — silently breaking bookmarked URLs when a project is renamed is unacceptable once content is published. Option B (editable slug, pre-filled at creation, manually controlled thereafter) was chosen. This is the pattern used by Notion, Ghost, and most CMSes. A ↺ regenerate button provides convenience without removing control.
+
+### Project edit page uses form fields, not a rich text editor
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+Notes use TipTap for freeform content. Projects use structured form fields (title, slug, description, tech stack, GitHub URL, live URL) — no rich text editor. Projects are structured data entries, not long-form writing. A textarea for description is sufficient and more appropriate than a block editor for short, factual content.
+
 ## Blockers
 
 ### psql command not found after installing libpq
@@ -137,6 +161,12 @@ Passing a Record<string, unknown> to sql.json() failed TypeScript compilation be
 _Phase 03 · 2026-03-03T00:00:00.000Z_
 
 Passing a non-UUID string to a UUID column causes Postgres to throw error 22P02 (invalid input syntax for type uuid) before it even attempts the query. The error lands in the catch block and was returning 500. Fix: catch 22P02 explicitly in all [id] route handlers and return 404 — consistent with a valid UUID that finds no rows.
+
+### Note and project slugs were never updated after creation
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+Slugs were generated once at creation as untitled-{timestamp} and never changed, even after renaming the item. The public portfolio URLs would have been permanently broken for any renamed content. Fixed by adding an editable slug field to both editor pages with a sanitised input, debounced save, and a ↺ regenerate button.
 
 ## Lessons
 
@@ -202,3 +232,9 @@ router.refresh() re-fetches server component data for the current page without a
 _Phase 03 · 2026-03-03T00:00:00.000Z_
 
 Normalising tags (lowercase, strip special characters) in the TagInput component means the API always receives clean data. Doing it only at the API layer would allow the UI to briefly display un-normalised tags before the save response returns. Normalising at input keeps the UI and database consistent at all times.
+
+### Reusable components should be parameterised early, not hardcoded
+
+_Phase 03 · 2026-03-04T00:00:00.000Z_
+
+TagInput was initially built for one specific use case. When the second use case (tech stack on projects) arrived, retrofitting the props was straightforward but could have been avoided by anticipating reuse from the start. Any component that interacts with a specific API endpoint or field name should accept those as props with sensible defaults rather than hardcoding them.
