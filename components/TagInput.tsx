@@ -6,17 +6,11 @@ type Props = {
   noteId: string;
   initial: string[];
   onSave?: (status: "saving" | "saved" | "error") => void;
-  fieldName?: string; // defaults to 'tags'
-  apiPath?: string; // defaults to 'pages'
+  fieldName: string;
+  apiPath: string;
 };
 
-export function TagInput({
-  noteId,
-  initial,
-  onSave,
-  fieldName = "tags",
-  apiPath = "pages",
-}: Props) {
+export function TagInput({ noteId, initial, onSave, fieldName, apiPath }: Props) {
   const [tags, setTags] = useState<string[]>(initial ?? []);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
