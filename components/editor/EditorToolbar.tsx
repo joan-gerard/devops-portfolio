@@ -1,8 +1,9 @@
 "use client";
 
 import { Editor } from "@tiptap/react";
+import { useRef, useState } from "react";
 
-type Props = { editor: Editor | null };
+type Props = { editor: Editor | null; noteId: string };
 
 type ToolbarButton = {
   label: string;
@@ -10,7 +11,9 @@ type ToolbarButton = {
   isActive?: boolean;
 };
 
-export default function EditorToolbar({ editor }: Props) {
+export default function EditorToolbar({ editor, noteId }: Props) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   if (!editor) return null;
 
   const groups: ToolbarButton[][] = [
@@ -72,6 +75,37 @@ export default function EditorToolbar({ editor }: Props) {
     ],
   ];
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("linked_to", noteId);
+
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Upload failed");
+      }
+
+      const { url } = await res.json();
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   return (
     <div
       style={{
@@ -127,6 +161,44 @@ export default function EditorToolbar({ editor }: Props) {
           )}
         </div>
       ))}
+      {/* Image upload — separate from formatting groups */}
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleImageUpload}
+          style={{ display: "none" }}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          title="Insert image"
+          style={{
+            padding: "4px 10px",
+            borderRadius: "3px",
+            border: "1px solid var(--border)",
+            background: "transparent",
+            color: uploading ? "var(--text-muted)" : "var(--text-dim)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "11px",
+            cursor: uploading ? "not-allowed" : "pointer",
+            transition: "background 0.1s, color 0.1s",
+          }}
+          onMouseEnter={(e) => {
+            if (!uploading) {
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-2)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-dim)";
+          }}
+        >
+          {uploading ? "Uploading…" : "⌃ Image"}
+        </button>
+      </div>
     </div>
   );
 }

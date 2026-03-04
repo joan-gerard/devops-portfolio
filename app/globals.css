@@ -130,3 +130,11 @@ body {
   float: left;
   height: 0;
 }
+
+.tiptap-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 16px 0;
+  display: block;
+}
