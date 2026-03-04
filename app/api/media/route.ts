@@ -16,14 +16,18 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const rawLinkedTo = formData.get("linked_to") as string | null;
+    const linkedToEntry = formData.get("linked_to");
+    if (linkedToEntry !== null && typeof linkedToEntry !== "string") {
+      return NextResponse.json({ error: "linked_to must be a string UUID" }, { status: 400 });
+    }
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Normalise linked_to — treat empty string as null, validate UUID if present
-    const validLinkedTo = rawLinkedTo && rawLinkedTo.trim() !== "" ? rawLinkedTo.trim() : null;
+    const normalizedLinkedTo = linkedToEntry?.trim() ?? "";
+    const validLinkedTo = normalizedLinkedTo !== "" ? normalizedLinkedTo : null;
 
     if (validLinkedTo !== null && !UUID_REGEX.test(validLinkedTo)) {
       return NextResponse.json({ error: "linked_to must be a valid UUID" }, { status: 400 });
