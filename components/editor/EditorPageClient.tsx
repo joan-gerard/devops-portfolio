@@ -1,6 +1,7 @@
 "use client";
 
 import TipTapEditor from "@/components/editor/TipTapEditor";
+import { slugify } from "@/lib/slugify";
 import { Page } from "@/types/pages";
 import { useRef, useState } from "react";
 import DeleteNoteButton from "../notes/DeleteNoteButton";
@@ -20,9 +21,11 @@ type EditorMetaBarProps = {
 
 export function EditorPageClient({ note }: { note: Page }) {
   const [title, setTitle] = useState(note.title);
+  const [slug, setSlug] = useState(note.slug);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(note.published);
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function saveTitle(newTitle: string) {
     setSaveStatus("saving");
@@ -77,6 +80,21 @@ export function EditorPageClient({ note }: { note: Page }) {
     titleTimer.current = setTimeout(() => saveTitle(newTitle), 1000);
   }
 
+  async function saveSlug(newSlug: string) {
+    setSaveStatus("saving");
+    try {
+      const res = await fetch(`/api/pages/${note.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: newSlug }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   return (
     <div style={{ maxWidth: "860px", margin: "0 auto" }}>
       <EditorMetaBar
@@ -88,6 +106,92 @@ export function EditorPageClient({ note }: { note: Page }) {
         onTogglePublished={togglePublished}
       />
       <EditorTitleInput value={title} onChange={handleTitleChange} />
+      {/* Slug */}
+      <div style={{ marginBottom: "20px" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "10px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            marginBottom: "6px",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          Slug
+        </label>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => {
+              const sanitised = e.target.value
+                .toLowerCase()
+                .replace(/[^a-z0-9-]/g, "-")
+                .replace(/-+/g, "-");
+              setSlug(sanitised);
+              if (slugTimer.current) clearTimeout(slugTimer.current);
+              slugTimer.current = setTimeout(() => saveSlug(sanitised), 1000);
+            }}
+            style={{
+              flex: 1,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "4px",
+              padding: "9px 12px",
+              fontFamily: "var(--font-mono)",
+              fontSize: "13px",
+              color: "var(--text)",
+              outline: "none",
+            }}
+            placeholder="note-slug"
+          />
+          <button
+            onClick={() => {
+              const generated = slugify(title);
+              setSlug(generated);
+              if (slugTimer.current) clearTimeout(slugTimer.current);
+              slugTimer.current = setTimeout(() => saveSlug(generated), 1000);
+            }}
+            style={{
+              flexShrink: 0,
+              padding: "9px 12px",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "4px",
+              color: "var(--text-muted)",
+              fontFamily: "var(--font-mono)",
+              fontSize: "11px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "border-color 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+            }}
+          >
+            ↺ from title
+          </button>
+        </div>
+        {published && (
+          <p
+            style={{
+              fontSize: "11px",
+              color: "var(--yellow)",
+              fontFamily: "var(--font-mono)",
+              marginTop: "6px",
+            }}
+          >
+            ⚠ Changing the slug of a published note will break existing URLs.
+          </p>
+        )}
+      </div>
       <div style={{ marginBottom: "20px" }}>
         <label
           style={{

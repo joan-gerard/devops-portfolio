@@ -1173,10 +1173,9 @@
       <li><a onclick="scrollToSection('data-model')"><span class="toc-num">06</span>Data Model</a></li>
       <li><a onclick="scrollToSection('devops-angle')"><span class="toc-num">07</span>The DevOps Angle</a></li>
       <li><a onclick="scrollToSection('phases')"    ><span class="toc-num">08</span>Project Phases & Steps</a></li>
-      <li><a onclick="scrollToSection('saving')"    ><span class="toc-num">09</span>How Notes Are Saved</a></li>
-      <li><a onclick="scrollToSection('orm')"       ><span class="toc-num">10</span>Why No ORM</a></li>
-      <li><a onclick="scrollToSection('enhancements')"><span class="toc-num">11</span>Enhancements & Extra Features</a></li>
-      <li><a onclick="scrollToSection('branding')"  ><span class="toc-num">12</span>Branding & UI Direction</a></li>
+      <li><a onclick="scrollToSection('architecture')" ><span class="toc-num">09</span>Architecture Decisions</a></li>
+      <li><a onclick="scrollToSection('enhancements')"><span class="toc-num">10</span>Enhancements & Extra Features</a></li>
+      <li><a onclick="scrollToSection('branding')"  ><span class="toc-num">11</span>Branding & UI Direction</a></li>
     </ol>
   </nav>
 
@@ -1430,7 +1429,7 @@
 
   <!-- DevOps angle -->
   <div class="section" id="devops-angle">
-    <div class="section-label">11 — The DevOps Angle</div>
+    <div class="section-label">07 — The DevOps Angle</div>
     <h2>The App as a Live Project</h2>
     <p>The infrastructure around this app is itself a portfolio piece. As you progress through your course, you'll incrementally improve the deployment setup — giving you real talking points for interviews.</p>
     <div class="card-grid">
@@ -1684,12 +1683,25 @@
     </div>
   </div>
 
-  <!-- Slug Strategy -->
-  <div class="section" id="slug-strategy">
-    <div class="section-label">09 — Architecture Decision</div>
-    <h2>Slug Management Strategy</h2>
-    <p>When a project or note is created, the slug is auto-generated from the title using <code>slugify()</code> with a <code>Date.now()</code> suffix to guarantee uniqueness. The question is what happens after creation when the title changes.</p>
+  <!-- Architecture Decisions -->
+  <div class="section" id="architecture">
+    <div class="section-label">09 — Architecture Decisions</div>
+    <h2>Key Design Decisions</h2>
+    <p>A record of the significant architectural choices made during the build — what options were considered, what was chosen, and why.</p>
 
+    <div style="margin:20px 0 4px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">In this section</div>
+      <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;">
+        <li><a onclick="scrollToSection('arch-slug')"     style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">01</span>Slug Management</a></li>
+        <li><a onclick="scrollToSection('arch-fetching')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">02</span>Server Component Data Fetching</a></li>
+        <li><a onclick="scrollToSection('arch-saving')"   style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">03</span>How Notes Are Saved</a></li>
+        <li><a onclick="scrollToSection('arch-orm')"      style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">04</span>Why No ORM</a></li>
+      </ol>
+    </div>
+
+    <!-- Subsection: Slug Strategy -->
+    <h3 id="arch-slug" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Slug Management</h3>
+    <p>When a project or note is created, the slug is auto-generated from the title using <code>slugify()</code> with a <code>Date.now()</code> suffix to guarantee uniqueness. The question is what happens after creation when the title changes.</p>
     <div class="card-grid" style="margin-bottom:20px">
       <div class="card" style="border-color:var(--border)">
         <div class="card-title" style="color:var(--text-muted)">Option A — Auto-update slug with title</div>
@@ -1700,14 +1712,10 @@
         <p class="card-desc">Slug is pre-filled from the title at creation but owned by the author from that point forward. A <strong>↺ from title</strong> button regenerates it on demand. A warning appears when editing the slug of a published item. This is the pattern used by Notion, Ghost, and most CMSes.</p>
       </div>
     </div>
+    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">&#9432; Both <code>EditorPageClient.tsx</code> and <code>ProjectEditClient.tsx</code> include an editable slug field with the ↺ regenerate button and a published-state warning. Slug input sanitises on keypress — only <code>a-z</code>, <code>0-9</code>, and <code>-</code> are permitted.</p>
 
-    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">&#9432; Both the notes editor (<code>EditorPageClient.tsx</code>) and the projects editor (<code>ProjectEditClient.tsx</code>) include an editable slug field with the ↺ regenerate button and a published-state warning. Slug input sanitises on keypress — only <code>a-z</code>, <code>0-9</code>, and <code>-</code> are permitted.</p>
-  </div>
-
-  <!-- Data Fetching Pattern -->
-  <div class="section" id="fetching">
-    <div class="section-label">10 — Architecture Decision</div>
-    <h2>Server Component Data Fetching</h2>
+    <!-- Subsection: Server Component Data Fetching -->
+    <h3 id="arch-fetching" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Server Component Data Fetching</h3>
     <p>Server components fetch data by calling <strong style="color:var(--text)">query helpers in <code>lib/queries/</code> directly</strong> — not by calling their own API routes. This avoids an unnecessary HTTP round-trip from the server back to itself.</p>
     <div class="card-grid" style="margin-bottom:20px">
       <div class="card card-accent">
@@ -1720,16 +1728,11 @@
       </div>
     </div>
     <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">&#9432; Both <code>getAllPages()</code> (admin, all records) and <code>getAllPublishedPages()</code> (public, published only) live in <code>lib/queries/pages.ts</code>. The API route <code>GET /api/pages</code> handles the same filtering logic for client-side and external consumers.</p>
-  </div>
 
-  <!-- Saving Strategy -->
-  <div class="section" id="saving">
-    <div class="section-label">11 — Architecture Decision</div>
-    <h2>How Notes Are Saved</h2>
+    <!-- Subsection: How Notes Are Saved -->
+    <h3 id="arch-saving" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">How Notes Are Saved</h3>
     <p>TipTap produces a <strong style="color:var(--text)">JSON document</strong> — a structured tree of nodes representing the content (paragraphs, headings, code blocks, etc.). That JSON is what gets stored, not HTML or markdown. In Postgres, the <code>pages</code> table holds a <code>content</code> column of type <code>jsonb</code>. When the editor loads, TipTap receives the JSON back and reconstructs the document exactly. When the public note page renders, TipTap's <code>generateHTML()</code> converts the JSON to HTML server-side.</p>
-
     <p>We use <strong style="color:var(--text)">autosave only</strong> — no manual save button. The editor saves automatically after the user pauses typing. A save status indicator in the meta bar shows the current state.</p>
-
     <div class="card-grid" style="margin-bottom:20px">
       <div class="card card-accent">
         <div class="card-title">Autosave — 1.5s debounce</div>
@@ -1744,14 +1747,13 @@
         <p class="card-desc">A text label in the editor meta bar shows the current state: <strong>Saving…</strong> (yellow), <strong>Saved</strong> (green), or <strong>Save failed</strong> (red). Hidden when idle.</p>
       </div>
     </div>
-
     <p><strong style="color:var(--text)">Autosave flow:</strong></p>
     <div class="flow-block">
       <div class="flow-step"><span class="flow-icon accent">✎</span><div>User types in TipTap editor</div></div>
       <div class="flow-arrow">↓</div>
       <div class="flow-step"><span class="flow-icon muted">⏱</span><div><code>onUpdate</code> fires → debounce 1.5 seconds</div></div>
       <div class="flow-arrow">↓</div>
-      <div class="flow-step"><span class="flow-icon blue">⟳</span><div>UI shows "Saving…" spinner</div></div>
+      <div class="flow-step"><span class="flow-icon blue">⟳</span><div>UI shows "Saving…"</div></div>
       <div class="flow-arrow">↓</div>
       <div class="flow-step"><span class="flow-icon muted">⬆</span><div><code>PATCH /api/pages/[id]</code> with <code>&#123; content: &lt;tiptap json&gt; &#125;</code></div></div>
       <div class="flow-arrow">↓</div>
@@ -1759,7 +1761,6 @@
       <div class="flow-arrow">↓</div>
       <div class="flow-step"><span class="flow-icon accent">✓</span><div>Returns <code>200</code> → UI shows "Saved ✓"</div></div>
     </div>
-
     <p style="margin-top:24px"><strong style="color:var(--text)">Public note render flow:</strong></p>
     <div class="flow-block">
       <div class="flow-step"><span class="flow-icon blue">⬇</span><div>Employer visits <code>/notes/[slug]</code></div></div>
@@ -1771,15 +1772,10 @@
       <div class="flow-step"><span class="flow-icon accent">✓</span><div>Next.js renders clean, formatted note page (ISR cached)</div></div>
     </div>
 
-  </div>
-
-  <!-- ORM Decision -->
-  <div class="section" id="orm">
-    <div class="section-label">10 — Architecture Decision</div>
-    <h2>Why We're Not Using an ORM</h2>
+    <!-- Subsection: Why No ORM -->
+    <h3 id="arch-orm" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Why No ORM</h3>
     <p>An ORM (Object Relational Mapper) like Prisma sits between your application code and the database, letting you write TypeScript instead of SQL. Rather than writing <code style="color:var(--accent-2);font-size:11px">SELECT * FROM projects WHERE id = $1</code>, you'd write <code style="color:var(--accent-2);font-size:11px">prisma.project.findUnique({ where: { id } })</code>. It also handles connection management and generates TypeScript types from your schema automatically.</p>
     <p>We considered both approaches before deciding. Here's the honest trade-off:</p>
-
     <div class="card-grid" style="margin-bottom: 20px">
       <div class="card card-blue">
         <div class="card-title">The case for an ORM</div>
@@ -1790,9 +1786,7 @@
         <p class="card-desc">Adds an abstraction layer you don't fully control. Requires learning the ORM's own API on top of everything else. Hides what's actually hitting the database. Overkill for a solo project with a stable schema.</p>
       </div>
     </div>
-
     <p><strong style="color:var(--text)">What we chose:</strong> Raw SQL via <strong style="color:var(--text)">postgres.js</strong> — a lightweight, modern Postgres client for Node.js. SQL queries are written directly in the API route handlers, and schema changes are managed as plain <code style="color:var(--accent-2);font-size:11px">.sql</code> migration files in a <code style="color:var(--accent-2);font-size:11px">/migrations</code> folder.</p>
-
     <ul class="feature-list" style="margin-top:16px">
       <li><span class="icon">▸</span><div><strong style="color:var(--text)">Better learning value</strong> — Writing raw SQL builds a more fundamental understanding of how data is queried and structured. This matters far more in a DevOps context than knowing how an ORM works.</div></li>
       <li><span class="icon">▸</span><div><strong style="color:var(--text)">More transparent</strong> — Every query is exactly what it looks like. There's no generated client, no magic, no debugging why the ORM produced an unexpected query plan.</div></li>
@@ -1801,9 +1795,11 @@
     </ul>
   </div>
 
+
+
   <!-- Enhancements -->
   <div class="section" id="enhancements">
-    <div class="section-label">12 — Enhancements & Extra Features</div>
+    <div class="section-label">10 — Enhancements & Extra Features</div>
     <h2>What Else to Build</h2>
     <p>These items aren't part of the core MVP but each adds meaningful value — either as a learning opportunity, a recruiter talking point, or both. Each is tagged with a priority and whether it should land before or after the initial launch.</p>
 
@@ -1958,7 +1954,7 @@
 
   <!-- Branding -->
   <div class="section" id="branding">
-    <div class="section-label">13 — Branding</div>
+    <div class="section-label">11 — Branding</div>
     <h2>Colours & UI Direction</h2>
     <p>The visual identity is <strong style="color:var(--text)">dark, terminal-native</strong> — the same world as Vercel's dashboard, Railway, and GitHub's dark theme. Deep near-black backgrounds, a single electric green accent, and tight typography. It signals immediately to a technical recruiter that you live in this space. The content — code blocks, CLI commands, architecture notes — renders better in dark mode, and the aesthetic is consistent with the tools you'll be writing about.</p>
 
