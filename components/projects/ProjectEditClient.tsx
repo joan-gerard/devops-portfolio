@@ -2,6 +2,7 @@
 
 import { slugify } from "@/lib/slugify";
 import { Project } from "@/types/projects";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { TagInput } from "../editor";
 import { DeleteProjectButton } from "./DeleteProjectButton";
@@ -111,7 +112,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
           marginBottom: "28px",
         }}
       >
-        <a
+        <Link
           href="/admin/projects"
           style={{
             fontSize: "11px",
@@ -121,7 +122,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
           }}
         >
           ← Projects
-        </a>
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {saveStatus !== "idle" && (
             <span style={{ fontSize: "11px", color: statusColour }}>{statusLabel}</span>

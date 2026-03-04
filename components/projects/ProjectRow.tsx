@@ -1,6 +1,7 @@
 "use client";
 
 import type { Project } from "@/types/projects";
+import Link from "next/link";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 
 function formatDate(date: Date | string) {
@@ -18,7 +19,7 @@ type ProjectRowProps = {
 
 export function ProjectRow({ project, isLast }: ProjectRowProps) {
   return (
-    <a
+    <Link
       href={`/admin/projects/${project.id}`}
       style={{
         display: "grid",
@@ -104,6 +105,6 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
       <div onClick={(e) => e.preventDefault()}>
         <DeleteProjectButton id={project.id} />
       </div>
-    </a>
+    </Link>
   );
 }
