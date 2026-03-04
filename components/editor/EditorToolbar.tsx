@@ -85,18 +85,14 @@ export default function EditorToolbar({ editor, noteId }: Props) {
       formData.append("file", file);
       formData.append("linked_to", noteId);
 
-      const res = await fetch("/api/media", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("/api/media", { method: "POST", body: formData });
+      const parsed = await res.json();
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Upload failed");
+        throw new Error(parsed.error ?? "Upload failed");
       }
 
-      const { url } = await res.json();
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setImage({ src: parsed.url }).run();
     } catch (err) {
       console.error("Image upload failed:", err);
       alert(err instanceof Error ? err.message : "Upload failed");
