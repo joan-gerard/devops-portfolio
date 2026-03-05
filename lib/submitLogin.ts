@@ -29,7 +29,7 @@ export async function submitLogin(email: string, password: string): Promise<Logi
       const message =
         result.error === AUTH_ERROR_SERVICE_UNAVAILABLE
           ? "Sign-in is temporarily unavailable. Please try again later."
-          : "Invalid email or password";
+          : decodeURIComponent(result.error);
       return { ok: false, error: message };
     }
 

@@ -32,11 +32,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: NextAuth uses `NEXTAUTH_SECRET` for signing JWTs and cookies. If it’s unset in production, NextAuth may fall back to a weak or default behavior. It’s not mentioned in `docs/authentication.md` or `docs/security.md`.
 - **Resolution**: `docs/authentication.md` now lists `NEXTAUTH_SECRET` and `NEXTAUTH_URL` in the environment variables table, with guidance to set both in production (e.g. Vercel). `docs/security.md` already referenced them. Production (Vercel) has been confirmed to have both variables set.
 
-### 3. **No rate limiting on login (medium)**
+### 3. **No rate limiting on login (medium)** — Addressed
 
 - **Where**: `app/api/auth/[...nextauth]/route.ts` (credentials sign-in).
-- **Issue**: The credentials provider has no rate limiting, so an attacker can attempt many passwords against the single admin account.
-- **Recommendation**: Add rate limiting for sign-in attempts (e.g. by IP or by email) at the edge or in a wrapper around the NextAuth route), and document it in `docs/security.md`.
+- **Issue**: The credentials provider had no rate limiting, so an attacker could attempt many passwords against the single admin account.
+- **Resolution**: Rate limiting is implemented in the NextAuth credentials `authorize` callback. Client IP is taken from `x-forwarded-for` (Vercel/proxy-friendly). `lib/queries/loginAttempts.ts` enforces a 15-minute sliding window with a maximum of 5 attempts per IP; the `login_attempts` table is created by `migrations/002_login_attempts.sql`. When the limit is exceeded, the user sees a message with the cooldown time in minutes. On successful login, the counter for that IP is cleared. Documented in `docs/security.md`.
 
 ### 4. **CI build and DATABASE_URL (low)**
 
@@ -105,7 +105,7 @@ _Generated for review. No code changes were made during this scan._
 | ------------------------- | -------- | ------------------------------------------------------------- |
 | Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                   |
 | NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set  |
-| Login rate limit          | Medium   | Add and document rate limiting                                |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented        |
 | Media MIME / magic bytes  | Medium   | Validate file content server-side                             |
 | Project URL schemes       | Medium   | Validate/sanitize when public links exist                     |
 | CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB                      |
