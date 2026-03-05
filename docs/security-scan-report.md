@@ -13,7 +13,7 @@ _Generated for review. No code changes were made during this scan._
 - **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and 5 MB limit; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
 - **Dependencies**: Run `pnpm audit` regularly; address any reported vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` in app code; external links that use `target="_blank"` use `rel="noopener noreferrer"`.
-- **Protected pages**: Admin layout and routes use `getServerSession(authOptions)` and redirect unauthenticated users to login.
+- **Protected pages**: Root `proxy.ts` (Next.js 16 Proxy) runs NextAuth `withAuth` for matched admin paths, redirecting unauthenticated requests to login. Admin layout and routes also use `getServerSession(authOptions)` for defence in depth.
 - **Login errors**: The client shows only generic messages (“Invalid email or password”, “Sign-in is temporarily unavailable”); no stack traces or config details are leaked.
 - **Session**: JWT strategy is used; the email shown on the dashboard is the validated admin email from the provider.
 
@@ -21,12 +21,12 @@ _Generated for review. No code changes were made during this scan._
 
 ## Issues and Recommendations
 
-### 1. **NextAuth middleware not active (medium)**
+### 1. **NextAuth middleware not active (medium)** — Addressed
 
 - **Where**: `proxy.ts` exports NextAuth middleware and a `config.matcher` for `/admin/dashboard`, `/admin/editor`, `/admin/roadmap`, `/admin/notes`, `/admin/projects`.
 - **Issue**: Next.js only runs middleware from a root `middleware.ts` (or `src/middleware.ts`). There is no `middleware.ts` that uses this, so the middleware in `proxy.ts` is never run.
 - **Impact**: Protection relies entirely on each page calling `getServerSession` and redirecting. If a new admin route is added and the developer forgets the session check, it could be accessible without auth.
-- **Recommendation**: Add a root `middleware.ts` that imports and invokes the middleware from `proxy.ts` (and re-exports its `config`), so all matched admin paths are protected at the edge. Alternatively, document that every new admin route must perform a session check and that `proxy.ts` is currently unused.
+- **Status**: In Next.js 16 the middleware convention was renamed to [Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). The app uses root `proxy.ts` with NextAuth’s `withAuth` and the same matcher; Next.js 16 runs this file, so admin paths are now protected at the edge and unauthenticated requests are redirected to `/admin/login`. Page-level `getServerSession` remains as defence in depth.
 
 ### 2. **NEXTAUTH_SECRET not documented (medium)**
 
@@ -103,22 +103,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                    |
-| ------------------------- | -------- | -------------------------------------------------- |
-| Middleware                | Medium   | Not active; add `middleware.ts` or document intent |
-| NEXTAUTH_SECRET           | Medium   | Document as required in production                 |
-| Login rate limit          | Medium   | Add and document rate limiting                     |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side                  |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist          |
-| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB           |
-| Login catch message       | Low      | Always show generic message in catch               |
-| Media `linked_to`         | Low      | Validate UUID or null                              |
-| R2 env vars               | Low      | Validate at startup; document                      |
-| Slug validation           | Low      | Validate format and length                         |
-| EditorToolbar alert       | Low      | Use generic message in UI                          |
-| Dependencies              | —        | Run `pnpm audit` regularly                         |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                    |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`     |
+| Area                      | Severity | Status / action                                |
+| ------------------------- | -------- | ---------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16    |
+| NEXTAUTH_SECRET           | Medium   | Document as required in production             |
+| Login rate limit          | Medium   | Add and document rate limiting                 |
+| Media MIME / magic bytes  | Medium   | Validate file content server-side              |
+| Project URL schemes       | Medium   | Validate/sanitize when public links exist      |
+| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB       |
+| Login catch message       | Low      | Always show generic message in catch           |
+| Media `linked_to`         | Low      | Validate UUID or null                          |
+| R2 env vars               | Low      | Validate at startup; document                  |
+| Slug validation           | Low      | Validate format and length                     |
+| EditorToolbar alert       | Low      | Use generic message in UI                      |
+| Dependencies              | —        | Run `pnpm audit` regularly                     |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML` |
 
 ---
 
