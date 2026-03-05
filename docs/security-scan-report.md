@@ -26,11 +26,11 @@ _Generated for review. No code changes were made during this scan._
 - **Historical issue**: Previously, Next.js only ran edge auth from a root `middleware.ts` (or `src/middleware.ts`). Logic lived in what is now `proxy.ts` but was not invoked because there was no `middleware.ts`, so admin routes were protected only by page-level `getServerSession`.
 - **Resolution**: The app now uses the [Next.js 16 Proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). Root `proxy.ts` exports NextAuth’s `withAuth` and a `config.matcher` for the `/admin/*` routes (e.g. `/admin`, `/admin/dashboard/:path*`, `/admin/editor/:path*`, `/admin/roadmap/:path*`, `/admin/notes/:path*`, `/admin/projects/:path*`). Next.js runs `proxy.ts` at the root, so those admin paths are protected at the edge and unauthenticated requests are redirected to `/admin/login`. Page-level `getServerSession` remains as defense-in-depth.
 
-### 2. **NEXTAUTH_SECRET not documented (medium)**
+### 2. **NEXTAUTH_SECRET not documented (medium)** — Addressed
 
 - **Where**: NextAuth route and docs.
 - **Issue**: NextAuth uses `NEXTAUTH_SECRET` for signing JWTs and cookies. If it’s unset in production, NextAuth may fall back to a weak or default behavior. It’s not mentioned in `docs/authentication.md` or `docs/security.md`.
-- **Recommendation**: In `docs/authentication.md` (and optionally `docs/security.md`), document that `NEXTAUTH_SECRET` must be set in production (e.g. a long random string) and that `NEXTAUTH_URL` should be set to the canonical app URL when applicable.
+- **Resolution**: `docs/authentication.md` now lists `NEXTAUTH_SECRET` and `NEXTAUTH_URL` in the environment variables table, with guidance to set both in production (e.g. Vercel). `docs/security.md` already referenced them. Production (Vercel) has been confirmed to have both variables set.
 
 ### 3. **No rate limiting on login (medium)**
 
@@ -104,7 +104,7 @@ _Generated for review. No code changes were made during this scan._
 | Area                      | Severity | Status / action                                               |
 | ------------------------- | -------- | ------------------------------------------------------------- |
 | Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                   |
-| NEXTAUTH_SECRET           | Medium   | Document as required in production                            |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set  |
 | Login rate limit          | Medium   | Add and document rate limiting                                |
 | Media MIME / magic bytes  | Medium   | Validate file content server-side                             |
 | Project URL schemes       | Medium   | Validate/sanitize when public links exist                     |
@@ -124,4 +124,3 @@ _Generated for review. No code changes were made during this scan._
 
 - [Security](security.md) – General security practices and posture.
 - [Authentication](authentication.md) – Auth setup, env vars, and architecture.
-

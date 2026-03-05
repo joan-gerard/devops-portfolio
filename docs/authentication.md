@@ -12,12 +12,14 @@ This document describes the admin authentication setup introduced on the `set-up
 
 ## Environment variables
 
-| Variable              | Description                                                                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `ADMIN_EMAIL`         | Email used to sign in (must match the value submitted in the form).                                                                |
-| `ADMIN_PASSWORD_HASH` | Bcrypt hash of the admin password. Generate with e.g. `node -e "require('bcryptjs').hash('your-password', 10).then(console.log)"`. |
+| Variable              | Description                                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADMIN_EMAIL`         | Email used to sign in (must match the value submitted in the form).                                                                                                                              |
+| `ADMIN_PASSWORD_HASH` | Bcrypt hash of the admin password. Generate with e.g. `node -e "require('bcryptjs').hash('your-password', 10).then(console.log)"`.                                                               |
+| `NEXTAUTH_SECRET`     | Long random string used by NextAuth to sign JWTs and cookies. **Must be set in production**; otherwise NextAuth may use weak or default behaviour. Generate with e.g. `openssl rand -base64 32`. |
+| `NEXTAUTH_URL`        | Canonical URL of the app (e.g. `https://yourdomain.com`). Set in production so redirects and callbacks work correctly; optional for local development (NextAuth can infer from the request).     |
 
-These must be set in `.env.local` (or your deployment environment). If `ADMIN_PASSWORD_HASH` is missing or empty, sign-in is rejected and the user sees a generic “Sign-in is temporarily unavailable” message (no server details are exposed).
+These must be set in `.env.local` (or your deployment environment). In production (e.g. Vercel), set `NEXTAUTH_SECRET` and `NEXTAUTH_URL` in addition to the credentials above. If `ADMIN_PASSWORD_HASH` is missing or empty, sign-in is rejected and the user sees a generic “Sign-in is temporarily unavailable” message (no server details are exposed). See [Security](security.md) for more.
 
 ## Architecture
 
