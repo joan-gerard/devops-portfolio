@@ -42,10 +42,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate file size — 5MB limit
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size — 4MB limit - safely under Vercel's 4.5MB body limit
+    const maxSize = 4 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
+      return NextResponse.json({ error: "File too large. Maximum size is 4MB." }, { status: 400 });
     }
 
     // Fail fast if R2 is not configured (avoids opaque AWS errors)
