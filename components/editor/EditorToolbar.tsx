@@ -170,6 +170,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
           style={{ display: "none" }}
         />
         <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
           title="Insert image"
