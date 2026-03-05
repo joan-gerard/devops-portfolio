@@ -1,7 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import sql from "@/lib/db";
 import r2 from "@/lib/r2";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -49,6 +49,9 @@ export async function POST(request: Request) {
     }
 
     // Fail fast if R2 is not configured (avoids opaque AWS errors)
+    // Validate all R2 config here — credentials and endpoint are consumed by
+    // lib/r2.ts but we surface misconfiguration with a clear 503 rather than
+    // an opaque AWS SDK error from deep inside the client
     const bucket = process.env.R2_BUCKET_NAME?.trim();
     const publicUrl = process.env.R2_PUBLIC_URL?.trim();
     const endpoint = process.env.R2_S3_ENDPOINT?.trim();
@@ -78,12 +81,27 @@ export async function POST(request: Request) {
 
     const url = `${publicUrl.replace(/\/$/, "")}/${key}`;
 
-    // Record in media table
-    await sql`
-      INSERT INTO media (filename, url, size, linked_to)
-      VALUES (${filename}, ${url}, ${file.size}, ${validLinkedTo})
-    `;
-
+    // Record in media table — if this fails, clean up the R2 object immediately
+    try {
+      await sql`
+        INSERT INTO media (filename, url, size, linked_to)
+        VALUES (${filename}, ${url}, ${file.size}, ${validLinkedTo})
+      `;
+    } catch (dbError) {
+      console.error("POST /api/media: DB insert failed, rolling back R2 object:", dbError);
+      try {
+        await r2.send(
+          new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: key,
+          })
+        );
+      } catch (r2Error) {
+        // Log but don't throw — we still want to return the DB error to the client
+        console.error("POST /api/media: R2 rollback also failed:", r2Error);
+      }
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
     return NextResponse.json({ url, filename }, { status: 201 });
   } catch (error) {
     console.error("POST /api/media error:", error);
