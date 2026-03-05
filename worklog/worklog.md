@@ -1,6 +1,6 @@
 # DevOps Portal — Work Log
 
-_Exported 2026-03-04_
+_Exported 2026-03-05_
 
 ---
 
@@ -47,6 +47,18 @@ Built the full projects admin flow: CreateProjectButton creates a new project an
 _Phase 03 · 2026-03-04T00:00:00.000Z_
 
 Added editable slug fields to both the notes editor (EditorPageClient.tsx) and the projects editor (ProjectEditClient.tsx). Slug input sanitises on keypress — only a-z, 0-9, and - permitted. An icon from title button regenerates the slug from the current title on demand. A yellow warning appears when editing the slug of a published item. Saves via PATCH with a 1s debounce.
+
+### Phase 03 Step 7 — Cloudflare R2 file uploads
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Wired image uploads into the TipTap editor. Created lib/r2.ts with an S3-compatible client using the AWS SDK. Built POST /api/media route handling auth, validation (file type, size, UUID format for linked_to), R2 upload via PutObjectCommand, and media table insert. Added @tiptap/extension-image, updated EditorToolbar.tsx with a hidden file input and upload button pushed to the right of the formatting groups via marginLeft: auto. Images insert inline at cursor position on success. Added position: sticky to the toolbar so it remains visible when scrolling long notes — top set to the admin header height and toolbar z-index set lower than the header to prevent overlap
+
+### Phase 03 Step 7 — Compensating delete on DB insert failure
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Added a nested try/catch around the INSERT INTO media in app/api/media/route.ts. If the DB insert fails after a successful R2 upload, a DeleteObjectCommand fires immediately to roll back the R2 object. Rollback failures are logged but do not change the client response — the user always receives { "error": "Upload failed" } with a 500. A Sentry comment is in place for Phase 6 to promote rollback failures to tracked exceptions
 
 ## Decisions
 
@@ -129,6 +141,36 @@ _Phase 03 · 2026-03-04T00:00:00.000Z_
 
 Notes use TipTap for freeform content. Projects use structured form fields (title, slug, description, tech stack, GitHub URL, live URL) — no rich text editor. Projects are structured data entries, not long-form writing. A textarea for description is sufficient and more appropriate than a block editor for short, factual content.
 
+### Account API Token, not User API Token for R2
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+R2 credentials are created as an Account API Token scoped to Object Read & Write on one specific bucket. User API tokens are tied to a personal login and have broader scope than needed. Account tokens follow the principle of least privilege — they can only do exactly what the upload route requires and are revocable independently of the user account.
+
+### No IP filtering on R2 API token
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Client IP Address Filtering was left empty when creating the R2 API token. Vercel runs on a distributed edge network with no stable IP, and GitHub Actions runners are assigned from a large rotating Azure pool. Whitelisting those would either be impossible to maintain or require ranges so broad the filter provides no real security value. Security is handled at the application layer instead — auth session check before any upload, token stored as an environment variable, never in client code
+
+### Validate all five R2 env vars in the route, not just the two used directly
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+R2_S3_ENDPOINT, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY are consumed by lib/r2.ts, not app/api/media/route.ts directly. They are validated in the route anyway to surface misconfiguration as a clean 503 rather than an opaque AWS SDK error from inside the client. A comment documents why variables not used in the file are checked there
+
+### Native alert() for upload errors, toast deferred to UI polish
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Upload failures surface as a browser native alert() dialog. The page does not crash — the editor remains fully intact and the button resets. A toast notification would be more polished but alert() is functional and the cosmetic improvement is deferred to a later UI polish pass.
+
+### Cron job reporting: three-layer observability
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Each media cleanup cron run writes a structured JSON report to the cron_log table (status, duration, pass-by-pass counts, errors array), pipes the same summary to console.log for Vercel log capture, and triggers a Sentry exception on partial or failed status. No notification on clean runs — alert fatigue from successful jobs is counterproductive. A dedicated Observability chapter will be added to the brief in Phase 6 once Sentry, health endpoints, and uptime monitoring are all built.
+
 ## Blockers
 
 ### psql command not found after installing libpq
@@ -167,6 +209,18 @@ Passing a non-UUID string to a UUID column causes Postgres to throw error 22P02 
 _Phase 03 · 2026-03-04T00:00:00.000Z_
 
 Slugs were generated once at creation as untitled-{timestamp} and never changed, even after renaming the item. The public portfolio URLs would have been permanently broken for any renamed content. Fixed by adding an editable slug field to both editor pages with a sanitised input, debounced save, and a ↺ regenerate button.
+
+### Sticky toolbar appeared above the admin header
+
+_General · 2026-03-05T00:00:00.000Z_
+
+Setting position: sticky; top: 0 on the editor toolbar caused it to overlap the admin header on scroll because top: 0 pinned it to the viewport rather than below the header, and the toolbar's z-index was higher than the header's. Solution: The toolbar is sticky with top: var(--header-height) and zIndex: 8. The fix was to avoid overflow: hidden on the toolbar’s parent and to apply overflow: hidden only to the inner wrapper around EditorContent, so the toolbar can stick to the viewport while the content area still clips with rounded corners.
+
+### R2 upload succeeded but DB insert could fail silently, leaving stranded objects
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+The original implementation had no handling for the case where PutObjectCommand succeeds but INSERT INTO media throws. The object would land in R2 with no database record, invisible to the cron job's DB-led sweep. Fixed with a compensating DeleteObjectCommand in a nested try/catch around the insert. If the rollback itself also fails, the error is logged and the Phase 6 cron Pass 2 (R2 inventory reconciliation via ListObjectsV2Command) acts as the final safety net.
 
 ## Lessons
 
@@ -238,3 +292,27 @@ Normalising tags (lowercase, strip special characters) in the TagInput component
 _Phase 03 · 2026-03-04T00:00:00.000Z_
 
 TagInput was initially built for one specific use case. When the second use case (tech stack on projects) arrived, retrofitting the props was straightforward but could have been avoided by anticipating reuse from the start. Any component that interacts with a specific API endpoint or field name should accept those as props with sensible defaults rather than hardcoding them.
+
+### R2 API token vs Access Key ID / Secret Access Key
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+The API token created in the Cloudflare dashboard is not what goes in the env file. Creating the token generates a key pair — Access Key ID and Secret Access Key — which are the actual credentials the AWS SDK uses to sign requests. The token itself lives in the Cloudflare dashboard as the parent permission scope. If you need to revoke access, delete the token there and both keys stop working immediately.
+
+### res.json() consumes the response body — parse once, use everywhere
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Calling res.json() twice on the same Response object consumes the stream on the first call and throws on the second. Even when the two calls are in separate branches of an if/else and only one fires at runtime, the correct pattern is to parse once into a variable immediately after the fetch resolves and reference that variable in both the error branch and the success branch.
+
+### Compensating actions in distributed operations should be synchronous where possible
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+When an operation spans two systems (R2 and Postgres), a failure in the second step after the first has already succeeded leaves the systems inconsistent. A synchronous compensating action — issuing a DeleteObjectCommand immediately on DB failure — closes the gap at the source. It should be wrapped in its own try/catch so a failed rollback does not mask the original error. Log rollback failures separately with enough context (bucket, key) for manual recovery or cron cleanup.
+
+### Validate all environment variables at the boundary that uses them
+
+_Phase 03 · 2026-03-05T00:00:00.000Z_
+
+Checking R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in the media route even though they're consumed by lib/r2.ts means a misconfigured deployment surfaces as a 503 with a clear log message rather than an opaque AWS SDK error from deep inside the client. The pattern — validate all config at the entry point, fail fast with a useful message — is more operationally useful than strict separation of concerns in this case.
