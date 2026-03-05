@@ -1,6 +1,7 @@
 "use client";
 
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -49,6 +50,11 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
         placeholder: "Start writing…",
       }),
       Typography,
+      Image.configure({
+        HTMLAttributes: {
+          class: "tiptap-image",
+        },
+      }),
     ],
     content: Object.keys(content).length > 0 ? content : undefined,
     editorProps: {
@@ -77,12 +83,20 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
       style={{
         border: "1px solid var(--border)",
         borderRadius: "6px",
-        overflow: "hidden",
         background: "var(--surface)",
+        /* overflow: visible so EditorToolbar position:sticky can stick to viewport */
       }}
     >
-      <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} />
+      <EditorToolbar editor={editor} noteId={noteId} />
+      <div
+        style={{
+          overflow: "hidden",
+          borderBottomLeftRadius: "6px",
+          borderBottomRightRadius: "6px",
+        }}
+      >
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
