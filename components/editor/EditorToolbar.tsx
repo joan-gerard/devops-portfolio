@@ -98,7 +98,11 @@ export default function EditorToolbar({ editor, noteId }: Props) {
         throw new Error(parsed.error ?? "Upload failed — please try a smaller file");
       }
 
-      editor.chain().focus().setImage({ src: parsed.url! }).run();
+      if (!parsed.url) {
+        throw new Error("Upload succeeded but no URL was returned");
+      }
+
+      editor.chain().focus().setImage({ src: parsed.url }).run();
     } catch (err) {
       console.error("Image upload failed:", err);
       alert(err instanceof Error ? err.message : "Upload failed");
