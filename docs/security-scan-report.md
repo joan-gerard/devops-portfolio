@@ -103,22 +103,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                |
-| ------------------------- | -------- | ---------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16    |
-| NEXTAUTH_SECRET           | Medium   | Document as required in production             |
-| Login rate limit          | Medium   | Add and document rate limiting                 |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side              |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist      |
-| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB       |
-| Login catch message       | Low      | Always show generic message in catch           |
-| Media `linked_to`         | Low      | Validate UUID or null                          |
-| R2 env vars               | Low      | Validate at startup; document                  |
-| Slug validation           | Low      | Validate format and length                     |
-| EditorToolbar alert       | Low      | Use generic message in UI                      |
-| Dependencies              | —        | Run `pnpm audit` regularly                     |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML` |
+| Area                      | Severity | Status / action                                               |
+| ------------------------- | -------- | ------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                   |
+| NEXTAUTH_SECRET           | Medium   | Document as required in production                            |
+| Login rate limit          | Medium   | Add and document rate limiting                                |
+| Media MIME / magic bytes  | Medium   | Validate file content server-side                             |
+| Project URL schemes       | Medium   | Validate/sanitize when public links exist                     |
+| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB                      |
+| Login catch message       | Low      | Always show generic message in catch                          |
+| Media `linked_to`         | Low      | Validate UUID or null                                         |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented |
+| Slug validation           | Low      | Validate format and length                                    |
+| EditorToolbar alert       | Low      | Use generic message in UI                                     |
+| Dependencies              | —        | Run `pnpm audit` regularly                                    |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                               |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                |
 
 ---
 
