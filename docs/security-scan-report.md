@@ -10,7 +10,7 @@ _Generated for review. No code changes were made during this scan._
 - **Auth**: Credentials are validated against a bcrypt hash; misconfiguration and bcrypt errors are mapped to a generic `SERVICE_UNAVAILABLE` message so server details are not exposed.
 - **Database**: `DATABASE_URL` is validated at load time; `ssl: "require"` is used; all SQL uses parameterized queries (postgres.js tagged templates). `handleDbError` maps invalid UUID (e.g. from route `[id]`) to 404 so no internals are leaked.
 - **API authorization**: Admin-only mutations (pages, projects, media upload) check session and role; public GETs filter by `published` where needed.
-- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and 5 MB limit; unique object keys; R2 credentials from env.
+- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and 5 MB limit; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
 - **Dependencies**: Run `pnpm audit` regularly; address any reported vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` in app code; external links that use `target="_blank"` use `rel="noopener noreferrer"`.
 - **Protected pages**: Admin layout and routes use `getServerSession(authOptions)` and redirect unauthenticated users to login.
@@ -58,17 +58,17 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: A malicious client can spoof `Content-Type` and filename; a non-image could be uploaded if only MIME/extension are trusted.
 - **Recommendation**: Add server-side validation of file content (e.g. magic-byte checks for JPEG/PNG/WebP/GIF) in addition to type/extension checks.
 
-### 7. **Media upload – `linked_to` not validated (low)**
+### 7. **Media upload – `linked_to` not validated (low)** — Addressed
 
-- **Where**: `app/api/media/route.ts` – `formData.get("linked_to")` is passed into the `INSERT` as-is.
-- **Issue**: Invalid or arbitrary values can cause Postgres errors (e.g. invalid UUID) and result in a 500 instead of 400.
-- **Recommendation**: Validate `linkedTo` as either `null` or a valid UUID before using it in the query; return 400 for invalid values.
+- **Where**: `app/api/media/route.ts` – `formData.get("linked_to")` was passed into the `INSERT` as-is.
+- **Issue**: Invalid or arbitrary values could cause Postgres errors (e.g. invalid UUID) and result in a 500 instead of 400.
+- **Status**: `linked_to` is now validated as a string if present, normalised (empty → null), and checked with a UUID regex before insert; invalid values return 400. See [R2 file upload workflow](r2-file-upload-workflow.md).
 
-### 8. **R2 / media env vars (low)**
+### 8. **R2 / media env vars (low)** — Addressed
 
-- **Where**: `lib/r2.ts` and `app/api/media/route.ts` use `process.env.R2_*` with non-null assertions.
-- **Issue**: If any are missing, the app can throw at runtime when an upload is attempted (no secret leak, but poor fail-fast and UX).
-- **Recommendation**: Validate required R2 env vars at startup (or when first used) and fail with a clear error; document them in README or deployment docs.
+- **Where**: `lib/r2.ts` and `app/api/media/route.ts` use `process.env.R2_*`.
+- **Issue**: If any are missing, the app could throw at runtime when an upload is attempted (no secret leak, but poor fail-fast and UX).
+- **Status**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
 
 ### 9. **Project URLs – no scheme validation (medium when public)**
 
