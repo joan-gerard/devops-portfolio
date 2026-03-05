@@ -23,10 +23,8 @@ _Generated for review. No code changes were made during this scan._
 
 ### 1. **NextAuth middleware not active (medium)** — Addressed
 
-- **Where**: `proxy.ts` exports NextAuth middleware and a `config.matcher` for `/admin/dashboard`, `/admin/editor`, `/admin/roadmap`, `/admin/notes`, `/admin/projects`.
-- **Issue**: Next.js only runs middleware from a root `middleware.ts` (or `src/middleware.ts`). There is no `middleware.ts` that uses this, so the middleware in `proxy.ts` is never run.
-- **Impact**: Protection relies entirely on each page calling `getServerSession` and redirecting. If a new admin route is added and the developer forgets the session check, it could be accessible without auth.
-- **Status**: In Next.js 16 the middleware convention was renamed to [Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). The app uses root `proxy.ts` with NextAuth’s `withAuth` and the same matcher; Next.js 16 runs this file, so admin paths are now protected at the edge and unauthenticated requests are redirected to `/admin/login`. Page-level `getServerSession` remains as defence in depth.
+- **Historical issue**: Previously, Next.js only ran edge auth from a root `middleware.ts` (or `src/middleware.ts`). Logic lived in what is now `proxy.ts` but was not invoked because there was no `middleware.ts`, so admin routes were protected only by page-level `getServerSession`.
+- **Resolution**: The app now uses the [Next.js 16 Proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). Root `proxy.ts` exports NextAuth’s `withAuth` and a `config.matcher` for the `/admin/*` routes (e.g. `/admin`, `/admin/dashboard/:path*`, `/admin/editor/:path*`, `/admin/roadmap/:path*`, `/admin/notes/:path*`, `/admin/projects/:path*`). Next.js runs `proxy.ts` at the root, so those admin paths are protected at the edge and unauthenticated requests are redirected to `/admin/login`. Page-level `getServerSession` remains as defense-in-depth.
 
 ### 2. **NEXTAUTH_SECRET not documented (medium)**
 
