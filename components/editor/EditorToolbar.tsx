@@ -196,7 +196,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
             (e.currentTarget as HTMLButtonElement).style.color = "var(--text-dim)";
           }}
         >
-          {uploading ? "Uploading…" : "⌃ Image"}
+          {uploading ? "Uploading…" : "+ Image"}
         </button>
       </div>
     </div>
