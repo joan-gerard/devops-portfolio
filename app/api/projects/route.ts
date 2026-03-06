@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = !!session;
+    const isAdmin = session?.user?.role === "admin";
 
     const projects = isAdmin
       ? await sql`
@@ -34,7 +34,7 @@ export async function GET() {
 // POST /api/projects
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user || session.user.role !== "admin") {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

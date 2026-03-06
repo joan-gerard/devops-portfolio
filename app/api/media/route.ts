@@ -10,7 +10,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user || session.user.role !== "admin") {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

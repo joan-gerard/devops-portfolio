@@ -11,7 +11,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const session = await getServerSession(authOptions);
-    const isAdmin = !!session;
+    const isAdmin = session?.user?.role === "admin";
 
     const [project] = isAdmin
       ? await sql`SELECT * FROM projects WHERE id = ${id}`
@@ -33,7 +33,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 // PATCH /api/projects/[id]
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user || session.user.role !== "admin") {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
@@ -115,7 +115,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 // DELETE /api/projects/[id]
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user || session.user.role !== "admin") {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
