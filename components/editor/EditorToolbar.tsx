@@ -86,10 +86,20 @@ export default function EditorToolbar({ editor, noteId }: Props) {
       formData.append("linked_to", noteId);
 
       const res = await fetch("/api/media", { method: "POST", body: formData });
-      const parsed = await res.json();
+      let parsed: { error?: string; url?: string; filename?: string } = {};
+
+      try {
+        parsed = await res.json();
+      } catch (parseError) {
+        console.error("POST /api/media: response body was not valid JSON:", parseError);
+      }
 
       if (!res.ok) {
-        throw new Error(parsed.error ?? "Upload failed");
+        throw new Error(parsed.error ?? "Upload failed — please try a smaller file");
+      }
+
+      if (!parsed.url) {
+        throw new Error("Upload succeeded but no URL was returned");
       }
 
       editor.chain().focus().setImage({ src: parsed.url }).run();
@@ -173,7 +183,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          title="Insert image"
+          title="(JPEG, PNG, WebP, GIF — max 4MB)"
           style={{
             padding: "4px 10px",
             borderRadius: "3px",
