@@ -13,6 +13,10 @@ export async function checkRateLimit(
   // unidentifiable requests
   if (!ip) return { allowed: true };
 
+  // Note: this is a read-then-write pattern and is not atomic under concurrency.
+  // Simultaneous requests from the same IP could both pass the limit check before
+  // either increments the counter. Acceptable for a single-admin app where
+  // concurrent login attempts from the same IP are not a realistic threat.
   const [record] = await sql`
     SELECT attempts, window_start
     FROM login_attempts
