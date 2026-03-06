@@ -20,8 +20,22 @@ function getDatabaseUrl(): string {
   return url.trim();
 }
 
-const sql = postgres(getDatabaseUrl(), {
-  ssl: "require",
+let _sql: ReturnType<typeof postgres> | null = null;
+
+function getClient(): ReturnType<typeof postgres> {
+  if (!_sql) {
+    _sql = postgres(getDatabaseUrl(), { ssl: "require" });
+  }
+  return _sql;
+}
+
+const sql = new Proxy({} as ReturnType<typeof postgres>, {
+  get(_target, prop) {
+    return (getClient() as any)[prop];
+  },
+  apply(_target, _thisArg, args) {
+    return (getClient() as any)(...args);
+  },
 });
 
 export default sql;

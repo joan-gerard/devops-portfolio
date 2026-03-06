@@ -35,4 +35,12 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Build does not connect to the database — all routes are dynamic
+          # and data is fetched at request time, not build time. A syntactically
+          # valid placeholder is sufficient to satisfy the postgres.js client
+          # initialisation. The real DATABASE_URL is only needed at runtime (Vercel).
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost/placeholder
+          NEXTAUTH_SECRET: placeholder
+          NEXTAUTH_URL: http://localhost:3000
+          ADMIN_EMAIL: placeholder@placeholder.com
+          ADMIN_PASSWORD_HASH: placeholder
