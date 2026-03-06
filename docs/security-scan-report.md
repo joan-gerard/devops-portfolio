@@ -10,7 +10,7 @@ _Generated for review. No code changes were made during this scan._
 - **Auth**: Credentials are validated against a bcrypt hash; misconfiguration and bcrypt errors are mapped to a generic `SERVICE_UNAVAILABLE` message so server details are not exposed.
 - **Database**: `DATABASE_URL` is validated at load time; `ssl: "require"` is used; all SQL uses parameterized queries (postgres.js tagged templates). `handleDbError` maps invalid UUID (e.g. from route `[id]`) to 404 so no internals are leaked.
 - **API authorization**: Admin-only mutations (pages, projects, media upload) check session and role; public GETs filter by `published` where needed.
-- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and 5 MB limit; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
+- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and size limit; server-side magic-byte validation (`lib/validateFileBytes.ts`) so declared type must match actual content; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
 - **Dependencies**: Run `pnpm audit` regularly; address any reported vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` in app code; external links that use `target="_blank"` use `rel="noopener noreferrer"`.
 - **Protected pages**: Root `proxy.ts` (Next.js 16 Proxy) runs NextAuth `withAuth` for matched admin paths, redirecting unauthenticated requests to login. Admin layout and routes also use `getServerSession(authOptions)` for defence in depth.
@@ -50,11 +50,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: Any unexpected exception (e.g. from `signIn`) could expose `err.message` to the client. Right now the server only returns controlled error codes, so this is unlikely but brittle.
 - **Resolution**: The `catch` block always returns a generic message (`DEFAULT_ERROR_MESSAGE`) to the user. The real error is logged with `console.error` for debugging; no exception message is ever shown to the user, so future server or client changes cannot accidentally leak internal messages.
 
-### 6. **Media upload – MIME type and file content (medium)**
+### 6. **Media upload – MIME type and file content (medium)** — Addressed
 
-- **Where**: `app/api/media/route.ts` – validation uses `file.type` (browser-provided) and file extension from `file.name`.
+- **Where**: `app/api/media/route.ts` – validation previously relied on `file.type` (browser-provided) and file extension from `file.name`.
 - **Issue**: A malicious client can spoof `Content-Type` and filename; a non-image could be uploaded if only MIME/extension are trusted.
-- **Recommendation**: Add server-side validation of file content (e.g. magic-byte checks for JPEG/PNG/WebP/GIF) in addition to type/extension checks.
+- **Resolution**: Server-side magic-byte validation is implemented in `lib/validateFileBytes.ts` for JPEG, PNG, GIF, and WebP. The media route reads the upload buffer once, runs `detectMimeFromBytes(buffer)` before accepting the file, and rejects (400) when the signature is unrecognised or when the detected MIME does not match the client-declared `file.type`. Only content that matches an allowed image signature and matches the declared type is uploaded.
 
 ### 7. **Media upload – `linked_to` not validated (low)** — Addressed
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                                                  |
-| ------------------------- | -------- | -------------------------------------------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                      |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                     |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                           |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side                                                |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist                                        |
-| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow) |
-| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                     |
-| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                 |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                    |
-| Slug validation           | Low      | Validate format and length                                                       |
-| EditorToolbar alert       | Low      | Use generic message in UI                                                        |
-| Dependencies              | —        | Run `pnpm audit` regularly                                                       |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                  |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                   |
+| Area                      | Severity | Status / action                                                                           |
+| ------------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                               |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                              |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                    |
+| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match |
+| Project URL schemes       | Medium   | Validate/sanitize when public links exist                                                 |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)          |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                              |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                          |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                             |
+| Slug validation           | Low      | Validate format and length                                                                |
+| EditorToolbar alert       | Low      | Use generic message in UI                                                                 |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                                |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                           |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                            |
 
 ---
 

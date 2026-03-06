@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import sql from "@/lib/db";
 import r2 from "@/lib/r2";
+import { detectMimeFromBytes } from "@/lib/validateFileBytes"; // ← new import
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "linked_to must be a valid UUID" }, { status: 400 });
     }
 
-    // Validate file type
+    // Validate file type — cheap check on client-provided MIME before reading buffer
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
@@ -42,10 +43,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate file size — 5MB limit
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size — 4MB limit (safely under Vercel's 4.5MB body limit)
+    const maxSize = 4 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
+      return NextResponse.json({ error: "File too large. Maximum size is 4MB." }, { status: 400 });
     }
 
     // Fail fast if R2 is not configured (avoids opaque AWS errors)
@@ -62,6 +63,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Media upload is not configured" }, { status: 503 });
     }
 
+    // Read buffer once — used for magic byte validation and R2 upload
+    const buffer = Buffer.from(await file.arrayBuffer()); // ← moved up from below
+
+    // Validate actual file content against magic bytes — client-provided file.type
+    // cannot be trusted; a malicious client can set any Content-Type
+    const detectedMime = detectMimeFromBytes(buffer);
+    if (!detectedMime) {
+      return NextResponse.json(
+        { error: "File type not allowed. Use JPEG, PNG, WebP, or GIF." },
+        { status: 400 }
+      );
+    }
+    if (detectedMime !== file.type) {
+      return NextResponse.json(
+        { error: "File content does not match declared type." },
+        { status: 400 }
+      );
+    }
+
     // Build a unique filename
     const rawExt = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() : undefined;
     const ext = rawExt ?? "jpg";
@@ -69,12 +89,11 @@ export async function POST(request: Request) {
     const key = `uploads/${filename}`;
 
     // Upload to R2
-    const buffer = Buffer.from(await file.arrayBuffer());
     await r2.send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: key,
-        Body: buffer,
+        Body: buffer, // ← reuses the buffer already read above
         ContentType: file.type,
       })
     );
@@ -97,7 +116,6 @@ export async function POST(request: Request) {
           })
         );
       } catch (r2Error) {
-        // Log but don't throw — we still want to return the DB error to the client
         console.error("POST /api/media: R2 rollback also failed:", r2Error);
       }
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
