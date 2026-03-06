@@ -1,8 +1,24 @@
+/**
+ * NextAuth.js catch-all route and configuration.
+ *
+ * Handles GET/POST for all NextAuth endpoints (signin, signout, session, etc.)
+ * using a credentials provider with a single admin identity (ADMIN_EMAIL +
+ * ADMIN_PASSWORD_HASH). Login attempts are rate-limited by IP; JWT session strategy
+ * is used with no database session store.
+ *
+ * @see docs/authentication.md
+ */
+
 import { checkRateLimit, clearRateLimit } from "@/lib/queries/loginAttempts";
 import bcrypt from "bcryptjs";
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+/**
+ * NextAuth options: credentials provider, JWT session, custom sign-in page,
+ * and callbacks that attach role to token/session. Exported for use with
+ * getServerSession(authOptions) in API routes and Server Components.
+ */
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -65,6 +81,11 @@ export const authOptions: AuthOptions = {
   },
 };
 
+/**
+ * NextAuth request handler. Handles GET and POST for /api/auth/* (e.g. signin,
+ * signout, session, csrf, providers). Used by the App Router as the catch-all
+ * for the [...nextauth] segment.
+ */
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

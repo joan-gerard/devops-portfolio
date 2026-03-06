@@ -1,3 +1,13 @@
+/**
+ * Media upload API route.
+ *
+ * Handles authenticated uploads of images (JPEG, PNG, WebP, GIF) to Cloudflare R2,
+ * validates file type via magic bytes, and records metadata in the media table.
+ * Requires R2_* environment variables to be set; returns 503 if not configured.
+ *
+ * @see docs/r2-file-upload-workflow.md
+ */
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import sql from "@/lib/db";
 import r2 from "@/lib/r2";
@@ -8,6 +18,21 @@ import { NextResponse } from "next/server";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * POST /api/media — upload an image (authenticated only).
+ *
+ * Expects multipart form data with:
+ * - file: image file (JPEG, PNG, WebP, or GIF; max 4MB)
+ * - linked_to: optional string UUID of a page/project to associate the media with
+ *
+ * Validates MIME via magic bytes, uploads to R2, inserts a row into media, and
+ * returns { url, filename }. On DB insert failure, deletes the R2 object and returns 500.
+ *
+ * @returns 201 with { url, filename } on success
+ * @returns 400 for missing file, invalid type/size, or invalid linked_to UUID
+ * @returns 401 if not authenticated
+ * @returns 503 if R2 is not configured
+ */
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
