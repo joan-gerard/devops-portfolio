@@ -9,6 +9,7 @@ This document summarizes the project’s security posture and practices.
 - **Database**: `lib/db.ts` validates `DATABASE_URL` at load time and uses `ssl: "require"` for the Postgres client. Use parameterized queries (e.g. `sql\`...\${userInput}\`` via postgres.js tagged templates) when you add queries to avoid SQL injection.
 - **Media upload**: `/api/media` is auth-protected; file type whitelist and size limit apply. Validate file content (e.g. magic bytes) server-side where possible; validate `linked_to` as UUID or null. R2 env vars are validated before upload and missing config returns 503. See [R2 file upload workflow](r2-file-upload-workflow.md) for details.
 - **Project URLs**: `github_url` and `live_url` are validated before store in `lib/validateProjectUrl.ts` (allowed schemes: `https:` and `http:`). POST/PATCH project APIs reject invalid schemes with 400.
+- **Slugs**: Project and page slugs are validated in `lib/validateSlug.ts` (lowercase alphanumeric and hyphens, max 200 chars). POST/PATCH for projects and pages reject invalid slugs with 400.
 - **Dependencies**: Run `pnpm audit` regularly; fix or accept known vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` or other raw HTML injection in app code. External links use `rel="noopener noreferrer"` where appropriate. When adding public note rendering, use TipTap's `generateHTML` with a strict schema.
 

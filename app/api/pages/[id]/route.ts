@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
+import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { JSONValue } from "postgres";
@@ -61,11 +62,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     published?: boolean;
   };
 
+  const slugToWrite = slug !== undefined && slug !== null ? normalizeSlug(String(slug)) : undefined;
+  if (slugToWrite !== undefined) {
+    const slugError = getSlugValidationError(slugToWrite);
+    if (slugError) {
+      return NextResponse.json({ error: slugError }, { status: 400 });
+    }
+  }
+
   try {
     const [page] = await sql`
       UPDATE pages SET
         title     = COALESCE(${title ?? null},     title),
-        slug      = COALESCE(${slug ?? null},      slug),
+        slug      = COALESCE(${slugToWrite ?? null}, slug),
         content   = COALESCE(${content ? sql.json(content as JSONValue) : null}, content),
         tags      = COALESCE(${tags ?? null},      tags),
         published = COALESCE(${published ?? null}, published)

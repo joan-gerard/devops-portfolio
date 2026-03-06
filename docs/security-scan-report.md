@@ -74,11 +74,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: If these are later rendered as `href` on public pages, values like `javascript:...` or `data:...` could lead to XSS or unexpected behavior.
 - **Resolution**: Scheme validation is implemented in `lib/validateProjectUrl.ts`. `isAllowedProjectUrlScheme()` accepts only `http:` and `https:` (and rejects empty/invalid or over-length URLs). POST and PATCH project handlers normalize `github_url` and `live_url` with `normalizeProjectUrl()`, then validate with `isAllowedProjectUrlScheme()` before storing; invalid schemes return 400 with a clear error. When rendering links, only stored values are used, so the allowlist is enforced at write time.
 
-### 10. **Slug format/length not validated (low)**
+### 10. **Slug format/length not validated (low)** — Addressed
 
-- **Where**: `POST /api/pages`, `POST /api/projects`, and their PATCH handlers – `slug` is required (for create) but not validated for format or length.
+- **Where**: `POST /api/pages`, `POST /api/projects`, and their PATCH handlers – `slug` was required (for create) but not validated for format or length.
 - **Issue**: Very long or odd slugs could cause issues (DB, URLs, or caches). Unlikely to be critical.
-- **Recommendation**: Validate slug format (e.g. alphanumeric, hyphens) and max length (e.g. 80–200 chars) and return 400 when invalid.
+- **Resolution**: Slug validation is implemented in `lib/validateSlug.ts`. Slugs must be lowercase letters, numbers, and hyphens only (no leading/trailing or consecutive hyphens), with a maximum length of 200 characters. POST and PATCH handlers for both projects and pages validate the slug via `getSlugValidationError()` and return 400 with a clear message when invalid.
 
 ### 11. **Image upload error message in EditorToolbar (low)**
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                                                                          |
-| ------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                              |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                             |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                   |
-| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                |
-| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store |
-| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                         |
-| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                             |
-| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                         |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                            |
-| Slug validation           | Low      | Validate format and length                                                                               |
-| EditorToolbar alert       | Low      | Use generic message in UI                                                                                |
-| Dependencies              | —        | Run `pnpm audit` regularly                                                                               |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                          |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                           |
+| Area                      | Severity | Status / action                                                                                                    |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                                        |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                                       |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                             |
+| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                          |
+| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store           |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                                   |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                                       |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                                   |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                                      |
+| Slug validation           | Low      | Addressed – format and length validated in lib/validateSlug.ts; POST/PATCH projects and pages enforce before store |
+| EditorToolbar alert       | Low      | Use generic message in UI                                                                                          |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                                                         |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                                    |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                                     |
 
 ---
 
