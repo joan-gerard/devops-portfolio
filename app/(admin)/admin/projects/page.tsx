@@ -9,6 +9,8 @@ export default async function ProjectsPage() {
   if (!session) redirect("/admin/login");
 
   const projects = await getAllProjects();
+  const publishedCount = projects.filter((p) => p.published).length;
+  const unpublishedCount = projects.length - publishedCount;
 
   return (
     <div>
@@ -20,9 +22,14 @@ export default async function ProjectsPage() {
           marginBottom: "24px",
         }}
       >
-        <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-          {projects.length} {projects.length === 1 ? "project" : "projects"}
-        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            {unpublishedCount} unpublished
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--accent)" }}>
+            {publishedCount} published
+          </span>
+        </div>
         <CreateProjectButton />
       </div>
 
