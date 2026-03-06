@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
  *
  * @returns A JSON array of page objects containing `id`, `title`, `slug`, `tags`, `published`, `created_at`, and `updated_at`; on failure returns a JSON error object and a 500 status.
  */
-export async function GET(_request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!session;
