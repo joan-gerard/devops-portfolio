@@ -38,11 +38,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: The credentials provider had no rate limiting, so an attacker could attempt many passwords against the single admin account.
 - **Resolution**: Rate limiting is implemented in the NextAuth credentials `authorize` callback. Client IP is taken from `x-forwarded-for` (trimmed), with fallback to `x-real-ip`, then to the socket address; if the IP cannot be determined it is left `undefined`. `lib/queries/loginAttempts.ts` enforces a 15-minute fixed window with a maximum of 5 attempts per IP. When the IP is unknown (`undefined`), the request is **allowed** and not rate limited, so that all unidentifiable requests are not grouped into a single shared bucket. The `login_attempts` table is created by `migrations/002_login_attempts.sql`. When the limit is exceeded, the user sees a message with the cooldown time in minutes. On successful login, the counter for that IP is cleared (no-op when IP is unknown). Documented in `docs/security.md`.
 
-### 4. **CI build and DATABASE_URL (low)**
+### 4. **CI build and DATABASE_URL (low)** — Addressed
 
-- **Where**: `.github/workflows/ci.yml` – build step uses `DATABASE_URL` from secrets.
+- **Where**: `.github/workflows/ci.yml` – build step used `DATABASE_URL` from secrets.
 - **Issue**: If the Next.js build does not need a real database (e.g. no DB access at build time), requiring a real `DATABASE_URL` in CI increases secret usage and failure surface.
-- **Recommendation**: If build does not need DB, consider using a placeholder URL for the build step and document that real `DATABASE_URL` is only for runtime. If build does need DB, current setup is acceptable; just ensure the secret is restricted to what’s needed.
+- **Resolution**: The CI build step no longer uses a secret for `DATABASE_URL`. It uses a syntactically valid placeholder (`postgresql://placeholder:placeholder@localhost/placeholder`) because the build does not connect to the database—all routes are dynamic and data is fetched at request time. The workflow comment documents that the real `DATABASE_URL` is only needed at runtime (e.g. Vercel). Other build-time env vars (NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL, ADMIN_PASSWORD_HASH) are also placeholders in CI.
 
 ### 5. **Client-side error message from exceptions (low)**
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                                  |
-| ------------------------- | -------- | ---------------------------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                      |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set     |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented           |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side                                |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist                        |
-| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB                         |
-| Login catch message       | Low      | Always show generic message in catch                             |
-| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented    |
-| Slug validation           | Low      | Validate format and length                                       |
-| EditorToolbar alert       | Low      | Use generic message in UI                                        |
-| Dependencies              | —        | Run `pnpm audit` regularly                                       |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                                  |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                   |
+| Area                      | Severity | Status / action                                                                  |
+| ------------------------- | -------- | -------------------------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                      |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                     |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                           |
+| Media MIME / magic bytes  | Medium   | Validate file content server-side                                                |
+| Project URL schemes       | Medium   | Validate/sanitize when public links exist                                        |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow) |
+| Login catch message       | Low      | Always show generic message in catch                                             |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                 |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                    |
+| Slug validation           | Low      | Validate format and length                                                       |
+| EditorToolbar alert       | Low      | Use generic message in UI                                                        |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                       |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                  |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                   |
 
 ---
 
