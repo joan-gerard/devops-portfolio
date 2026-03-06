@@ -1,1 +1,1 @@
-Review the changes made to the files currently unstaged and then update the documents specified by the user, otherwise find the relevant documents to update. If the user provides more context or instructions, take them into account also.
+Review the currently unstaged file changes, then update the documents specified by the user. If the user does not specify any documents, identify the relevant documents to update instead. If the user provides additional context or instructions, take them into account as well.

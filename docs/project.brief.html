@@ -1628,6 +1628,7 @@
           <li><span class="step-num">5</span><div><span class="spriority medium">Medium</span><strong>CI build no longer uses real DATABASE_URL</strong> — Since the build does not connect to the database (all routes are dynamic, data fetched at request time), the CI workflow now uses a syntactically valid placeholder connection string instead of the production secret. Real <code>DATABASE_URL</code> stays on Vercel where it is only needed at runtime.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority low">Low</span><strong>/admin redirect</strong> — <code>/admin</code> with no sub-path returned a 404. Added <code>/admin</code> to the <code>proxy.ts</code> matcher and a pathname check that redirects to <code>/admin/dashboard</code>. Unauthenticated users still hit the auth check first and are sent to <code>/admin/login</code>.</div></li>
           <li><span class="step-num">7</span><div><span class="spriority low">Low</span><strong>Upload response parsing hardened</strong> — <code>handleImageUpload</code> in <code>EditorToolbar.tsx</code> previously called <code>res.json()</code> unconditionally and used a non-null assertion on <code>parsed.url</code>. Fixed: <code>res.json()</code> wrapped in try/catch with logging, <code>parsed.url</code> explicitly guarded before calling <code>editor.setImage()</code>, non-null assertion removed. Error messages from the API route are decoded and surfaced directly rather than replaced with a generic fallback.</div></li>
+          <li><span class="step-num">8</span><div><span class="spriority medium">Medium</span><strong>Project URL scheme validation</strong> — <code>github_url</code> and <code>live_url</code> were stored without validation. If rendered as <code>href</code> on public pages, values like <code>javascript:...</code> or <code>data:...</code> could lead to XSS or unexpected behaviour. Implemented in <code>lib/validateProjectUrl.ts</code> — <code>isAllowedProjectUrlScheme()</code> accepts only <code>http:</code> and <code>https:</code>, rejecting empty, invalid, or over-length URLs. <code>normalizeProjectUrl()</code> trims and normalises the value before validation. Both POST and PATCH handlers in <code>/api/projects</code> and <code>/api/projects/[id]</code> run normalise-then-validate before storing — invalid schemes return 400 with a clear error. Scheme enforcement is at write time so only safe values ever reach the database or the public-facing rendered links.</div></li>
         </ol>
         <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-muted);">
           <strong style="color:var(--text)">Why a dedicated phase?</strong><br><br>
@@ -1713,7 +1714,7 @@
 
       <div class="phase" id="phase-09">
         <div class="phase-header phase-header-post">
-          <div class="phase-number post">08</div>
+          <div class="phase-number post">09</div>
           <div>
             <div class="phase-title">Post Launch</div>
             <div class="phase-subtitle">Enhancements to layer in as your course progresses and content grows</div>
