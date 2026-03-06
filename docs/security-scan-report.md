@@ -60,13 +60,13 @@ _Generated for review. No code changes were made during this scan._
 
 - **Where**: `app/api/media/route.ts` – `formData.get("linked_to")` was passed into the `INSERT` as-is.
 - **Issue**: Invalid or arbitrary values could cause Postgres errors (e.g. invalid UUID) and result in a 500 instead of 400.
-- **Status**: `linked_to` is now validated as a string if present, normalised (empty → null), and checked with a UUID regex before insert; invalid values return 400. See [R2 file upload workflow](r2-file-upload-workflow.md).
+- **Resolution**: `linked_to` is now validated as a string if present, normalised (empty → null), and checked with a UUID regex before insert; invalid values return 400. See [R2 file upload workflow](r2-file-upload-workflow.md).
 
 ### 8. **R2 / media env vars (low)** — Addressed
 
 - **Where**: `lib/r2.ts` and `app/api/media/route.ts` use `process.env.R2_*`.
 - **Issue**: If any are missing, the app could throw at runtime when an upload is attempted (no secret leak, but poor fail-fast and UX).
-- **Status**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
+- **Resolution**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
 
 ### 9. **Project URLs – no scheme validation (medium when public)**
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                               |
-| ------------------------- | -------- | ------------------------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                   |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set  |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented        |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side                             |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist                     |
-| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB                      |
-| Login catch message       | Low      | Always show generic message in catch                          |
-| Media `linked_to`         | Low      | Validate UUID or null                                         |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented |
-| Slug validation           | Low      | Validate format and length                                    |
-| EditorToolbar alert       | Low      | Use generic message in UI                                     |
-| Dependencies              | —        | Run `pnpm audit` regularly                                    |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                               |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                |
+| Area                      | Severity | Status / action                                                  |
+| ------------------------- | -------- | ---------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                      |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set     |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented           |
+| Media MIME / magic bytes  | Medium   | Validate file content server-side                                |
+| Project URL schemes       | Medium   | Validate/sanitize when public links exist                        |
+| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB                         |
+| Login catch message       | Low      | Always show generic message in catch                             |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented    |
+| Slug validation           | Low      | Validate format and length                                       |
+| EditorToolbar alert       | Low      | Use generic message in UI                                        |
+| Dependencies              | —        | Run `pnpm audit` regularly                                       |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                  |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                   |
 
 ---
 
