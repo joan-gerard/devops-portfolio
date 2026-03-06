@@ -80,11 +80,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: Very long or odd slugs could cause issues (DB, URLs, or caches). Unlikely to be critical.
 - **Resolution**: Slug validation is implemented in `lib/validateSlug.ts`. Slugs must be lowercase letters, numbers, and hyphens only (no leading/trailing or consecutive hyphens), with a maximum length of 200 characters. POST and PATCH handlers for both projects and pages validate the slug via `getSlugValidationError()` and return 400 with a clear message when invalid.
 
-### 11. **Image upload error message in EditorToolbar (low)**
+### 11. **Image upload error message in EditorToolbar (low)** — Addressed
 
-- **Where**: `components/editor/EditorToolbar.tsx` – `handleImageUpload` uses `alert(err instanceof Error ? err.message : "Upload failed")`.
-- **Issue**: Server error messages (e.g. from API JSON) can be shown to the user.
-- **Recommendation**: Show a generic message (e.g. "Upload failed") in the UI and log the real error (e.g. via `console.error` or a logging utility).
+- **Where**: `components/editor/EditorToolbar.tsx` – `handleImageUpload` previously used `alert(err instanceof Error ? err.message : "Upload failed")`.
+- **Issue**: Server error messages (e.g. from API JSON) could be shown to the user.
+- **Resolution**: The catch block now always shows a generic message (`"Upload failed"`) in the UI via `alert()`. The real error is already logged with `console.error("Image upload failed:", err)` for debugging; no exception or API message is shown to the user.
 
 ### 12. **Public note rendering (future)**
 
@@ -113,7 +113,7 @@ _Generated for review. No code changes were made during this scan._
 | Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                                   |
 | R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                                      |
 | Slug validation           | Low      | Addressed – format and length validated in lib/validateSlug.ts; POST/PATCH projects and pages enforce before store |
-| EditorToolbar alert       | Low      | Use generic message in UI                                                                                          |
+| EditorToolbar alert       | Low      | Addressed – generic message in UI; real error logged only                                                          |
 | Dependencies              | —        | Run `pnpm audit` regularly                                                                                         |
 | Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                                    |
 | Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                                     |
