@@ -5,7 +5,15 @@ import { isAllowedProjectUrlScheme, normalizeProjectUrl } from "@/lib/validatePr
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-// GET /api/projects
+/**
+ * Return project entries, including unpublished ones when the requester is authenticated.
+ *
+ * Queries the database for projects ordered by `updated_at` descending. If the request is authenticated,
+ * all projects are returned; otherwise only projects with `published = true` are included.
+ *
+ * @returns A NextResponse whose body is a JSON array of project records ordered by `updated_at` descending.
+ *          If an internal error occurs, returns a JSON error object with status 500.
+ */
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
