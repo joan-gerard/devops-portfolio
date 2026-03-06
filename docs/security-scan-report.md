@@ -44,11 +44,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: If the Next.js build does not need a real database (e.g. no DB access at build time), requiring a real `DATABASE_URL` in CI increases secret usage and failure surface.
 - **Resolution**: The CI build step no longer uses a secret for `DATABASE_URL`. It uses a syntactically valid placeholder (`postgresql://placeholder:placeholder@localhost/placeholder`) because the build does not connect to the database—all routes are dynamic and data is fetched at request time. The workflow comment documents that the real `DATABASE_URL` is only needed at runtime (e.g. Vercel). Other build-time env vars (NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL, ADMIN_PASSWORD_HASH) are also placeholders in CI.
 
-### 5. **Client-side error message from exceptions (low)**
+### 5. **Client-side error message from exceptions (low)** — Addressed
 
-- **Where**: `lib/submitLogin.ts` – `catch` uses `err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE`.
+- **Where**: `lib/submitLogin.ts` – `catch` previously used `err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE`.
 - **Issue**: Any unexpected exception (e.g. from `signIn`) could expose `err.message` to the client. Right now the server only returns controlled error codes, so this is unlikely but brittle.
-- **Recommendation**: In the `catch` block, always return a generic message (e.g. `DEFAULT_ERROR_MESSAGE`) for the user and log `err` server-side if needed, so future server changes cannot accidentally leak internal messages.
+- **Resolution**: The `catch` block always returns a generic message (`DEFAULT_ERROR_MESSAGE`) to the user. The real error is logged with `console.error` for debugging; no exception message is ever shown to the user, so future server or client changes cannot accidentally leak internal messages.
 
 ### 6. **Media upload – MIME type and file content (medium)**
 
@@ -109,7 +109,7 @@ _Generated for review. No code changes were made during this scan._
 | Media MIME / magic bytes  | Medium   | Validate file content server-side                                                |
 | Project URL schemes       | Medium   | Validate/sanitize when public links exist                                        |
 | CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow) |
-| Login catch message       | Low      | Always show generic message in catch                                             |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                     |
 | Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                 |
 | R2 env vars               | Low      | Addressed – validate in media route before upload; documented                    |
 | Slug validation           | Low      | Validate format and length                                                       |

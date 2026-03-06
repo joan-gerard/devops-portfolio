@@ -35,7 +35,7 @@ export async function submitLogin(email: string, password: string): Promise<Logi
 
     return { ok: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE;
-    return { ok: false, error: message };
+    console.error("submitLogin: unexpected error", err);
+    return { ok: false, error: DEFAULT_ERROR_MESSAGE };
   }
 }
