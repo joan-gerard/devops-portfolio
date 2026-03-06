@@ -4,9 +4,14 @@ const WINDOW_MINUTES = 15;
 const MAX_ATTEMPTS = 5;
 
 export async function checkRateLimit(
-  ip: string
+  ip: string | undefined
 ): Promise<{ allowed: boolean; minutesLeft?: number }> {
   const now = new Date();
+
+  // If IP cannot be determined, allow the request — do not rate limit
+  // an unknown key as it would create a shared bucket across all
+  // unidentifiable requests
+  if (!ip) return { allowed: true };
 
   const [record] = await sql`
     SELECT attempts, window_start
@@ -49,7 +54,8 @@ export async function checkRateLimit(
   return { allowed: true };
 }
 
-export async function clearRateLimit(ip: string): Promise<void> {
+export async function clearRateLimit(ip: string | undefined): Promise<void> {
+  if (!ip) return;
   await sql`
     DELETE FROM login_attempts WHERE ip = ${ip}
   `;

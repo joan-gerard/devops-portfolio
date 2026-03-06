@@ -1,0 +1,1 @@
+Review the changes made to the files currently unstaged and then update the documents specified by the user, otherwise find the relevant documents to update. If the user provides more context or instructions, take them into account also.

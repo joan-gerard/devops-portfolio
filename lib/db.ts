@@ -24,7 +24,7 @@ function getClient(): ReturnType<typeof postgres> {
   return _sql;
 }
 
-const sql = new Proxy({} as ReturnType<typeof postgres>, {
+const sql = new Proxy(function () {} as unknown as ReturnType<typeof postgres>, {
   get(_target, prop) {
     const client = getClient();
     return client[prop as keyof typeof client];

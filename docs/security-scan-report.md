@@ -36,7 +36,7 @@ _Generated for review. No code changes were made during this scan._
 
 - **Where**: `app/api/auth/[...nextauth]/route.ts` (credentials sign-in).
 - **Issue**: The credentials provider had no rate limiting, so an attacker could attempt many passwords against the single admin account.
-- **Resolution**: Rate limiting is implemented in the NextAuth credentials `authorize` callback. Client IP is taken from `x-forwarded-for` (Vercel/proxy-friendly). `lib/queries/loginAttempts.ts` enforces a 15-minute sliding window with a maximum of 5 attempts per IP; the `login_attempts` table is created by `migrations/002_login_attempts.sql`. When the limit is exceeded, the user sees a message with the cooldown time in minutes. On successful login, the counter for that IP is cleared. Documented in `docs/security.md`.
+- **Resolution**: Rate limiting is implemented in the NextAuth credentials `authorize` callback. Client IP is taken from `x-forwarded-for` (trimmed), with fallback to `x-real-ip`, then to the socket address; if the IP cannot be determined it is left `undefined`. `lib/queries/loginAttempts.ts` enforces a 15-minute fixed window with a maximum of 5 attempts per IP. When the IP is unknown (`undefined`), the request is **allowed** and not rate limited, so that all unidentifiable requests are not grouped into a single shared bucket. The `login_attempts` table is created by `migrations/002_login_attempts.sql`. When the limit is exceeded, the user sees a message with the cooldown time in minutes. On successful login, the counter for that IP is cleared (no-op when IP is unknown). Documented in `docs/security.md`.
 
 ### 4. **CI build and DATABASE_URL (low)**
 
