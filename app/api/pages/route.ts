@@ -8,9 +8,9 @@ import { NextResponse } from "next/server";
 export async function GET(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === "admin";
+    const isAuthenticated = !!session;
 
-    const pages = isAdmin
+    const pages = isAuthenticated
       ? await sql`
           SELECT id, title, slug, tags, published, created_at, updated_at
           FROM pages
@@ -29,10 +29,10 @@ export async function GET(_request: Request) {
     return NextResponse.json({ error: "Failed to fetch pages" }, { status: 500 });
   }
 }
-// POST /api/pages — create a new note (admin only)
+// POST /api/pages — create a new note (authenticated only)
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

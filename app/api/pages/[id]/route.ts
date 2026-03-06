@@ -11,9 +11,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === "admin";
+    const isAuthenticated = !!session;
 
-    const [page] = isAdmin
+    const [page] = isAuthenticated
       ? await sql`
           SELECT * FROM pages WHERE id = ${id}
         `
@@ -34,11 +34,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 }
 
-// PATCH /api/pages/[id] — update a note (admin only)
+// PATCH /api/pages/[id] — update a note (authenticated only)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
@@ -97,11 +97,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
-// DELETE /api/pages/[id] — delete a note (admin only)
+// DELETE /api/pages/[id] — delete a note (authenticated only)
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

@@ -11,9 +11,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     const session = await getServerSession(authOptions);
-    const isAdmin = !!session;
+    const isAuthenticated = !!session;
 
-    const [project] = isAdmin
+    const [project] = isAuthenticated
       ? await sql`SELECT * FROM projects WHERE id = ${id}`
       : await sql`SELECT * FROM projects WHERE id = ${id} AND published = true`;
 

@@ -9,9 +9,9 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = !!session;
+    const isAuthenticated = !!session;
 
-    const projects = isAdmin
+    const projects = isAuthenticated
       ? await sql`
           SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at
           FROM projects
