@@ -1956,7 +1956,7 @@
       </div>
       <div class="card card-yellow">
         <div class="card-title">Layer 3 — Sentry alerts</div>
-        <p class="card-desc">Sentry (planned Phase 6) is configured to capture an exception when status is <code>partial</code> or <code>failed</code>. No notification on clean runs — alert fatigue from successful jobs is counterproductive. Only fire when human attention is needed.</p>
+        <p class="card-desc">Sentry (planned Phase 7) is configured to capture an exception when status is <code>partial</code> or <code>failed</code>. No notification on clean runs — alert fatigue from successful jobs is counterproductive. Only fire when human attention is needed.</p>
       </div>
     </div>
 
@@ -1999,7 +1999,7 @@
       </div>
       <div class="card" style="border-color:var(--border)">
         <div class="card-title" style="color:var(--accent)">② API Route — /api/media</div>
-        <p class="card-desc">Session check first — unauthenticated requests are rejected with 401. Then validation in order: file present, <code>linked_to</code> is null or a valid UUID, MIME type is JPEG/PNG/WebP/GIF, size is under 5MB, R2 environment variables are present. Any failure returns a 4xx before touching R2 or the database.</p>
+        <p class="card-desc">Session check first — unauthenticated requests are rejected with 401. Then validation in order: file present, <code>linked_to</code> is null or a valid UUID, MIME type is JPEG/PNG/WebP/GIF, size is under 4MB, R2 environment variables are present. Any failure returns a 4xx before touching R2 or the database.</p>
       </div>
       <div class="card" style="border-color:var(--border)">
         <div class="card-title" style="color:var(--accent)">③ Cloudflare R2</div>
@@ -2007,7 +2007,7 @@
       </div>
       <div class="card" style="border-color:var(--border)">
         <div class="card-title" style="color:var(--accent)">④ Database — media table</div>
-        <p class="card-desc">After a successful R2 upload, a row is inserted into the <code>media</code> table recording the filename, full public URL, file size in bytes, and the note's UUID as <code>linked_to</code>. This record is what the Phase 6 orphan cleanup cron job will query to find unreferenced files.</p>
+        <p class="card-desc">After a successful R2 upload, a row is inserted into the <code>media</code> table recording the filename, full public URL, file size in bytes, and the note's UUID as <code>linked_to</code>. This record is what the Phase 7 orphan cleanup cron job will query to find unreferenced files.</p>
       </div>
       <div class="card" style="border-color:var(--border)">
         <div class="card-title" style="color:var(--accent)">⑤ Browser — TipTap editor</div>
@@ -2015,7 +2015,7 @@
       </div>
       <div class="card card-accent">
         <div class="card-title">⑥ Future — Orphan cleanup</div>
-        <p class="card-desc">If a user later removes the image from the note, the <code>media</code> row and R2 object become orphaned. A scheduled cron job in Phase 6 will query for <code>media</code> rows whose URL does not appear in any note's <code>content</code> JSONB and delete both the database row and the R2 object.</p>
+        <p class="card-desc">If a user later removes the image from the note, the <code>media</code> row and R2 object become orphaned. A scheduled cron job in Phase 7 will query for <code>media</code> rows whose URL does not appear in any note's <code>content</code> JSONB and delete both the database row and the R2 object.</p>
       </div>
     </div>
 
@@ -2085,7 +2085,7 @@ sequenceDiagram
         </div>
         <div class="enhancement-body">
           <div class="enhancement-title">Testing — Jest + Playwright</div>
-          <p class="enhancement-desc">Jest for unit tests on utility functions and API route logic. Playwright for end-to-end tests covering critical user journeys — visiting the roadmap, loading a note, logging in as admin. Even a small test suite is significant: being able to say "my CI pipeline runs tests before every deploy" is a strong signal to any DevOps employer. Add to Phase 6 of the build.</p>
+          <p class="enhancement-desc">Jest for unit tests on utility functions and API route logic. Playwright for end-to-end tests covering critical user journeys — visiting the roadmap, loading a note, logging in as admin. Even a small test suite is significant: being able to say "my CI pipeline runs tests before every deploy" is a strong signal to any DevOps employer. Add to Phase 7 of the build.</p>
           <div class="enhancement-tags"><span class="etool">Jest</span><span class="etool">Playwright</span><span class="etool">GitHub Actions</span></div>
         </div>
       </div>
