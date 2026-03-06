@@ -68,11 +68,11 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: If any are missing, the app could throw at runtime when an upload is attempted (no secret leak, but poor fail-fast and UX).
 - **Resolution**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
 
-### 9. **Project URLs – no scheme validation (medium when public)**
+### 9. **Project URLs – no scheme validation (medium when public)** — Addressed
 
-- **Where**: `app/api/projects/route.ts` and `app/api/projects/[id]/route.ts` – `github_url` and `live_url` are stored without validation.
+- **Where**: `app/api/projects/route.ts` and `app/api/projects/[id]/route.ts` – `github_url` and `live_url` were stored without validation.
 - **Issue**: If these are later rendered as `href` on public pages, values like `javascript:...` or `data:...` could lead to XSS or unexpected behavior.
-- **Recommendation**: Before storing, validate that URLs use allowed schemes (e.g. `https:` and optionally `http:`). Reject or sanitize others. When rendering, use the same allowlist or a safe link component.
+- **Resolution**: Scheme validation is implemented in `lib/validateProjectUrl.ts`. `isAllowedProjectUrlScheme()` accepts only `http:` and `https:` (and rejects empty/invalid or over-length URLs). POST and PATCH project handlers normalize `github_url` and `live_url` with `normalizeProjectUrl()`, then validate with `isAllowedProjectUrlScheme()` before storing; invalid schemes return 400 with a clear error. When rendering links, only stored values are used, so the allowlist is enforced at write time.
 
 ### 10. **Slug format/length not validated (low)**
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                                                           |
-| ------------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                               |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                              |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                    |
-| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist                                                 |
-| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)          |
-| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                              |
-| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                          |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                             |
-| Slug validation           | Low      | Validate format and length                                                                |
-| EditorToolbar alert       | Low      | Use generic message in UI                                                                 |
-| Dependencies              | —        | Run `pnpm audit` regularly                                                                |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                           |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                            |
+| Area                      | Severity | Status / action                                                                                          |
+| ------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                              |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                             |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                   |
+| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                |
+| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                         |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                             |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                         |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                            |
+| Slug validation           | Low      | Validate format and length                                                                               |
+| EditorToolbar alert       | Low      | Use generic message in UI                                                                                |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                                               |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                          |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                           |
 
 ---
 

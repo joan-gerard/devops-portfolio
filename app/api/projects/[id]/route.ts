@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
+import { isAllowedProjectUrlScheme, normalizeProjectUrl } from "@/lib/validateProjectUrl";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -58,6 +59,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     published?: boolean;
   };
 
+  const normalizedGithubUrl =
+    github_url !== undefined ? normalizeProjectUrl(github_url) : undefined;
+  const normalizedLiveUrl = live_url !== undefined ? normalizeProjectUrl(live_url) : undefined;
+  if (
+    (normalizedGithubUrl !== undefined &&
+      normalizedGithubUrl !== null &&
+      !isAllowedProjectUrlScheme(normalizedGithubUrl)) ||
+    (normalizedLiveUrl !== undefined &&
+      normalizedLiveUrl !== null &&
+      !isAllowedProjectUrlScheme(normalizedLiveUrl))
+  ) {
+    return NextResponse.json(
+      { error: "github_url and live_url must use http or https scheme" },
+      { status: 400 }
+    );
+  }
+
   try {
     const [project] = await sql`
       UPDATE projects SET
@@ -65,8 +83,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         slug        = COALESCE(${slug ?? null},        slug),
         description = COALESCE(${description ?? null}, description),
         tech_stack  = COALESCE(${tech_stack ?? null},  tech_stack),
-        github_url  = COALESCE(${github_url ?? null},  github_url),
-        live_url    = COALESCE(${live_url ?? null},    live_url),
+        github_url  = COALESCE(${normalizedGithubUrl ?? null},  github_url),
+        live_url    = COALESCE(${normalizedLiveUrl ?? null},    live_url),
         published   = COALESCE(${published ?? null},   published)
       WHERE id = ${id}
       RETURNING *

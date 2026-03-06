@@ -1,5 +1,6 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import sql from "@/lib/db";
+import { isAllowedProjectUrlScheme, normalizeProjectUrl } from "@/lib/validateProjectUrl";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -67,10 +68,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
 
+  const normalizedGithubUrl = normalizeProjectUrl(github_url);
+  const normalizedLiveUrl = normalizeProjectUrl(live_url);
+  if (
+    (normalizedGithubUrl !== null && !isAllowedProjectUrlScheme(normalizedGithubUrl)) ||
+    (normalizedLiveUrl !== null && !isAllowedProjectUrlScheme(normalizedLiveUrl))
+  ) {
+    return NextResponse.json(
+      { error: "github_url and live_url must use http or https scheme" },
+      { status: 400 }
+    );
+  }
+
   try {
     const [project] = await sql`
       INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url)
-      VALUES (${title}, ${slug}, ${description}, ${tech_stack}, ${github_url}, ${live_url})
+      VALUES (${title}, ${slug}, ${description}, ${tech_stack}, ${normalizedGithubUrl}, ${normalizedLiveUrl})
       RETURNING *
     `;
     return NextResponse.json(project, { status: 201 });
