@@ -6,14 +6,21 @@ import { isAllowedProjectUrlScheme, normalizeProjectUrl } from "@/lib/validatePr
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-// GET /api/projects/[id]
+/**
+ * Retrieve a project by its route `id`, returning its data if the requester is permitted to see it.
+ *
+ * If the request is authenticated, returns the project regardless of publication state; if unauthenticated, returns the project only if `published = true`.
+ *
+ * @param params - Route parameters; resolves to an object with the `id` of the project to fetch
+ * @returns A Response containing the project as JSON when accessible; a 404 JSON error `{ error: "Project not found" }` if no accessible project exists.
+ */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const session = await getServerSession(authOptions);
-    const isAdmin = !!session;
+    const isAuthenticated = !!session;
 
-    const [project] = isAdmin
+    const [project] = isAuthenticated
       ? await sql`SELECT * FROM projects WHERE id = ${id}`
       : await sql`SELECT * FROM projects WHERE id = ${id} AND published = true`;
 

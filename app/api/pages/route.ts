@@ -4,13 +4,17 @@ import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-// GET /api/pages — fetch all notes
-export async function GET(_request: Request) {
+/**
+ * Fetches pages and returns them as JSON; authenticated requests receive all pages, unauthenticated requests receive only published pages.
+ *
+ * @returns A JSON array of page objects containing `id`, `title`, `slug`, `tags`, `published`, `created_at`, and `updated_at`; on failure returns a JSON error object and a 500 status.
+ */
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === "admin";
+    const isAuthenticated = !!session;
 
-    const pages = isAdmin
+    const pages = isAuthenticated
       ? await sql`
           SELECT id, title, slug, tags, published, created_at, updated_at
           FROM pages
@@ -29,10 +33,20 @@ export async function GET(_request: Request) {
     return NextResponse.json({ error: "Failed to fetch pages" }, { status: 500 });
   }
 }
-// POST /api/pages — create a new note (admin only)
+/**
+ * Create a new page from the request body for an authenticated user.
+ *
+ * Uses `title` (defaults to "Untitled"), `slug`, and `tags` (defaults to []) from the JSON request body. The provided `slug` is normalized and validated before insertion.
+ *
+ * @returns On success, the created page object as JSON with status 201. On failure, a JSON error with one of:
+ * - 401 when the request is unauthenticated,
+ * - 400 when the slug is invalid,
+ * - 409 when a page with the same slug already exists,
+ * - 500 for other server errors.
+ */
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

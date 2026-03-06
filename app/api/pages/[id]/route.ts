@@ -6,14 +6,18 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { JSONValue } from "postgres";
 
-// GET /api/pages/[id] — fetch a single note
+/**
+ * Fetches a page by ID, returning unpublished pages only to authenticated users.
+ *
+ * @returns The page object as JSON when found, or a JSON error object `{ error: "Page not found" }` with a 404 status when no page exists.
+ */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === "admin";
+    const isAuthenticated = !!session;
 
-    const [page] = isAdmin
+    const [page] = isAuthenticated
       ? await sql`
           SELECT * FROM pages WHERE id = ${id}
         `
@@ -34,11 +38,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 }
 
-// PATCH /api/pages/[id] — update a note (admin only)
+/**
+ * Update a page identified by the route `id` with fields from the JSON request body.
+ *
+ * Validates authentication and request JSON, optionally normalizes and validates `slug`,
+ * and applies partial updates (keeps existing values when fields are omitted).
+ *
+ * @param params - Route params object containing `id` of the page to update
+ * @returns A NextResponse containing the updated page object on success, or a JSON error object describing the failure
+ */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
@@ -97,11 +109,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
-// DELETE /api/pages/[id] — delete a note (admin only)
+/**
+ * Deletes the page identified by the route `id` and returns a JSON response indicating the outcome.
+ *
+ * @param params - A promise that resolves to the route parameters object containing `id` (the page id to delete)
+ * @returns A JSON response:
+ * - `{ deleted: true, id }` when the page was deleted
+ * - `{ error: "Unauthorised" }` with HTTP 401 when the request is not authenticated
+ * - `{ error: "Page not found" }` with HTTP 404 when no page exists with the given `id`
+ * - a database error response produced by `handleDbError` for other server-side/database failures
+ */
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

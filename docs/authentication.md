@@ -7,7 +7,7 @@ This document describes the admin authentication setup introduced on the `set-up
 - **Provider**: [NextAuth.js](https://next-auth.js.org/) with the **Credentials** provider.
 - **Session**: JWT-based (`strategy: "jwt"`); no database session store.
 - **Credentials**: Single admin user defined via environment variables (`ADMIN_EMAIL` and a bcrypt-hashed `ADMIN_PASSWORD_HASH`).
-- **Role**: The signed-in admin user has `role: "admin"` in the session. API routes that perform or expose admin-only actions (create/update/delete pages, or listing unpublished pages) require `session.user.role === "admin"`; a plain authenticated session without the admin role is not sufficient.
+- **Authorization**: This is a single-admin app. API routes that perform or expose privileged actions (create/update/delete pages, or listing unpublished content) require an authenticated session via `getServerSession(authOptions)`; role-based checks are not used.
 - **Routes**: `/admin/login` (sign-in page), `/admin/dashboard` (protected). Unauthenticated access to the dashboard redirects to login; authenticated access to login redirects to the dashboard.
 
 ## Environment variables
@@ -71,7 +71,7 @@ All of these are re-exported from `components/auth/index.ts`.
 ## Key decisions
 
 1. **Exporting `authOptions`**: The NextAuth route exports `authOptions` so that `getServerSession(authOptions)` can be used in Server Components (dashboard, login page, admin layout) for consistent session checks and redirects.
-2. **Role-based API authorization**: Admin-only behaviour (e.g. in `/api/pages` and `/api/pages/[id]`) is gated on `session?.user?.role === "admin"`, not on the mere presence of a session. This prevents any future non-admin authenticated user from being treated as an admin.
+2. **Session-based API authorization**: Privileged behaviour (e.g. in `/api/pages` and `/api/pages/[id]`) is gated on the presence of a valid session (`getServerSession`). There is only one admin identity; role-based checks are not used.
 3. **Centralized login logic**: Submit logic lives in `lib/login.ts` (`submitLogin`) so the form stays thin and the same error handling and result contract can be reused or tested.
 4. **Distinct messages for misconfiguration**: When `ADMIN_PASSWORD_HASH` is missing or bcrypt fails, the server returns `AUTH_ERROR_SERVICE_UNAVAILABLE` and the client shows “Sign-in is temporarily unavailable” instead of a credential error or stack trace.
 5. **Accessibility**: Auth error messages are announced via `role="alert"` and `aria-live="assertive"` on **`LoginError`**.
