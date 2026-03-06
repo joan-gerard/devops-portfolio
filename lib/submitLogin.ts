@@ -29,13 +29,13 @@ export async function submitLogin(email: string, password: string): Promise<Logi
       const message =
         result.error === AUTH_ERROR_SERVICE_UNAVAILABLE
           ? "Sign-in is temporarily unavailable. Please try again later."
-          : "Invalid email or password";
+          : decodeURIComponent(result.error);
       return { ok: false, error: message };
     }
 
     return { ok: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE;
-    return { ok: false, error: message };
+    console.error("submitLogin: unexpected error", err);
+    return { ok: false, error: DEFAULT_ERROR_MESSAGE };
   }
 }

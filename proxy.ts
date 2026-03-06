@@ -1,8 +1,11 @@
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware() {
+  function proxy(req: NextRequest) {
+    if (req.nextUrl.pathname === "/admin") {
+      return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+    }
     return NextResponse.next();
   },
   {
@@ -17,6 +20,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    "/admin",
     "/admin/dashboard/:path*",
     "/admin/editor/:path*",
     "/admin/roadmap/:path*",

@@ -1,7 +1,7 @@
+import { checkRateLimit, clearRateLimit } from "@/lib/queries/loginAttempts";
 import bcrypt from "bcryptjs";
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -11,28 +11,39 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+      async authorize(credentials, req) {
+        // Extract IP — x-forwarded-for is set by Vercel in production
+        // Fall back to x-real-ip, then socket address, then undefined
+        const forwarded = req.headers?.["x-forwarded-for"];
+        const ip =
+          (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0])?.trim() ||
+          (req.headers?.["x-real-ip"] as string | undefined)?.trim() ||
+          undefined;
 
-        const hash = process.env.ADMIN_PASSWORD_HASH;
-        if (!hash || hash.trim() === "") {
-          console.error("[Auth] ADMIN_PASSWORD_HASH is not set or empty; sign-in rejected.");
-          throw new Error(AUTH_ERROR_SERVICE_UNAVAILABLE);
+        // Check rate limit
+        const { allowed, minutesLeft } = await checkRateLimit(ip);
+        if (!allowed) {
+          throw new Error(
+            `Too many login attempts. Please try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`
+          );
+        }
+        // Validate credentials
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
         }
 
         const isValidEmail = credentials.email === process.env.ADMIN_EMAIL;
-        let isValidPassword = false;
-        try {
-          isValidPassword = await bcrypt.compare(credentials.password, hash);
-        } catch (err) {
-          console.error(
-            "[Auth] Password hash comparison failed:",
-            err instanceof Error ? err.message : err
-          );
-          throw new Error(AUTH_ERROR_SERVICE_UNAVAILABLE);
+        const isValidPassword = await bcrypt.compare(
+          credentials.password,
+          process.env.ADMIN_PASSWORD_HASH ?? ""
+        );
+
+        if (!isValidEmail || !isValidPassword) {
+          throw new Error("Invalid email or password");
         }
 
-        if (!isValidEmail || !isValidPassword) return null;
+        // Clear rate limit counter on successful login
+        await clearRateLimit(ip);
 
         return { id: "1", email: credentials.email, role: "admin" };
       },

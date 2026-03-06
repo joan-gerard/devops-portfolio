@@ -1148,6 +1148,8 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { background: '#13161d', primaryColor: '#1a1e28', primaryTextColor: '#c9d1d9', primaryBorderColor: '#2a2f3d', lineColor: '#00e5a0', secondaryColor: '#1a1e28', tertiaryColor: '#0d0f14', edgeLabelBackground: '#13161d', clusterBkg: '#1a1e28', titleColor: '#00e5a0', fontFamily: 'JetBrains Mono, monospace' } });</script>
 </head>
 <body>
 <div id="top"></div>
@@ -1423,6 +1425,26 @@
           <li><span class="field-name">created_at</span><span class="field-type">timestamp</span></li>
         </ul>
       </div>
+      <div class="schema-block">
+        <div class="schema-name">cron_log</div>
+        <ul class="schema-fields">
+          <li><span class="field-name">id</span><span class="field-type">uuid</span></li>
+          <li><span class="field-name">job</span><span class="field-type">string</span><span class="field-note">e.g. media-cleanup</span></li>
+          <li><span class="field-name">ran_at</span><span class="field-type">timestamp</span></li>
+          <li><span class="field-name">duration_ms</span><span class="field-type">int</span></li>
+          <li><span class="field-name">status</span><span class="field-type">enum</span><span class="field-note">success | partial | failed</span></li>
+          <li><span class="field-name">result</span><span class="field-type">jsonb</span><span class="field-note">structured pass-by-pass report</span></li>
+          <li><span class="field-name">errors</span><span class="field-type">jsonb</span><span class="field-note">array of error messages, empty on success</span></li>
+        </ul>
+      </div>
+      <div class="schema-block">
+        <div class="schema-name">login_attempts</div>
+        <ul class="schema-fields">
+          <li><span class="field-name">ip</span><span class="field-type">text</span><span class="field-note">primary key</span></li>
+          <li><span class="field-name">attempts</span><span class="field-type">int</span><span class="field-note">default 1</span></li>
+          <li><span class="field-name">window_start</span><span class="field-type">timestamptz</span><span class="field-note">start of current 15-min window</span></li>
+        </ul>
+      </div>
     </div>
     <p style="font-size:12px;color:var(--text-muted);margin-top:16px;font-family:var(--font-mono);">&#9432; Both <code>pages</code> and <code>projects</code> have an <code>update_updated_at</code> Postgres trigger that automatically maintains <code>updated_at</code> on every row change. Application code never needs to set it manually.</p>
   </div>
@@ -1479,22 +1501,26 @@
         </a>
         <a class="phases-toc-item" onclick="scrollToSection('phase-04')">
           <span class="phases-toc-num">04</span>
-          <span class="phases-toc-name">Public Portfolio</span>
+          <span class="phases-toc-name">Security Hardening</span>
         </a>
         <a class="phases-toc-item" onclick="scrollToSection('phase-05')">
           <span class="phases-toc-num">05</span>
-          <span class="phases-toc-name">Roadmap</span>
+          <span class="phases-toc-name">Public Portfolio</span>
         </a>
         <a class="phases-toc-item" onclick="scrollToSection('phase-06')">
           <span class="phases-toc-num">06</span>
-          <span class="phases-toc-name">DevOps & Infrastructure</span>
+          <span class="phases-toc-name">Roadmap</span>
         </a>
         <a class="phases-toc-item" onclick="scrollToSection('phase-07')">
           <span class="phases-toc-num">07</span>
-          <span class="phases-toc-name">Polish & Pre-Launch</span>
+          <span class="phases-toc-name">DevOps &amp; Infrastructure</span>
         </a>
-        <a class="phases-toc-item post" onclick="scrollToSection('phase-08')">
+        <a class="phases-toc-item" onclick="scrollToSection('phase-08')">
           <span class="phases-toc-num">08</span>
+          <span class="phases-toc-name">Polish &amp; Pre-Launch</span>
+        </a>
+        <a class="phases-toc-item post" onclick="scrollToSection('phase-09')">
+          <span class="phases-toc-num">09</span>
           <span class="phases-toc-name">Post Launch</span>
         </a>
       </div>
@@ -1586,9 +1612,33 @@
         </div>
       </div>
 
-      <div class="phase" id="phase-04">
+<div class="phase" id="phase-04">
         <div class="phase-header">
           <div class="phase-number">04</div>
+          <div>
+            <div class="phase-title">Security Hardening</div>
+            <div class="phase-subtitle">Closing vulnerabilities found during and after the admin build — before any public traffic</div>
+          </div>
+        </div>
+        <ol class="steps">
+          <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>Login rate limiting</strong> — Added a <code>login_attempts</code> Neon table tracking attempts per IP with a fixed 15-minute window, 5 attempts allowed. Implemented in the NextAuth <code>authorize</code> callback via <code>lib/queries/loginAttempts.ts</code>. Counter resets on successful login. IP extracted from <code>x-forwarded-for</code> then <code>x-real-ip</code>, falling back to <code>undefined</code> — requests with no detectable IP are allowed through rather than sharing a shared <code>"unknown"</code> bucket. Lockout error message includes exact minutes remaining and is decoded from URL-encoding in <code>submitLogin.ts</code> before display. See Architecture Decisions — Login Rate Limiting.</div></li>
+          <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Magic byte validation for file uploads</strong> — <code>file.type</code> is browser-provided and can be spoofed. Added <code>lib/validateFileBytes.ts</code> which reads the first bytes of the uploaded buffer and checks them against known signatures for JPEG (<code>FF D8 FF</code>), PNG (<code>89 50 4E 47...</code>), GIF (<code>47 49 46 38</code>), and WebP (<code>RIFF....WEBP</code>). Detected MIME is also cross-checked against the declared <code>file.type</code> — a mismatch returns 400. Buffer is read once and reused for both validation and the R2 <code>PutObjectCommand</code>. See Architecture Decisions — Magic Byte Validation.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Upload size limit corrected to 4MB</strong> — Original 5MB limit was above Vercel's 4.5MB serverless body limit, meaning the route-level validation was unreachable for large files. Vercel would reject the request first with a plain-text error body, causing a JSON parse failure on the client. Limit corrected to 4MB — safely below Vercel's infrastructure limit. Error message updated to match. Client-side <code>res.json()</code> wrapped in try/catch so non-JSON rejection bodies degrade gracefully.</div></li>
+          <li><span class="step-num">4</span><div><span class="spriority medium">Medium</span><strong>Lazy database client initialisation</strong> — Original <code>lib/db.ts</code> threw at module load time if <code>DATABASE_URL</code> was missing, causing <code>pnpm build</code> to fail because Next.js imports all route modules during the build step. Refactored to a lazy <code>Proxy</code> — the client is only created on the first actual query, not on import. Build now succeeds with no real database connection. See Architecture Decisions — CI and Database Initialisation.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority medium">Medium</span><strong>CI build no longer uses real DATABASE_URL</strong> — Since the build does not connect to the database (all routes are dynamic, data fetched at request time), the CI workflow now uses a syntactically valid placeholder connection string instead of the production secret. Real <code>DATABASE_URL</code> stays on Vercel where it is only needed at runtime.</div></li>
+          <li><span class="step-num">6</span><div><span class="spriority low">Low</span><strong>/admin redirect</strong> — <code>/admin</code> with no sub-path returned a 404. Added <code>/admin</code> to the <code>proxy.ts</code> matcher and a pathname check that redirects to <code>/admin/dashboard</code>. Unauthenticated users still hit the auth check first and are sent to <code>/admin/login</code>.</div></li>
+          <li><span class="step-num">7</span><div><span class="spriority low">Low</span><strong>Upload response parsing hardened</strong> — <code>handleImageUpload</code> in <code>EditorToolbar.tsx</code> previously called <code>res.json()</code> unconditionally and used a non-null assertion on <code>parsed.url</code>. Fixed: <code>res.json()</code> wrapped in try/catch with logging, <code>parsed.url</code> explicitly guarded before calling <code>editor.setImage()</code>, non-null assertion removed. Error messages from the API route are decoded and surfaced directly rather than replaced with a generic fallback.</div></li>
+          <li><span class="step-num">8</span><div><span class="spriority medium">Medium</span><strong>Project URL scheme validation</strong> — <code>github_url</code> and <code>live_url</code> were stored without validation. If rendered as <code>href</code> on public pages, values like <code>javascript:...</code> or <code>data:...</code> could lead to XSS or unexpected behaviour. Implemented in <code>lib/validateProjectUrl.ts</code> — <code>isAllowedProjectUrlScheme()</code> accepts only <code>http:</code> and <code>https:</code>, rejecting empty, invalid, or over-length URLs. <code>normalizeProjectUrl()</code> trims and normalises the value before validation. Both POST and PATCH handlers in <code>/api/projects</code> and <code>/api/projects/[id]</code> run normalise-then-validate before storing — invalid schemes return 400 with a clear error. Scheme enforcement is at write time so only safe values ever reach the database or the public-facing rendered links.</div></li>
+        </ol>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-muted);">
+          <strong style="color:var(--text)">Why a dedicated phase?</strong><br><br>
+          Security work accumulated as a coherent body of changes after Phase 3 — each item identified through code review or feedback, fixed, tested, and documented. Grouping them as a named phase makes the decision trail explicit and is a stronger portfolio signal than scattered security commits across other phases. It demonstrates the ability to recognise, reason about, and systematically close vulnerabilities — a core DevOps skill.
+        </div>
+      </div>
+
+      <div class="phase" id="phase-05">
+        <div class="phase-header">
+          <div class="phase-number">05</div>
           <div>
             <div class="phase-title">Public Portfolio</div>
             <div class="phase-subtitle">The employer-facing view — read-only, fast, and well-presented</div>
@@ -1606,9 +1656,9 @@
         </ol>
       </div>
 
-      <div class="phase" id="phase-05">
+      <div class="phase" id="phase-06">
         <div class="phase-header">
-          <div class="phase-number">05</div>
+          <div class="phase-number">06</div>
           <div>
             <div class="phase-title">Roadmap</div>
             <div class="phase-subtitle">The interactive progress tracker — the most distinctive feature of the app</div>
@@ -1624,9 +1674,9 @@
         </ol>
       </div>
 
-      <div class="phase" id="phase-06">
+      <div class="phase" id="phase-07">
         <div class="phase-header">
-          <div class="phase-number">06</div>
+          <div class="phase-number">07</div>
           <div>
             <div class="phase-title">DevOps & Infrastructure</div>
             <div class="phase-subtitle">Turn the app into a proper DevOps project — and prepare it for launch</div>
@@ -1641,12 +1691,13 @@
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Add a staging environment</strong> — Set up a separate Vercel deployment for a staging branch. PRs deploy to staging; merges to <code>main</code> deploy to production.</div></li>
           <li><span class="step-num">7</span><div><span class="spriority high">High</span><strong>Set up monitoring</strong> — Point Better Stack at your <code>/api/health</code> endpoint. Configure an alert if the app goes down or the DB check fails.</div></li>
           <li><span class="step-num">8</span><div><span class="spriority low">Low</span><strong>(Optional) Migrate to a VPS</strong> — Provision a DigitalOcean droplet, configure Nginx as a reverse proxy, set up SSL with Let's Encrypt, and deploy the Docker container. Document every step as a note in the app itself.</div></li>
+          <li><span class="step-num">9</span><div><span class="spriority medium">Medium</span><strong>Orphaned media cleanup cron job</strong> — A two-pass scheduled job running daily or weekly. <strong>Pass 1 — DB-led sweep:</strong> queries the <code>media</code> table for rows whose URL does not appear in any note's <code>content</code> JSONB, then deletes both the R2 object and the database row. Catches images removed from notes where the upload was correctly recorded. <strong>Pass 2 — R2 inventory reconciliation:</strong> lists all objects in the R2 bucket via <code>ListObjectsV2Command</code> and cross-references against the <code>media</code> table, deleting any R2 objects with no matching DB row. Catches objects that were uploaded to R2 but whose DB insert failed and whose compensating delete also failed. Together the two passes ensure no orphaned objects accumulate in either the database or the bucket. On completion, each run writes a structured JSON report to the <code>cron_log</code> table (job name, timestamp, duration, pass-by-pass counts, errors array, overall status). The summary is also piped to <code>console.log</code> for Vercel log capture. Sentry alerts on <code>partial</code> or <code>failed</code> status — no notification on clean runs. See Architecture Decisions — Media Cleanup Strategy and Cron Job Reporting for full rationale.</div></li>
         </ol>
       </div>
 
-      <div class="phase" id="phase-07">
+      <div class="phase" id="phase-08">
         <div class="phase-header">
-          <div class="phase-number">07</div>
+          <div class="phase-number">08</div>
           <div>
             <div class="phase-title">Polish & Pre-Launch</div>
             <div class="phase-subtitle">Final refinements before sharing the URL with anyone</div>
@@ -1657,12 +1708,13 @@
           <li><span class="step-num">2</span><div><span class="spriority medium">Medium</span><strong>Tag filtering</strong> — Make tags on the notes and projects index pages clickable, filtering the list in real time.</div></li>
           <li><span class="step-num">3</span><div><span class="spriority medium">Medium</span><strong>Custom domain</strong> — Point a domain (e.g. <code>yourname.dev</code>) at the app. Cloudflare offers free domain management and a cheap first-year registration.</div></li>
           <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Seed real content</strong> — Write at least one or two notes and add your first project before launch. An empty portfolio is worse than no portfolio.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Login rate limiting</strong> — Already implemented (Phase 04). Uses the <code>login_attempts</code> Neon table to track attempts per IP with a fixed 15-minute window. 5 attempts allowed per window. On lockout, the error message includes the exact minutes remaining. Counter resets on successful login. See Architecture Decisions — Login Rate Limiting for full rationale and options considered.</div></li>
         </ol>
       </div>
 
-      <div class="phase" id="phase-08">
+      <div class="phase" id="phase-09">
         <div class="phase-header phase-header-post">
-          <div class="phase-number post">08</div>
+          <div class="phase-number post">09</div>
           <div>
             <div class="phase-title">Post Launch</div>
             <div class="phase-subtitle">Enhancements to layer in as your course progresses and content grows</div>
@@ -1696,6 +1748,10 @@
         <li><a onclick="scrollToSection('arch-fetching')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">02</span>Server Component Data Fetching</a></li>
         <li><a onclick="scrollToSection('arch-saving')"   style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">03</span>How Notes Are Saved</a></li>
         <li><a onclick="scrollToSection('arch-orm')"      style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">04</span>Why No ORM</a></li>
+        <li><a onclick="scrollToSection('arch-media')"    style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">05</span>Media Cleanup Strategy</a></li>
+        <li><a onclick="scrollToSection('arch-rate-limit')"    style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">06</span>Login Rate Limiting</a></li>
+        <li><a onclick="scrollToSection('arch-cron-reporting')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">07</span>Cron Job Reporting</a></li>
+        <li><a onclick="scrollToSection('arch-r2-upload')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">08</span>R2 Image Upload Flow</a></li>
       </ol>
     </div>
 
@@ -1793,6 +1849,199 @@
       <li><span class="icon">▸</span><div><strong style="color:var(--text)">Closer to production practice</strong> — Most production teams manage migrations as versioned SQL files (or use lightweight tools like Flyway or Liquibase). Starting that way builds the right habits.</div></li>
       <li><span class="icon">▸</span><div><strong style="color:var(--text)">Stronger talking point</strong> — "I write raw SQL and manage schema migrations manually" is a more compelling thing to say to an employer than "I used an ORM."</div></li>
     </ul>
+
+    <!-- Subsection: Media Cleanup Strategy -->
+    <h3 id="arch-media" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Media Cleanup Strategy</h3>
+
+    <p><strong style="color:var(--text)">The problem.</strong> When TipTap removes an image from a note, it updates the document JSON — the <code>&lt;img&gt;</code> node disappears from the content tree. Nothing automatically tells R2 or the <code>media</code> table that the file is no longer in use. Without a cleanup strategy, deleted images accumulate as orphaned files in R2 and orphaned rows in the database indefinitely.</p>
+
+    <p style="margin-top:16px"><strong style="color:var(--text)">Why it's harder than it sounds.</strong> The naive approach — detect when an image URL disappears from the document and immediately delete it from R2 — has a critical edge case. If the user removes an image and then hits undo, TipTap restores the image node, but the file is already gone from R2. The image renders as broken. There's also the future consideration of the same image being reused across multiple notes — immediate deletion would break other references.</p>
+
+    <p style="margin-top:16px"><strong style="color:var(--text)">A second gap: R2 upload succeeds but DB insert fails.</strong> Even with a cron job sweeping the <code>media</code> table, there is a subtler failure mode: if the R2 <code>PutObjectCommand</code> succeeds but the subsequent <code>INSERT INTO media</code> fails, the object lands in R2 with no database record at all. Since the cron job queries the <code>media</code> table to discover what to clean up, it cannot find objects that were never recorded there. Those objects accumulate silently and invisibly.</p>
+
+    <div class="card-grid" style="margin-bottom:20px;margin-top:20px">
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option A — Delete on removal</div>
+        <p class="card-desc">Diff image URLs on every TipTap <code>onUpdate</code>, delete any that disappeared. Simple but breaks undo for images — if a user undoes an image removal, the file is already gone from R2. Rejected as primary strategy.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">Option B — Cron job + compensating delete ✓</div>
+        <p class="card-desc">Two-part strategy. A compensating <code>DeleteObjectCommand</code> fires immediately in the API route if the DB insert fails — synchronous, self-contained, closes the R2/DB gap at the source. A scheduled cron job handles the broader orphan sweep. Scheduled for Phase 7.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option C — Ignore it</div>
+        <p class="card-desc">R2's free tier is 10GB — orphaned files are essentially free at this scale. Accept the orphans and clean up manually. Viable short-term but not a professional solution.</p>
+      </div>
+    </div>
+
+    <p><strong style="color:var(--text)">Decision: Option B — two-part strategy.</strong></p>
+    <ul class="feature-list" style="margin-top:12px">
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Compensating delete in the API route (Phase 4, done)</strong> — if the DB insert fails after a successful R2 upload, a <code>DeleteObjectCommand</code> is issued immediately to roll back the R2 object. Synchronous and self-contained. If the rollback itself also fails, the error is logged and the failure is caught by the cron job's second pass.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Cron job Pass 1 — DB-led sweep (Phase 7)</strong> — queries the <code>media</code> table for rows whose URL does not appear in any note's <code>content</code> JSONB, then deletes both the R2 object and the database row. Catches images removed from notes where the upload was correctly recorded.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Cron job Pass 2 — R2 inventory reconciliation (Phase 7)</strong> — lists all objects in the R2 bucket via <code>ListObjectsV2Command</code>, cross-references against the <code>media</code> table, and deletes any R2 objects with no matching DB row. Catches objects that were uploaded to R2 but whose DB insert failed and whose compensating delete also failed. Belt-and-braces safety net.</div></li>
+    </ul>
+    <p style="margin-top:16px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">&#9432; Together the three layers ensure no orphaned objects accumulate in either the database or the bucket — closing both the user-removal gap and the R2/DB consistency gap.</p>
+
+    <!-- Subsection: Login Rate Limiting -->
+    <h3 id="arch-rate-limit" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Login Rate Limiting</h3>
+
+    <p>The credentials login endpoint has no built-in protection against brute force attacks. Without rate limiting an attacker who knows the admin email can script unlimited password attempts against a single known account. A medium severity issue identified during security review.</p>
+
+    <div class="card-grid" style="margin-bottom:20px;margin-top:20px">
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option A — Upstash Redis + @upstash/ratelimit</div>
+        <p class="card-desc">Industry-standard approach for Next.js on Vercel. Runs at the edge, highly accurate across distributed nodes. Requires a free Upstash account and two additional environment variables. Rejected to avoid a new external dependency.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option B — Vercel KV</div>
+        <p class="card-desc">Vercel's managed Redis (built on Upstash under the hood). Works with the same <code>@upstash/ratelimit</code> package. Fewer accounts to manage but still adds an external paid service. Rejected for the same reason as Option A.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Option C — In-memory Map in middleware</div>
+        <p class="card-desc">No external service — track attempts in a <code>Map</code> in the middleware module. Rejected because Edge middleware runs across Vercel's distributed network — each node has isolated memory, so an attacker hitting different nodes gets a fresh counter each time.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">Option D — Neon DB tracking ✓</div>
+        <p class="card-desc">Track attempts in a <code>login_attempts</code> table using the existing Neon database. No new services, no new accounts. Implemented in the <code>authorize</code> callback in the NextAuth credentials provider via <code>lib/queries/loginAttempts.ts</code>.</p>
+      </div>
+    </div>
+
+    <p><strong style="color:var(--text)">Decision: Option D — Neon DB tracking.</strong> Uses the existing database, no new services required. The slight latency cost of an extra DB query on login is negligible for a route that fires rarely.</p>
+
+    <ul class="feature-list" style="margin-top:12px">
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Window</strong> — 5 attempts per IP per 15-minute <strong style="color:var(--text)">fixed window</strong>. The window starts on the first attempt and resets after 15 minutes. A sliding window would close the burst-at-boundary edge case but adds significant complexity — unnecessary for a single-admin portfolio protected by bcrypt.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Lockout message</strong> — Error includes exact minutes remaining: <em>"Too many login attempts. Please try again in 14 minutes."</em> Decoded from URL-encoding in <code>submitLogin.ts</code> before display.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Reset on success</strong> — Counter is cleared via <code>clearRateLimit(ip)</code> after a successful login so a previously locked-out user starts fresh.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">IP extraction</strong> — Uses <code>x-forwarded-for</code> header set by Vercel in production. Falls back to <code>x-real-ip</code> for other reverse proxy setups, then <code>undefined</code> if neither header is present. See below for why <code>'unknown'</code> was rejected as a fallback.</div></li>
+      <li><span class="icon">▸</span><div><strong style="color:var(--text)">Error passthrough</strong> — <code>submitLogin.ts</code> decodes and passes through the exact error message from <code>authorize</code> rather than hardcoding a generic fallback, so the rate limit message reaches the UI intact.</div></li>
+    </ul>
+
+    <p style="margin-top:24px"><strong style="color:var(--text)">The "unknown" bucket problem.</strong> The initial implementation fell back to the literal string <code>"unknown"</code> when no IP could be determined:</p>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-top:12px;overflow-x:auto;">
+      <pre style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin:0;line-height:1.7;">const ip =
+  (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0]) ?? "unknown"</pre>
+    </div>
+
+    <p style="margin-top:16px">The problem is that <code>"unknown"</code> is a shared key in the <code>login_attempts</code> table. If five failed attempts arrive from five different unidentifiable sources, they all increment the same counter and lock each other out. A legitimate user with no detectable IP would be locked out by an attacker's attempts — or vice versa. The bucket is shared across all requests that cannot be identified, making it both ineffective as a security control and a source of false positives.</p>
+
+    <div class="card-grid" style="margin-bottom:20px;margin-top:20px">
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--text-muted)">Original — Fall back to "unknown"</div>
+        <p class="card-desc">All unidentifiable IPs share one rate limit bucket. Five failed attempts from different anonymous sources lock out all anonymous sources. Ineffective against a distributed attacker and causes false positives for legitimate users. Rejected.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">Fix — Fall back to undefined, allow through ✓</div>
+        <p class="card-desc">If IP cannot be determined after checking <code>x-forwarded-for</code> and <code>x-real-ip</code>, pass <code>undefined</code> to <code>checkRateLimit</code>. The function returns <code>{ allowed: true }</code> immediately without touching the database. An unidentifiable request bypasses rate limiting rather than sharing a poisoned bucket.</p>
+      </div>
+    </div>
+
+    <p>The trade-off is explicit — a request with no detectable IP is allowed through unconditionally. In practice on Vercel, <code>x-forwarded-for</code> is always populated in production so this path is only reached in unusual proxy configurations or local development (<code>::1</code> normalised to <code>127.0.0.1</code>).</p>
+
+    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:16px">&#9432; Migration: <code>migrations/002_login_attempts.sql</code>. Query helper: <code>lib/queries/loginAttempts.ts</code> — exports <code>checkRateLimit(ip: string | undefined)</code> and <code>clearRateLimit(ip: string | undefined)</code>. Both functions are no-ops when <code>ip</code> is <code>undefined</code>.</p>
+
+        <!-- Subsection: Cron Job Reporting -->
+    <h3 id="arch-cron-reporting" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">Cron Job Reporting</h3>
+
+    <p>Background jobs that run silently are a liability — you need to know whether they ran, what they did, and whether anything went wrong. For the media cleanup cron job three layers of observability are planned, each serving a different purpose.</p>
+
+    <div class="card-grid" style="margin-bottom:24px;margin-top:20px">
+      <div class="card card-accent">
+        <div class="card-title">Layer 1 — cron_log table</div>
+        <p class="card-desc">Every run writes a row to the <code>cron_log</code> table in Neon. Persistent, queryable, and free. The <code>result</code> JSONB column holds a structured pass-by-pass report. The <code>errors</code> column holds an array of any error messages. Status is <code>success</code>, <code>partial</code> (completed with some failures), or <code>failed</code>.</p>
+      </div>
+      <div class="card card-blue">
+        <div class="card-title">Layer 2 — Vercel logs</div>
+        <p class="card-desc">The result JSON is also piped to <code>console.log</code> on every run. Vercel captures these automatically and they're searchable in the dashboard. Zero cost, zero setup — useful for quick ad-hoc inspection without opening a DB client.</p>
+      </div>
+      <div class="card card-yellow">
+        <div class="card-title">Layer 3 — Sentry alerts</div>
+        <p class="card-desc">Sentry (planned Phase 7) is configured to capture an exception when status is <code>partial</code> or <code>failed</code>. No notification on clean runs — alert fatigue from successful jobs is counterproductive. Only fire when human attention is needed.</p>
+      </div>
+    </div>
+
+    <p><strong style="color:var(--text)">Report structure</strong> — each <code>result</code> JSONB entry records:</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-top:12px;overflow-x:auto;">
+      <pre style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin:0;line-height:1.7;">{
+  "job":         "media-cleanup",
+  "ran_at":      "2026-03-05T10:00:00.000Z",
+  "duration_ms": 312,
+  "status":      "success",
+  "pass1": {
+    "rows_checked":      24,
+    "orphans_found":      3,
+    "r2_deletes_ok":      3,
+    "r2_deletes_failed":  0,
+    "db_deletes_ok":      3,
+    "db_deletes_failed":  0
+  },
+  "pass2": {
+    "r2_objects_listed":  21,
+    "unrecorded_found":    1,
+    "r2_deletes_ok":       1,
+    "r2_deletes_failed":   0
+  },
+  "errors": []
+}</pre>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:12px">&#9432; A dedicated Observability chapter will be added in Phase 7 to cover Sentry integration, the <code>/api/health</code> endpoint, and uptime monitoring alongside this cron reporting pattern.</p>
+
+        <!-- Subsection: R2 Image Upload Flow -->
+    <h3 id="arch-r2-upload" style="font-family:var(--font-syne);font-size:16px;font-weight:700;color:var(--text);margin:32px 0 12px;padding-top:24px;border-top:1px solid var(--border);">R2 Image Upload Flow</h3>
+
+    <p>When a user clicks the <strong style="color:var(--text)">⌃ Image</strong> button in the TipTap toolbar, an image travels from the browser through the Next.js API layer to Cloudflare R2, and the resulting URL is inserted inline into the editor and recorded in the database. Here is a breakdown of each stage.</p>
+
+    <div class="card-grid" style="margin-bottom:24px;margin-top:20px;grid-template-columns:repeat(2,1fr)">
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--accent)">① Browser — EditorToolbar</div>
+        <p class="card-desc">User clicks <code>⌃ Image</code> → hidden <code>&lt;input type="file"&gt;</code> opens. On file selection, <code>handleImageUpload</code> fires. A <code>FormData</code> object is built with the file and the current note's ID as <code>linked_to</code>. A <code>POST /api/media</code> request is sent. The button shows <strong>Uploading…</strong> and is disabled until the response returns.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--accent)">② API Route — /api/media</div>
+        <p class="card-desc">Session check first — unauthenticated requests are rejected with 401. Then validation in order: file present, <code>linked_to</code> is null or a valid UUID, MIME type is JPEG/PNG/WebP/GIF, size is under 4MB, R2 environment variables are present. Any failure returns a 4xx before touching R2 or the database.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--accent)">③ Cloudflare R2</div>
+        <p class="card-desc">A unique filename is generated server-side: <code>&#123;Date.now()&#125;-&#123;random&#125;.ext</code> — the client's original filename is never trusted. The file buffer is uploaded via <code>PutObjectCommand</code> using the AWS S3-compatible SDK. The object is stored under the <code>uploads/</code> prefix in the bucket.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--accent)">④ Database — media table</div>
+        <p class="card-desc">After a successful R2 upload, a row is inserted into the <code>media</code> table recording the filename, full public URL, file size in bytes, and the note's UUID as <code>linked_to</code>. This record is what the Phase 7 orphan cleanup cron job will query to find unreferenced files.</p>
+      </div>
+      <div class="card" style="border-color:var(--border)">
+        <div class="card-title" style="color:var(--accent)">⑤ Browser — TipTap editor</div>
+        <p class="card-desc">The API returns <code>&#123; url, filename &#125;</code>. The single parsed response object is used for both error handling and success. On success, <code>editor.chain().focus().setImage(&#123; src: url &#125;).run()</code> inserts the image inline at the cursor position. The image is immediately visible, served from the R2 public URL.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">⑥ Future — Orphan cleanup</div>
+        <p class="card-desc">If a user later removes the image from the note, the <code>media</code> row and R2 object become orphaned. A scheduled cron job in Phase 7 will query for <code>media</code> rows whose URL does not appear in any note's <code>content</code> JSONB and delete both the database row and the R2 object.</p>
+      </div>
+    </div>
+
+    <p style="margin-bottom:12px"><strong style="color:var(--text)">End-to-end flow:</strong></p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px;overflow-x:auto;">
+      <div class="mermaid">
+sequenceDiagram
+    participant B  as Browser (EditorToolbar)
+    participant A  as POST /api/media
+    participant R  as Cloudflare R2
+    participant DB as Neon (media table)
+
+    B->>A: FormData { file, linked_to }
+    A->>A: Auth check (session)
+    A->>A: Validate file + linked_to + R2 config
+    A->>R: PutObjectCommand { key, buffer, ContentType }
+    R-->>A: 200 OK
+    A->>DB: INSERT INTO media (filename, url, size, linked_to)
+    DB-->>A: Row inserted
+    A-->>B: { url, filename } 201
+    B->>B: editor.setImage({ src: url })
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:12px">&#9432; The file extension is extracted server-side from the original filename but the filename itself is never used — a fresh <code>Date.now()-random.ext</code> key is always generated. Trailing slashes on <code>R2_PUBLIC_URL</code> are stripped before building the final URL to prevent double-slash paths.</p>
+
   </div>
 
 
@@ -1836,7 +2085,7 @@
         </div>
         <div class="enhancement-body">
           <div class="enhancement-title">Testing — Jest + Playwright</div>
-          <p class="enhancement-desc">Jest for unit tests on utility functions and API route logic. Playwright for end-to-end tests covering critical user journeys — visiting the roadmap, loading a note, logging in as admin. Even a small test suite is significant: being able to say "my CI pipeline runs tests before every deploy" is a strong signal to any DevOps employer. Add to Phase 6 of the build.</p>
+          <p class="enhancement-desc">Jest for unit tests on utility functions and API route logic. Playwright for end-to-end tests covering critical user journeys — visiting the roadmap, loading a note, logging in as admin. Even a small test suite is significant: being able to say "my CI pipeline runs tests before every deploy" is a strong signal to any DevOps employer. Add to Phase 7 of the build.</p>
           <div class="enhancement-tags"><span class="etool">Jest</span><span class="etool">Playwright</span><span class="etool">GitHub Actions</span></div>
         </div>
       </div>

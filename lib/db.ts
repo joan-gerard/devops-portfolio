@@ -1,10 +1,5 @@
 import postgres from "postgres";
 
-/**
- * Validates DATABASE_URL at module load so the app fails fast with a clear
- * error instead of passing undefined to postgres() (which can lead to
- * confusing errors or unintended behavior).
- */
 function getDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
   if (typeof url !== "string" || url.trim() === "") {
@@ -20,8 +15,23 @@ function getDatabaseUrl(): string {
   return url.trim();
 }
 
-const sql = postgres(getDatabaseUrl(), {
-  ssl: "require",
+let _sql: ReturnType<typeof postgres> | null = null;
+
+function getClient(): ReturnType<typeof postgres> {
+  if (!_sql) {
+    _sql = postgres(getDatabaseUrl(), { ssl: "require" });
+  }
+  return _sql;
+}
+
+const sql = new Proxy(function () {} as unknown as ReturnType<typeof postgres>, {
+  get(_target, prop) {
+    const client = getClient();
+    return client[prop as keyof typeof client];
+  },
+  apply(_target, _thisArg, args) {
+    return (getClient() as unknown as (...args: unknown[]) => unknown)(...args);
+  },
 });
 
 export default sql;

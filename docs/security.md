@@ -5,10 +5,11 @@ This document summarizes the project’s security posture and practices.
 ## Review summary (latest)
 
 - **Secrets**: `.env*` is in `.gitignore`; no secrets are committed. Use `.env.local` for local development and set `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `NEXTAUTH_SECRET`, and (if using media upload) `R2_*` vars in your deployment environment. See [security-scan-report.md](security-scan-report.md) for the full list of env-related recommendations.
-- **Admin auth**: Admin sign-in uses NextAuth with a credentials provider; the password is stored as a bcrypt hash in `ADMIN_PASSWORD_HASH`. The session includes a `role: "admin"` and API routes that perform or expose admin-only actions require `session.user.role === "admin"`. Misconfiguration and bcrypt errors are handled with a generic “Sign-in is temporarily unavailable” message so no server details are exposed. **Set `NEXTAUTH_SECRET`** in production for secure JWT/cookie signing. See [Authentication](authentication.md) for full details.
+- **Admin auth**: Admin sign-in uses NextAuth with a credentials provider; the password is stored as a bcrypt hash in `ADMIN_PASSWORD_HASH`. The session includes a `role: "admin"` (set in the credentials `authorize` callback) and API routes that perform or expose admin-only actions require `session.user.role === "admin"`. Misconfiguration and bcrypt errors are handled with a generic “Sign-in is temporarily unavailable” message so no server details are exposed. **Set `NEXTAUTH_SECRET`** in production for secure JWT/cookie signing. **Login rate limiting**: Sign-in attempts are limited by client IP to 5 attempts per 15-minute window. IP is taken from `x-forwarded-for` (trimmed), with fallback to `x-real-ip`; when IP cannot be determined, the request is allowed and not rate limited (to avoid a single shared bucket for all unidentifiable clients). The limit is cleared on successful login for that IP. See [Authentication](authentication.md) for full details.
 - **Database**: `lib/db.ts` validates `DATABASE_URL` at load time and uses `ssl: "require"` for the Postgres client. Use parameterized queries (e.g. `sql\`...\${userInput}\`` via postgres.js tagged templates) when you add queries to avoid SQL injection.
 - **Media upload**: `/api/media` is auth-protected; file type whitelist and size limit apply. Validate file content (e.g. magic bytes) server-side where possible; validate `linked_to` as UUID or null. R2 env vars are validated before upload and missing config returns 503. See [R2 file upload workflow](r2-file-upload-workflow.md) for details.
-- **Project URLs**: When storing or displaying `github_url` / `live_url`, validate that URLs use allowed schemes (e.g. `https:` / `http:`) to avoid `javascript:` or `data:` XSS when rendered as links.
+- **Project URLs**: `github_url` and `live_url` are validated before store in `lib/validateProjectUrl.ts` (allowed schemes: `https:` and `http:`). POST/PATCH project APIs reject invalid schemes with 400.
+- **Slugs**: Project and page slugs are validated in `lib/validateSlug.ts` (lowercase alphanumeric and hyphens, max 200 chars). POST/PATCH for projects and pages reject invalid slugs with 400.
 - **Dependencies**: Run `pnpm audit` regularly; fix or accept known vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` or other raw HTML injection in app code. External links use `rel="noopener noreferrer"` where appropriate. When adding public note rendering, use TipTap's `generateHTML` with a strict schema.
 
@@ -20,7 +21,7 @@ This document summarizes the project’s security posture and practices.
 4. **Set `NEXTAUTH_SECRET`** (and `NEXTAUTH_URL` where applicable) in production for NextAuth.
 5. **Keep dependencies updated** and run `pnpm audit` before releases.
 6. **Restrict DB usage to server** (e.g. API routes, Server Components); do not import `lib/db` from client components.
-7. **Consider rate limiting** for sign-in attempts and document it if implemented.
+7. **Login rate limiting** is implemented: 5 attempts per IP per 15-minute window via `lib/queries/loginAttempts.ts` and the `login_attempts` table; when IP cannot be determined (e.g. missing headers), the request is allowed and not rate limited. Ensure the migration is applied in deployed environments.
 8. **Validate uploads and stored URLs**: Use server-side checks (e.g. magic bytes for images); validate project URLs' scheme and media `linked_to` (UUID or null).
 
 ## Security scan report

@@ -10,10 +10,10 @@ _Generated for review. No code changes were made during this scan._
 - **Auth**: Credentials are validated against a bcrypt hash; misconfiguration and bcrypt errors are mapped to a generic `SERVICE_UNAVAILABLE` message so server details are not exposed.
 - **Database**: `DATABASE_URL` is validated at load time; `ssl: "require"` is used; all SQL uses parameterized queries (postgres.js tagged templates). `handleDbError` maps invalid UUID (e.g. from route `[id]`) to 404 so no internals are leaked.
 - **API authorization**: Admin-only mutations (pages, projects, media upload) check session and role; public GETs filter by `published` where needed.
-- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and 5 MB limit; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
+- **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and size limit; server-side magic-byte validation (`lib/validateFileBytes.ts`) so declared type must match actual content; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
 - **Dependencies**: Run `pnpm audit` regularly; address any reported vulnerabilities.
 - **Frontend**: No `dangerouslySetInnerHTML` in app code; external links that use `target="_blank"` use `rel="noopener noreferrer"`.
-- **Protected pages**: Admin layout and routes use `getServerSession(authOptions)` and redirect unauthenticated users to login.
+- **Protected pages**: Root `proxy.ts` (Next.js 16 Proxy) runs NextAuth `withAuth` for matched admin paths, redirecting unauthenticated requests to login. Admin layout and routes also use `getServerSession(authOptions)` for defence in depth.
 - **Login errors**: The client shows only generic messages (“Invalid email or password”, “Sign-in is temporarily unavailable”); no stack traces or config details are leaked.
 - **Session**: JWT strategy is used; the email shown on the dashboard is the validated admin email from the provider.
 
@@ -21,72 +21,70 @@ _Generated for review. No code changes were made during this scan._
 
 ## Issues and Recommendations
 
-### 1. **NextAuth middleware not active (medium)**
+### 1. **NextAuth middleware not active (medium)** — Addressed
 
-- **Where**: `proxy.ts` exports NextAuth middleware and a `config.matcher` for `/admin/dashboard`, `/admin/editor`, `/admin/roadmap`, `/admin/notes`, `/admin/projects`.
-- **Issue**: Next.js only runs middleware from a root `middleware.ts` (or `src/middleware.ts`). There is no `middleware.ts` that uses this, so the middleware in `proxy.ts` is never run.
-- **Impact**: Protection relies entirely on each page calling `getServerSession` and redirecting. If a new admin route is added and the developer forgets the session check, it could be accessible without auth.
-- **Recommendation**: Add a root `middleware.ts` that imports and invokes the middleware from `proxy.ts` (and re-exports its `config`), so all matched admin paths are protected at the edge. Alternatively, document that every new admin route must perform a session check and that `proxy.ts` is currently unused.
+- **Historical issue**: Previously, Next.js only ran edge auth from a root `middleware.ts` (or `src/middleware.ts`). Logic lived in what is now `proxy.ts` but was not invoked because there was no `middleware.ts`, so admin routes were protected only by page-level `getServerSession`.
+- **Resolution**: The app now uses the [Next.js 16 Proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). Root `proxy.ts` exports NextAuth’s `withAuth` and a `config.matcher` for the `/admin/*` routes (e.g. `/admin`, `/admin/dashboard/:path*`, `/admin/editor/:path*`, `/admin/roadmap/:path*`, `/admin/notes/:path*`, `/admin/projects/:path*`). Next.js runs `proxy.ts` at the root, so those admin paths are protected at the edge and unauthenticated requests are redirected to `/admin/login`. Page-level `getServerSession` remains as defense-in-depth.
 
-### 2. **NEXTAUTH_SECRET not documented (medium)**
+### 2. **NEXTAUTH_SECRET not documented (medium)** — Addressed
 
 - **Where**: NextAuth route and docs.
 - **Issue**: NextAuth uses `NEXTAUTH_SECRET` for signing JWTs and cookies. If it’s unset in production, NextAuth may fall back to a weak or default behavior. It’s not mentioned in `docs/authentication.md` or `docs/security.md`.
-- **Recommendation**: In `docs/authentication.md` (and optionally `docs/security.md`), document that `NEXTAUTH_SECRET` must be set in production (e.g. a long random string) and that `NEXTAUTH_URL` should be set to the canonical app URL when applicable.
+- **Resolution**: `docs/authentication.md` now lists `NEXTAUTH_SECRET` and `NEXTAUTH_URL` in the environment variables table, with guidance to set both in production (e.g. Vercel). `docs/security.md` already referenced them. Production (Vercel) has been confirmed to have both variables set.
 
-### 3. **No rate limiting on login (medium)**
+### 3. **No rate limiting on login (medium)** — Addressed
 
 - **Where**: `app/api/auth/[...nextauth]/route.ts` (credentials sign-in).
-- **Issue**: The credentials provider has no rate limiting, so an attacker can attempt many passwords against the single admin account.
-- **Recommendation**: Add rate limiting for sign-in attempts (e.g. by IP or by email) at the edge or in a wrapper around the NextAuth route), and document it in `docs/security.md`.
+- **Issue**: The credentials provider had no rate limiting, so an attacker could attempt many passwords against the single admin account.
+- **Resolution**: Rate limiting is implemented in the NextAuth credentials `authorize` callback. Client IP is taken from `x-forwarded-for` (trimmed), with fallback to `x-real-ip`, then to the socket address; if the IP cannot be determined it is left `undefined`. `lib/queries/loginAttempts.ts` enforces a 15-minute fixed window with a maximum of 5 attempts per IP. When the IP is unknown (`undefined`), the request is **allowed** and not rate limited, so that all unidentifiable requests are not grouped into a single shared bucket. The `login_attempts` table is created by `migrations/002_login_attempts.sql`. When the limit is exceeded, the user sees a message with the cooldown time in minutes. On successful login, the counter for that IP is cleared (no-op when IP is unknown). Documented in `docs/security.md`.
 
-### 4. **CI build and DATABASE_URL (low)**
+### 4. **CI build and DATABASE_URL (low)** — Addressed
 
-- **Where**: `.github/workflows/ci.yml` – build step uses `DATABASE_URL` from secrets.
+- **Where**: `.github/workflows/ci.yml` – build step used `DATABASE_URL` from secrets.
 - **Issue**: If the Next.js build does not need a real database (e.g. no DB access at build time), requiring a real `DATABASE_URL` in CI increases secret usage and failure surface.
-- **Recommendation**: If build does not need DB, consider using a placeholder URL for the build step and document that real `DATABASE_URL` is only for runtime. If build does need DB, current setup is acceptable; just ensure the secret is restricted to what’s needed.
+- **Resolution**: The CI build step no longer uses a secret for `DATABASE_URL`. It uses a syntactically valid placeholder (`postgresql://placeholder:placeholder@localhost/placeholder`) because the build does not connect to the database—all routes are dynamic and data is fetched at request time. The workflow comment documents that the real `DATABASE_URL` is only needed at runtime (e.g. Vercel). Other build-time env vars (NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL, ADMIN_PASSWORD_HASH) are also placeholders in CI.
 
-### 5. **Client-side error message from exceptions (low)**
+### 5. **Client-side error message from exceptions (low)** — Addressed
 
-- **Where**: `lib/submitLogin.ts` – `catch` uses `err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE`.
+- **Where**: `lib/submitLogin.ts` – `catch` previously used `err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE`.
 - **Issue**: Any unexpected exception (e.g. from `signIn`) could expose `err.message` to the client. Right now the server only returns controlled error codes, so this is unlikely but brittle.
-- **Recommendation**: In the `catch` block, always return a generic message (e.g. `DEFAULT_ERROR_MESSAGE`) for the user and log `err` server-side if needed, so future server changes cannot accidentally leak internal messages.
+- **Resolution**: The `catch` block always returns a generic message (`DEFAULT_ERROR_MESSAGE`) to the user. The real error is logged with `console.error` for debugging; no exception message is ever shown to the user, so future server or client changes cannot accidentally leak internal messages.
 
-### 6. **Media upload – MIME type and file content (medium)**
+### 6. **Media upload – MIME type and file content (medium)** — Addressed
 
-- **Where**: `app/api/media/route.ts` – validation uses `file.type` (browser-provided) and file extension from `file.name`.
+- **Where**: `app/api/media/route.ts` – validation previously relied on `file.type` (browser-provided) and file extension from `file.name`.
 - **Issue**: A malicious client can spoof `Content-Type` and filename; a non-image could be uploaded if only MIME/extension are trusted.
-- **Recommendation**: Add server-side validation of file content (e.g. magic-byte checks for JPEG/PNG/WebP/GIF) in addition to type/extension checks.
+- **Resolution**: Server-side magic-byte validation is implemented in `lib/validateFileBytes.ts` for JPEG, PNG, GIF, and WebP. The media route reads the upload buffer once, runs `detectMimeFromBytes(buffer)` before accepting the file, and rejects (400) when the signature is unrecognised or when the detected MIME does not match the client-declared `file.type`. Only content that matches an allowed image signature and matches the declared type is uploaded.
 
 ### 7. **Media upload – `linked_to` not validated (low)** — Addressed
 
 - **Where**: `app/api/media/route.ts` – `formData.get("linked_to")` was passed into the `INSERT` as-is.
 - **Issue**: Invalid or arbitrary values could cause Postgres errors (e.g. invalid UUID) and result in a 500 instead of 400.
-- **Status**: `linked_to` is now validated as a string if present, normalised (empty → null), and checked with a UUID regex before insert; invalid values return 400. See [R2 file upload workflow](r2-file-upload-workflow.md).
+- **Resolution**: `linked_to` is now validated as a string if present, normalised (empty → null), and checked with a UUID regex before insert; invalid values return 400. See [R2 file upload workflow](r2-file-upload-workflow.md).
 
 ### 8. **R2 / media env vars (low)** — Addressed
 
 - **Where**: `lib/r2.ts` and `app/api/media/route.ts` use `process.env.R2_*`.
 - **Issue**: If any are missing, the app could throw at runtime when an upload is attempted (no secret leak, but poor fail-fast and UX).
-- **Status**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
+- **Resolution**: The media route now validates all five R2 env vars before upload and returns 503 with a clear message when incomplete. Required variables are documented in [R2 file upload workflow](r2-file-upload-workflow.md#environment-variables-r2).
 
-### 9. **Project URLs – no scheme validation (medium when public)**
+### 9. **Project URLs – no scheme validation (medium when public)** — Addressed
 
-- **Where**: `app/api/projects/route.ts` and `app/api/projects/[id]/route.ts` – `github_url` and `live_url` are stored without validation.
+- **Where**: `app/api/projects/route.ts` and `app/api/projects/[id]/route.ts` – `github_url` and `live_url` were stored without validation.
 - **Issue**: If these are later rendered as `href` on public pages, values like `javascript:...` or `data:...` could lead to XSS or unexpected behavior.
-- **Recommendation**: Before storing, validate that URLs use allowed schemes (e.g. `https:` and optionally `http:`). Reject or sanitize others. When rendering, use the same allowlist or a safe link component.
+- **Resolution**: Scheme validation is implemented in `lib/validateProjectUrl.ts`. `isAllowedProjectUrlScheme()` accepts only `http:` and `https:` (and rejects empty/invalid or over-length URLs). POST and PATCH project handlers normalize `github_url` and `live_url` with `normalizeProjectUrl()`, then validate with `isAllowedProjectUrlScheme()` before storing; invalid schemes return 400 with a clear error. When rendering links, only stored values are used, so the allowlist is enforced at write time.
 
-### 10. **Slug format/length not validated (low)**
+### 10. **Slug format/length not validated (low)** — Addressed
 
-- **Where**: `POST /api/pages`, `POST /api/projects`, and their PATCH handlers – `slug` is required (for create) but not validated for format or length.
+- **Where**: `POST /api/pages`, `POST /api/projects`, and their PATCH handlers – `slug` was required (for create) but not validated for format or length.
 - **Issue**: Very long or odd slugs could cause issues (DB, URLs, or caches). Unlikely to be critical.
-- **Recommendation**: Validate slug format (e.g. alphanumeric, hyphens) and max length (e.g. 80–200 chars) and return 400 when invalid.
+- **Resolution**: Slug validation is implemented in `lib/validateSlug.ts`. Slugs must be lowercase letters, numbers, and hyphens only (no leading/trailing or consecutive hyphens), with a maximum length of 200 characters. POST and PATCH handlers for both projects and pages validate the slug via `getSlugValidationError()` and return 400 with a clear message when invalid.
 
-### 11. **Image upload error message in EditorToolbar (low)**
+### 11. **Image upload error message in EditorToolbar (low)** — Addressed
 
-- **Where**: `components/editor/EditorToolbar.tsx` – `handleImageUpload` uses `alert(err instanceof Error ? err.message : "Upload failed")`.
-- **Issue**: Server error messages (e.g. from API JSON) can be shown to the user.
-- **Recommendation**: Show a generic message (e.g. "Upload failed") in the UI and log the real error (e.g. via `console.error` or a logging utility).
+- **Where**: `components/editor/EditorToolbar.tsx` – `handleImageUpload` previously used `alert(err instanceof Error ? err.message : "Upload failed")`.
+- **Issue**: Server error messages (e.g. from API JSON) could be shown to the user.
+- **Resolution**: The catch block now always shows a generic message (`"Upload failed"`) in the UI via `alert()`. The real error is already logged with `console.error("Image upload failed:", err)` for debugging; no exception or API message is shown to the user.
 
 ### 12. **Public note rendering (future)**
 
@@ -103,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                    |
-| ------------------------- | -------- | -------------------------------------------------- |
-| Middleware                | Medium   | Not active; add `middleware.ts` or document intent |
-| NEXTAUTH_SECRET           | Medium   | Document as required in production                 |
-| Login rate limit          | Medium   | Add and document rate limiting                     |
-| Media MIME / magic bytes  | Medium   | Validate file content server-side                  |
-| Project URL schemes       | Medium   | Validate/sanitize when public links exist          |
-| CI DATABASE_URL           | Low      | Use placeholder if build doesn’t need DB           |
-| Login catch message       | Low      | Always show generic message in catch               |
-| Media `linked_to`         | Low      | Validate UUID or null                              |
-| R2 env vars               | Low      | Validate at startup; document                      |
-| Slug validation           | Low      | Validate format and length                         |
-| EditorToolbar alert       | Low      | Use generic message in UI                          |
-| Dependencies              | —        | Run `pnpm audit` regularly                         |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                    |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`     |
+| Area                      | Severity | Status / action                                                                                                    |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                                        |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                                       |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                             |
+| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                          |
+| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store           |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                                   |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                                       |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                                   |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                                      |
+| Slug validation           | Low      | Addressed – format and length validated in lib/validateSlug.ts; POST/PATCH projects and pages enforce before store |
+| EditorToolbar alert       | Low      | Addressed – generic message in UI; real error logged only                                                          |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                                                         |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                                    |
+| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                                     |
 
 ---
 

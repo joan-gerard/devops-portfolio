@@ -105,7 +105,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
       editor.chain().focus().setImage({ src: parsed.url }).run();
     } catch (err) {
       console.error("Image upload failed:", err);
-      alert(err instanceof Error ? err.message : "Upload failed");
+      alert("Upload failed");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
