@@ -16,7 +16,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-The public homepage is at `app/(public)/page.tsx` and is composed of section components in `components/public/home/` (Hero, Recent Notes, Featured Projects, Roadmap, Tech Stack). Data is loaded via `lib/queries/home.ts`; types and constants live in `types/home.ts` and `lib/constants/home.ts`. The page auto-updates as you edit.
+The public homepage is at `app/(public)/page.tsx` and is composed of section components in `components/public/home/` (Hero, Recent Notes, Featured Projects, Roadmap, Tech Stack). Data is loaded via `lib/queries/home.ts`; types and constants live in `types/home.ts` and `lib/constants/home.ts`. If the data fetch fails, the page falls back to empty notes/projects (sections show “No notes/projects published yet”); uncaught errors in the segment are caught by `app/(public)/error.tsx`. The page auto-updates as you edit.
 
 ### Code style (Prettier)
 
