@@ -1,4 +1,5 @@
 import sql from "@/lib/db";
+import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
 import type { Project } from "@/types/projects";
 
 export async function getAllProjects() {
@@ -19,12 +20,18 @@ export type PublishedProject = Pick<
 >;
 
 export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
-  return sql<PublishedProject[]>`
-    SELECT id, title, slug, description, tech_stack, github_url, live_url
-    FROM projects
-    WHERE published = true
-    ORDER BY updated_at DESC
-  `;
+  try {
+    return await sql<PublishedProject[]>`
+      SELECT id, title, slug, description, tech_stack, github_url, live_url
+      FROM projects
+      WHERE published = true
+      ORDER BY updated_at DESC
+    `;
+  } catch (error) {
+    // DB may be unavailable during static build (e.g. CI); allow prerender with empty list
+    if (isConnectionErrorOrAggregate(error)) return [];
+    throw error;
+  }
 }
 
 export async function getProjectById(id: string) {
