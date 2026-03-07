@@ -9,9 +9,18 @@ export async function getAllProjects() {
   `;
 }
 
-export async function getAllPublishedProjects() {
-  return sql`
-    SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at
+/**
+ * Shape returned for public listing (no admin-only fields).
+ * Used by the public projects page and by homepage featured projects.
+ */
+export type PublishedProject = Pick<
+  Project,
+  "id" | "title" | "slug" | "description" | "tech_stack" | "github_url" | "live_url"
+>;
+
+export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
+  return sql<PublishedProject[]>`
+    SELECT id, title, slug, description, tech_stack, github_url, live_url
     FROM projects
     WHERE published = true
     ORDER BY updated_at DESC
