@@ -1,6 +1,6 @@
 # DevOps Portal — Work Log
 
-_Exported 2026-03-05_
+_Exported 2026-03-07_
 
 ---
 
@@ -59,6 +59,18 @@ Wired image uploads into the TipTap editor. Created lib/r2.ts with an S3-compati
 _Phase 03 · 2026-03-05T00:00:00.000Z_
 
 Added a nested try/catch around the INSERT INTO media in app/api/media/route.ts. If the DB insert fails after a successful R2 upload, a DeleteObjectCommand fires immediately to roll back the R2 object. Rollback failures are logged but do not change the client response — the user always receives { "error": "Upload failed" } with a 500. A Sentry comment is in place for Phase 6 to promote rollback failures to tracked exceptions
+
+### Inconsistent session check across API routes
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Pages routes used session.user.role !== "admin" while projects routes used !session. Standardised all protected route handlers across /api/pages, /api/pages/[id], /api/projects, /api/projects/[id], and /api/media to use if (!session). Role check removed — single-user app has no concept of non-admin authenticated users.
+
+### Login rate limiting via Neon DB
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Added migrations/002_login_attempts.sql creating the login_attempts table. Implemented lib/queries/loginAttempts.ts exporting checkRateLimit(ip: string | undefined) and clearRateLimit(ip: string | undefined). Both are no-ops when ip is undefined. Rate limit check wired into the NextAuth authorize callback — 5 attempts per IP per fixed 15-minute window. Counter resets on successful login. IP extracted from x-forwarded-for then x-real-ip, falling back to undefined. Error message includes exact minutes remaining and is decoded from URL-encoding in submitLogin.ts before display.
 
 ## Decisions
 
@@ -171,6 +183,30 @@ _Phase 03 · 2026-03-05T00:00:00.000Z_
 
 Each media cleanup cron run writes a structured JSON report to the cron_log table (status, duration, pass-by-pass counts, errors array), pipes the same summary to console.log for Vercel log capture, and triggers a Sentry exception on partial or failed status. No notification on clean runs — alert fatigue from successful jobs is counterproductive. A dedicated Observability chapter will be added to the brief in Phase 6 once Sentry, health endpoints, and uptime monitoring are all built.
 
+### Simple !session check over role-based check
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Removed session.user.role !== "admin" checks across all API routes in favour of !session. The app has a single admin user — there is no non-admin authenticated user type. The role check implied a more complex auth model than exists and caused confusion when role wasn't set on the token. Consistency across all routes is more important than future-proofing for a user model that may never be needed.
+
+### Fixed window over sliding window for rate limiting
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+A fixed 15-minute window starting at the first attempt is simpler to implement and reason about — three columns in the login_attempts table, no per-attempt log needed. A sliding window closes the burst-at-boundary edge case but adds significant complexity. For a single-admin portfolio protected by bcrypt (~100ms per comparison), the burst-at-boundary attack is not a realistic threat. Fixed window is adequate.
+
+### Neon DB over Redis for rate limiting storage
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Upstash Redis and Vercel KV were considered and rejected to avoid new external services and accounts. In-memory tracking in middleware was rejected because Vercel's edge network runs across distributed nodes with isolated memory — counters would not be shared across nodes. Neon DB uses the existing database with no new dependencies. The latency cost of an extra query on a rarely-fired login route is negligible.
+
+### Uundefined fallback over "unknown" for unidentifiable IPs
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Falling back to the string "unknown" when no IP can be determined creates a shared rate limit bucket — five failed attempts from different unidentifiable sources would lock out all unidentifiable sources including legitimate ones. Instead, undefined is passed to checkRateLimit which returns { allowed: true } immediately. An unidentifiable request bypasses rate limiting rather than sharing a poisoned bucket. On Vercel in production x-forwarded-for is always set so this path is rarely reached.
+
 ## Blockers
 
 ### psql command not found after installing libpq
@@ -221,6 +257,12 @@ Setting position: sticky; top: 0 on the editor toolbar caused it to overlap the 
 _Phase 03 · 2026-03-05T00:00:00.000Z_
 
 The original implementation had no handling for the case where PutObjectCommand succeeds but INSERT INTO media throws. The object would land in R2 with no database record, invisible to the cron job's DB-led sweep. Fixed with a compensating DeleteObjectCommand in a nested try/catch around the insert. If the rollback itself also fails, the error is logged and the Phase 6 cron Pass 2 (R2 inventory reconciliation via ListObjectsV2Command) acts as the final safety net.
+
+### Notes create and delete returning 401 in development
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+POST /api/pages and DELETE /api/pages/[id] returning 401 despite being authenticated. Root cause: stale JWT in the browser cookie from before session.user.role was added to the NextAuth callbacks. The existing dev session token didn't have the role field, so session.user.role !== "admin" was always true. Fixed by signing out and back in. Resolved permanently by removing the role check entirely.
 
 ## Lessons
 
@@ -316,3 +358,15 @@ When an operation spans two systems (R2 and Postgres), a failure in the second s
 _Phase 03 · 2026-03-05T00:00:00.000Z_
 
 Checking R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in the media route even though they're consumed by lib/r2.ts means a misconfigured deployment surfaces as a 503 with a clear log message rather than an opaque AWS SDK error from deep inside the client. The pattern — validate all config at the entry point, fail fast with a useful message — is more operationally useful than strict separation of concerns in this case.
+
+### Sign out and back in immediately after changing NextAuth session shape
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+Any change to the JWT or session callbacks — adding fields, changing what's on the user object — leaves existing dev session tokens stale. The old token keeps being used until it expires or you explicitly sign out. This only affects development; production users don't have old tokens from before the change. Make signing out after auth config changes a habit.
+
+### Validate at the boundary where data enters, not where it exits
+
+_Phase 04 · 2026-03-07T00:00:00.000Z_
+
+URL scheme validation belongs in the API route handler at write time, not in the UI at render time. The same principle applies to slug validation, MIME type checks, and magic byte validation — enforce constraints when data enters the system so the database always contains only valid values, regardless of how many places that data is later read or rendered.
