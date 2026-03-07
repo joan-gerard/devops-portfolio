@@ -1,11 +1,13 @@
-import { getHomepageData } from "@/lib/queries/home";
 import {
+  FeaturedProjectsSection,
   HeroSection,
   RecentNotesSection,
-  FeaturedProjectsSection,
   RoadmapSection,
   TechStackSection,
 } from "@/components/public/home";
+import { getHomepageData } from "@/lib/queries/home";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { notes, projects } = await getHomepageData();
