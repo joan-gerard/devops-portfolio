@@ -25,7 +25,7 @@ export function HeroSection() {
           letterSpacing: "-0.02em",
         }}
       >
-        [Your Name]
+        Joan Gerard
       </h1>
       <p
         style={{

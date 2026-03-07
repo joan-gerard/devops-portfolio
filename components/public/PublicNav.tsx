@@ -46,7 +46,7 @@ export function PublicNav() {
             letterSpacing: "0.01em",
           }}
         >
-          [Your Name]
+          Joan Gerard
         </Link>
 
         {/* Nav links */}

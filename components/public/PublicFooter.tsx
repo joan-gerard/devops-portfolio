@@ -44,7 +44,7 @@ export function PublicFooter() {
 
         {/* GitHub link */}
         <a
-          href="https://github.com/[your-github-url]"
+          href="https://github.com/joan-gerard"
           target="_blank"
           rel="noopener noreferrer"
           style={{
