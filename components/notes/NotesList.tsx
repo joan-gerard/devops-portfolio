@@ -6,6 +6,9 @@ type NotesListProps = {
 };
 
 export function NotesList({ notes }: NotesListProps) {
+  const publishedCount = notes.filter((n) => n.published).length;
+  const unpublishedCount = notes.length - publishedCount;
+
   return (
     <div>
       {/* Page header */}
@@ -17,10 +20,13 @@ export function NotesList({ notes }: NotesListProps) {
           marginBottom: "24px",
         }}
       >
-        <div>
-          <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            {notes.length} {notes.length === 1 ? "note" : "notes"}
-          </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            {unpublishedCount} unpublished
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--accent)" }}>
+            {publishedCount} published
+          </span>
         </div>
         <CreateNoteButton />
       </div>
