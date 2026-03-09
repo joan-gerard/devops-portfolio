@@ -57,9 +57,13 @@ export async function getProjectById(id: string) {
   return project ?? null;
 }
 
-export async function getProjectBySlug(slug: string) {
-  const [project] = await sql`
-    SELECT * FROM projects WHERE slug = ${slug} AND published = true
-  `;
-  return project ?? null;
+export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  const rows = await sql<Project[]>`
+  SELECT id, title, slug, description, tech_stack, github_url, live_url, updated_at
+  FROM projects
+  WHERE slug = ${slug}
+    AND published = true
+  LIMIT 1
+`;
+  return rows[0] ?? null;
 }
