@@ -1,6 +1,6 @@
 "use client";
 
-import { PageRow } from "@/lib/queries/page";
+import type { Page } from "@/types/pages";
 import Link from "next/link";
 import DeleteNoteButton from "./DeleteNoteButton";
 
@@ -13,7 +13,7 @@ function formatDate(date: Date | string) {
 }
 
 type Props = {
-  note: PageRow;
+  note: Page;
   isLast: boolean;
 };
 
@@ -58,7 +58,7 @@ export function NoteRowLink({ note, isLast }: Props) {
           justifyContent: "flex-end",
         }}
       >
-        {note.tags && note.tags.length > 0 ? (
+        {note.tags.length > 0 ? (
           note.tags.slice(0, 3).map((tag: string) => (
             <span
               key={tag}

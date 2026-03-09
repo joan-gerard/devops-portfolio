@@ -1,26 +1,31 @@
 import sql from "@/lib/db";
-
-/** Shape of a row from the pages table (as returned by getAllPages). */
-export type PageRow = {
-  id: string;
-  title: string;
-  slug: string | null;
-  tags: string[] | null;
-  published: boolean;
-  updated_at: Date;
-};
+import { Page } from "@/types/pages";
 
 export async function getAllPages() {
-  return sql<PageRow[]>`
+  return sql<Page[]>`
     SELECT id, title, slug, tags, published, updated_at
     FROM pages
     ORDER BY updated_at DESC
   `;
 }
 
-export async function getPageById(id: string) {
-  const [page] = await sql`
-    SELECT * FROM pages WHERE id = ${id}
+export async function getPageById(id: string): Promise<Page | null> {
+  const rows = await sql<Page[]>`
+    SELECT id, title, slug, content, tags, published, created_at, updated_at
+    FROM pages
+    WHERE id = ${id}
+    LIMIT 1
   `;
-  return page ?? null;
+  return rows[0] ?? null;
+}
+
+export async function getNoteBySlug(slug: string): Promise<Page | null> {
+  const rows = await sql<Page[]>`
+    SELECT id, title, slug, content, tags, updated_at
+    FROM pages
+    WHERE slug = ${slug}
+      AND published = true
+    LIMIT 1
+  `;
+  return rows[0] ?? null;
 }

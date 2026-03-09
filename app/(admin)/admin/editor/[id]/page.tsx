@@ -1,6 +1,5 @@
 import { EditorPageClient } from "@/components/editor";
 import { getPageById } from "@/lib/queries/page";
-import { Page } from "@/types/pages";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 
@@ -13,5 +12,5 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   const note = await getPageById(id);
   if (!note) notFound();
 
-  return <EditorPageClient note={note as Page} />;
+  return <EditorPageClient note={note} />;
 }

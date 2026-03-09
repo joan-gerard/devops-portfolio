@@ -86,10 +86,10 @@ _Generated for review. No code changes were made during this scan._
 - **Issue**: Server error messages (e.g. from API JSON) could be shown to the user.
 - **Resolution**: The catch block now always shows a generic message (`"Upload failed"`) in the UI via `alert()`. The real error is already logged with `console.error("Image upload failed:", err)` for debugging; no exception or API message is shown to the user.
 
-### 12. **Public note rendering (future)**
+### 12. **Public note rendering**
 
-- **Where**: The project brief describes public note pages rendered with TipTap's `generateHTML(content)`. There is no public `/notes/[slug]` route in the app yet.
-- **Recommendation**: When you add it, use TipTap's `generateHTML` with a strict schema (no raw HTML or custom nodes that allow scripts). Avoid rendering stored content with `dangerouslySetInnerHTML` and no schema.
+- **Where**: Public note pages at `app/(public)/notes/[slug]/page.tsx` are rendered with TipTap's `generateHTML(content, extensions)`.
+- **Status**: Implemented. Content is generated with a fixed extension set (StarterKit, Image, CodeBlockLowlight); only published notes are returned by `getNoteBySlug`. The result is rendered via `dangerouslySetInnerHTML` with this generated HTML only (no raw stored HTML), reducing XSS risk.
 
 ### 13. **Static HTML in docs (informational)**
 
@@ -101,22 +101,22 @@ _Generated for review. No code changes were made during this scan._
 
 ## Summary Table
 
-| Area                      | Severity | Status / action                                                                                                    |
-| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                                        |
-| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                                       |
-| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                             |
-| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                          |
-| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store           |
-| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                                   |
-| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                                       |
-| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                                   |
-| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                                      |
-| Slug validation           | Low      | Addressed – format and length validated in lib/validateSlug.ts; POST/PATCH projects and pages enforce before store |
-| EditorToolbar alert       | Low      | Addressed – generic message in UI; real error logged only                                                          |
-| Dependencies              | —        | Run `pnpm audit` regularly                                                                                         |
-| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                                    |
-| Public note HTML          | —        | When added, use safe schema for `generateHTML`                                                                     |
+| Area                      | Severity | Status / action                                                                                                     |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| Proxy (admin auth)        | Medium   | Addressed – `proxy.ts` active on Next.js 16                                                                         |
+| NEXTAUTH_SECRET           | Medium   | Addressed – documented in auth docs; production (Vercel) set                                                        |
+| Login rate limit          | Medium   | Addressed – IP-based rate limit (5/15 min); documented                                                              |
+| Media MIME / magic bytes  | Medium   | Addressed – magic-byte validation in lib/validateFileBytes.ts; media route enforces match                           |
+| Project URL schemes       | Medium   | Addressed – scheme validation (https/http) in lib/validateProjectUrl.ts; POST/PATCH enforce before store            |
+| CI DATABASE_URL           | Low      | Addressed – placeholder in CI; real URL only at runtime (documented in workflow)                                    |
+| Login catch message       | Low      | Addressed – generic message in catch; real error logged only                                                        |
+| Media `linked_to`         | Low      | Addressed – validated as UUID or null in media route; documented                                                    |
+| R2 env vars               | Low      | Addressed – validate in media route before upload; documented                                                       |
+| Slug validation           | Low      | Addressed – format and length validated in lib/validateSlug.ts; POST/PATCH projects and pages enforce before store  |
+| EditorToolbar alert       | Low      | Addressed – generic message in UI; real error logged only                                                           |
+| Dependencies              | —        | Run `pnpm audit` regularly                                                                                          |
+| Secrets / auth / DB / XSS | —        | In good shape for current scope                                                                                     |
+| Public note HTML          | —        | Addressed – `generateHTML` with fixed extensions (StarterKit, Image, CodeBlockLowlight); only published notes shown |
 
 ---
 

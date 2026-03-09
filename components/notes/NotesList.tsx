@@ -1,8 +1,8 @@
 import { CreateNoteButton, NoteRowLink } from "@/components/notes";
-import type { PageRow } from "@/lib/queries/page";
+import type { Page } from "@/types/pages";
 
 type NotesListProps = {
-  notes: PageRow[];
+  notes: Page[];
 };
 
 export function NotesList({ notes }: NotesListProps) {
