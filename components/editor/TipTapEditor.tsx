@@ -14,7 +14,7 @@ const lowlight = createLowlight(common);
 
 type Props = {
   noteId: string;
-  content: Record<string, unknown>;
+  content: Record<string, unknown> | undefined;
   onSave?: (status: "saving" | "saved" | "error") => void;
 };
 
@@ -56,7 +56,7 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
         },
       }),
     ],
-    content: Object.keys(content).length > 0 ? content : undefined,
+    content: content && Object.keys(content).length > 0 ? content : undefined,
     editorProps: {
       attributes: {
         class: "tiptap-editor",
