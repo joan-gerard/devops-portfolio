@@ -129,7 +129,7 @@ function NoteDetailHeader({ title, tags, updatedAt }: NoteDetailHeaderProps) {
 
 type NoteDetailContentProps = {
   content: Record<string, unknown> | undefined;
-  html: any;
+  html: string;
 };
 
 const emptyContentStyle: React.CSSProperties = {
