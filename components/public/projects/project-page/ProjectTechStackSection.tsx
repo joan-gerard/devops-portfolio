@@ -22,8 +22,8 @@ export function ProjectTechStackSection({ techStack }: ProjectTechStackSectionPr
         Tech stack
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-        {techStack.map((tech) => (
-          <span key={tech} style={tagStyle}>
+        {techStack.map((tech, index) => (
+          <span key={`${tech}-${index}`} style={tagStyle}>
             {tech}
           </span>
         ))}
