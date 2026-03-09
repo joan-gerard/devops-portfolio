@@ -23,6 +23,5 @@ export default async function NoteDetailPage({ params }: { params: Promise<{ slu
   const note = await getNoteBySlug(slug);
   if (!note) notFound();
 
-  console.log("note", note);
   return <NoteDetail note={note} />;
 }

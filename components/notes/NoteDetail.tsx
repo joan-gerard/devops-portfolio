@@ -37,15 +37,12 @@ export function NoteDetail({ note }: NoteDetailProps) {
 
   const output = useMemo(() => {
     const content = note.content;
-    console.log("JSON content?????", content);
     if (!content || Object.keys(content).length === 0) return "";
     return generateHTML(
       content as Parameters<typeof generateHTML>[0],
       [StarterKit, Image, CodeBlockLowlight] as Extensions
     );
   }, [note.content]);
-
-  console.log("output", output);
 
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
