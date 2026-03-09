@@ -7,13 +7,31 @@ type ErrorProps = {
   reset: () => void;
 };
 
+const isProd = process.env.NODE_ENV === "production";
+
+function reportPublicErrorDigest(error: Error & { digest?: string }) {
+  const payload = {
+    name: error.name,
+    digest: error.digest ?? "unknown",
+  };
+
+  // TODO: wire up to real monitoring pipeline (e.g. Sentry, Datadog)
+  // This intentionally avoids logging the raw Error object or stack trace.
+  console.error("[PublicErrorDigest]", payload);
+}
+
 /**
  * Route-level error boundary for the public segment.
  * Catches uncaught errors during render and shows a fallback UI.
  */
 export default function PublicError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error("[PublicError]", error);
+    if (!isProd) {
+      console.error("[PublicError]", error);
+      return;
+    }
+
+    reportPublicErrorDigest(error);
   }, [error]);
 
   return (

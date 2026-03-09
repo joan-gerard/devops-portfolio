@@ -19,6 +19,14 @@ export type PublishedProject = Pick<
   "id" | "title" | "slug" | "description" | "tech_stack" | "github_url" | "live_url"
 >;
 
+/**
+ * Fetches all published projects for public listing.
+ *
+ * During prerender builds (`IS_PRERENDER_BUILD === "true"`), if the database
+ * is temporarily unavailable (connection or aggregate error), the catch block
+ * logs a warning and returns an empty list instead of failing the build.
+ * For all other errors or at runtime, the original error is rethrown.
+ */
 export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
   try {
     return await sql<PublishedProject[]>`
@@ -28,8 +36,14 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
       ORDER BY updated_at DESC
     `;
   } catch (error) {
-    // DB may be unavailable during static build (e.g. CI); allow prerender with empty list
-    if (isConnectionErrorOrAggregate(error)) return [];
+    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
+    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
+      console.warn(
+        "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list",
+        error
+      );
+      return [];
+    }
     throw error;
   }
 }

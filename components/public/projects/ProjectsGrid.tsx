@@ -6,7 +6,7 @@ type ProjectsGridProps = { projects: PublishedProject[] };
 
 const gridStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+  gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))",
   gap: "12px",
 };
 

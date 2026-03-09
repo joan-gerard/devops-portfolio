@@ -44,3 +44,4 @@ jobs:
           NEXTAUTH_URL: http://localhost:3000
           ADMIN_EMAIL: placeholder@placeholder.com
           ADMIN_PASSWORD_HASH: placeholder
+          IS_PRERENDER_BUILD: "true"

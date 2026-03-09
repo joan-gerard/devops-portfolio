@@ -37,7 +37,6 @@ export const tag: React.CSSProperties = {
   border: "1px solid var(--border)",
   borderRadius: "4px",
   padding: "2px 8px",
-  textTransform: "lowercase",
 };
 
 export const cardBase: React.CSSProperties = {

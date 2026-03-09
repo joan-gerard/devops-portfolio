@@ -12,12 +12,16 @@ export function isConnectionError(e: unknown): boolean {
 }
 
 /**
- * Returns true if the error is a connection error, or an AggregateError that
- * contains at least one connection error. Use in catch blocks for DB calls
- * that may run during static generation (e.g. when DB is unavailable in CI).
+ * Returns true if the error is a connection error, or an object with an
+ * `errors` array (e.g. AggregateError) that contains at least one connection
+ * error. Use in catch blocks for DB calls that may run during static
+ * generation (e.g. when DB is unavailable in CI).
  */
 export function isConnectionErrorOrAggregate(error: unknown): boolean {
   if (isConnectionError(error)) return true;
-  const agg = error as { errors?: unknown[] };
-  return Array.isArray(agg.errors) && agg.errors.some(isConnectionError);
+  if (typeof error !== "object" || error === null || !("errors" in error)) {
+    return false;
+  }
+  const { errors } = error as { errors?: unknown[] };
+  return Array.isArray(errors) && errors.some(isConnectionError);
 }
