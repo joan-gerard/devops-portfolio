@@ -11,7 +11,7 @@ This document summarizes the project’s security posture and practices.
 - **Project URLs**: `github_url` and `live_url` are validated before store in `lib/validateProjectUrl.ts` (allowed schemes: `https:` and `http:`). POST/PATCH project APIs reject invalid schemes with 400.
 - **Slugs**: Project and page slugs are validated in `lib/validateSlug.ts` (lowercase alphanumeric and hyphens, max 200 chars). POST/PATCH for projects and pages reject invalid slugs with 400.
 - **Dependencies**: Run `pnpm audit` regularly; fix or accept known vulnerabilities.
-- **Frontend**: Public note HTML is generated with TipTap's `generateHTML` (strict schema from `lib/tipTapExtensions.ts`) and sanitized with DOMPurify (`dompurify`) before being passed to `dangerouslySetInnerHTML` in `components/notes/NoteDetail.tsx`. External links use `rel="noopener noreferrer"` where appropriate.
+- **Frontend**: Public note HTML is generated with TipTap's `generateHTML` (strict schema from `lib/tipTapExtensions.ts`). Note detail pages (`components/notes/NoteDetail.tsx`) sanitize that HTML with DOMPurify (`dompurify`) before `dangerouslySetInnerHTML`; the about page (`components/public/about/AboutPageContent.tsx`) uses the same schema-generated HTML without sanitization, as all content is first-party from the single admin. External links use `rel="noopener noreferrer"` where appropriate.
 
 ## Practices to follow
 

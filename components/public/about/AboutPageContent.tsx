@@ -2,7 +2,6 @@
 
 import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
-import DOMPurify from "dompurify";
 import { useMemo } from "react";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
@@ -92,8 +91,7 @@ type AboutBodyProps = {
 function AboutBody({ content, html }: AboutBodyProps) {
   const hasContent = content && Object.keys(content).length > 0;
   if (hasContent && html) {
-    const safeHtml = DOMPurify.sanitize(html);
-    return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
+    return <div className="note-content" dangerouslySetInnerHTML={{ __html: html }} />;
   }
   return <AboutEmptyState />;
 }
