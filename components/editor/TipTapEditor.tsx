@@ -50,6 +50,15 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
     },
   });
 
+  // Sync editor content when noteId or content change (e.g. switching notes).
+  // Skip when editor is null or user is focused to avoid overwriting in-progress edits.
+  useEffect(() => {
+    if (!editor) return;
+    if (editor.isFocused) return;
+    const value = content && Object.keys(content).length > 0 ? content : undefined;
+    editor.commands.setContent(value ?? "", { emitUpdate: false });
+  }, [editor, content, noteId]);
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => {
