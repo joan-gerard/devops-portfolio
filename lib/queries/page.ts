@@ -1,5 +1,5 @@
 import sql from "@/lib/db";
-import { Page } from "@/types/pages";
+import { Page, PublicNote } from "@/types/pages";
 
 export async function getAllPages() {
   return sql<Page[]>`
@@ -19,7 +19,7 @@ export async function getPageById(id: string): Promise<Page | null> {
   return rows[0] ?? null;
 }
 
-export async function getNoteBySlug(slug: string): Promise<Page | null> {
+export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
   const rows = await sql<Page[]>`
     SELECT id, title, slug, content, tags, updated_at
     FROM pages

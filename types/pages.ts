@@ -13,3 +13,5 @@ export type Page = {
   created_at?: string;
   updated_at: string;
 };
+
+export type PublicNote = Omit<Page, "published" | "created_at">;
