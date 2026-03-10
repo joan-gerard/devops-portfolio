@@ -15,3 +15,8 @@ export type Page = {
 };
 
 export type PublicNote = Omit<Page, "published" | "created_at">;
+
+export type PublishedNotePreview = Pick<
+  PublicNote,
+  "id" | "title" | "slug" | "tags" | "updated_at"
+>;

@@ -1,5 +1,5 @@
 import sql from "@/lib/db";
-import { Page, PublicNote } from "@/types/pages";
+import { Page, PublicNote, PublishedNotePreview } from "@/types/pages";
 
 export async function getAllPages() {
   return sql<Page[]>`
@@ -28,4 +28,17 @@ export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
     LIMIT 1
   `;
   return rows[0] ?? null;
+}
+
+export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
+  try {
+    return await sql<PublishedNotePreview[]>`
+      SELECT id, title, slug, tags, updated_at
+      FROM pages
+      WHERE published = true
+      ORDER BY updated_at DESC
+    `;
+  } catch {
+    return [];
+  }
 }
