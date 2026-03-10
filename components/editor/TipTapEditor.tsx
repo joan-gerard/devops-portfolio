@@ -1,16 +1,9 @@
 "use client";
 
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import Image from "@tiptap/extension-image";
-import Placeholder from "@tiptap/extension-placeholder";
-import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { common, createLowlight } from "lowlight";
 import { useCallback, useEffect, useRef } from "react";
 import EditorToolbar from "./EditorToolbar";
-
-const lowlight = createLowlight(common);
+import { getSharedExtensions } from "@/lib/tipTapExtensions";
 
 type Props = {
   noteId: string;
@@ -41,21 +34,7 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false, // replaced by lowlight version
-      }),
-      CodeBlockLowlight.configure({ lowlight }),
-      Placeholder.configure({
-        placeholder: "Start writing…",
-      }),
-      Typography,
-      Image.configure({
-        HTMLAttributes: {
-          class: "tiptap-image",
-        },
-      }),
-    ],
+    extensions: getSharedExtensions(),
     content: content && Object.keys(content).length > 0 ? content : undefined,
     editorProps: {
       attributes: {

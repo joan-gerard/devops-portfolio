@@ -1,11 +1,8 @@
 "use client";
 import { Page } from "@/types/pages";
-import type { Extensions } from "@tiptap/core";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import Image from "@tiptap/extension-image";
 import { generateHTML } from "@tiptap/html";
-import StarterKit from "@tiptap/starter-kit";
 
+import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -38,10 +35,7 @@ export function NoteDetail({ note }: NoteDetailProps) {
   const output = useMemo(() => {
     const content = note.content;
     if (!content || Object.keys(content).length === 0) return "";
-    return generateHTML(
-      content as Parameters<typeof generateHTML>[0],
-      [StarterKit, Image, CodeBlockLowlight] as Extensions
-    );
+    return generateHTML(content as Parameters<typeof generateHTML>[0], getSharedExtensions());
   }, [note.content]);
 
   return (
