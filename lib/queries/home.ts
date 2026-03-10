@@ -1,6 +1,5 @@
 import sql from "@/lib/db";
-import type { RecentNote } from "@/types/home";
-import type { FeaturedProject } from "@/types/home";
+import type { FeaturedProject, RecentNote } from "@/types/home";
 
 /**
  * Fetches data for the public homepage: recent notes and featured projects.
@@ -15,6 +14,7 @@ export async function getHomepageData(): Promise<{
       SELECT id, title, slug, tags, updated_at
       FROM pages
       WHERE published = true
+        AND slug != 'about'
       ORDER BY updated_at DESC
       LIMIT 3
     `,

@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { sectionLabel, sectionHeading, viewAllLink } from "./sectionStyles";
 import { ROADMAP_PHASES } from "@/lib/constants/home";
+import Link from "next/link";
+import { sectionHeading, sectionLabel, viewAllLink } from "./sectionStyles";
 
 export function RoadmapSection() {
   return (

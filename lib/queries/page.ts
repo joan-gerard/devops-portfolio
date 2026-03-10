@@ -36,6 +36,7 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
       SELECT id, title, slug, tags, updated_at
       FROM pages
       WHERE published = true
+        AND slug != 'about'
       ORDER BY updated_at DESC
     `;
   } catch {
