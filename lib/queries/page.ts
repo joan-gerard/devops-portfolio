@@ -20,7 +20,7 @@ export async function getPageById(id: string): Promise<Page | null> {
 }
 
 export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
-  const rows = await sql<Page[]>`
+  const rows = await sql<PublicNote[]>`
     SELECT id, title, slug, content, tags, updated_at
     FROM pages
     WHERE slug = ${slug}

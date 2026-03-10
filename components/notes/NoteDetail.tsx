@@ -1,5 +1,5 @@
 "use client";
-import { Page } from "@/types/pages";
+import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
@@ -18,7 +18,7 @@ const tagStyle: React.CSSProperties = {
 };
 
 export type NoteDetailProps = {
-  note: Page;
+  note: PublicNote;
 };
 
 /**
