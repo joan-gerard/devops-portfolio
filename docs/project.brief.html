@@ -1523,6 +1523,10 @@
           <span class="phases-toc-num">09</span>
           <span class="phases-toc-name">Post Launch</span>
         </a>
+        <a class="phases-toc-item post" onclick="scrollToSection('phase-10')">
+          <span class="phases-toc-num">10</span>
+          <span class="phases-toc-name">Interview Prep</span>
+        </a>
       </div>
     </nav>
 
@@ -1597,7 +1601,7 @@
         <ol class="steps">
           <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>Build the admin layout</strong> — Sidebar navigation, header, main content area. This is the Notion-style shell all admin pages will live inside.</div></li>
           <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Notes API routes</strong> — Build <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> handlers under <code>/api/pages</code> using raw SQL queries. <code>GET</code> filters by <code>published = true</code> for unauthenticated requests; admin sees all. Unpublished notes return <code>404</code> (not <code>403</code>) to guests — avoids leaking the existence of draft content.</div></li>
-          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/notes</code> — fetches and lists all notes with title, tags, published status, and last updated date. Each row has a two-step delete confirmation via <code>DeleteNoteButton</code>. Delete is also available in the editor meta bar, redirecting to <code>/admin/notes</code> after deletion. Note: <code>/admin/dashboard</code> is a separate overview page showing stat cards; notes and projects show published and unpublished counts.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Notes list page</strong> — <code>/admin/notes</code> — fetches and lists all notes with title, tags, published status, and last updated date. Each row has a two-step delete confirmation via <code>DeleteNoteButton</code>. Delete is also available in the editor meta bar, redirecting to <code>/admin/notes</code> after deletion. Note: <code>/admin/dashboard</code> is a separate overview page showing stat cards.</div></li>
           <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>Rich text editor</strong> — Install TipTap, build the <code>/admin/editor/[id]</code> page. Support headings, paragraphs, code blocks, and blockquotes. Autosave wired to <code>PATCH /api/pages/[id]</code> with a 1.5s debounce. Set <code>immediatelyRender: false</code> in <code>useEditor</code> to avoid SSR hydration mismatch. Page split into a server component (<code>page.tsx</code>) and client shell (<code>EditorPageClient.tsx</code>). Title editable inline with 1s debounced save. Publish toggle in meta bar. <code>TagInput</code> component below the title — type and press Enter or comma to add tags, click × to remove, saves immediately via PATCH.</div></li>
           <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Projects API routes</strong> — <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> under <code>/api/projects</code>, same pattern as notes. All <code>[id]</code> handlers catch Postgres error <code>22P02</code> (invalid UUID syntax) and return 404 rather than 500. Query helpers in <code>lib/queries/projects.ts</code>: <code>getAllProjects()</code>, <code>getAllPublishedProjects()</code>, <code>getProjectById()</code>, <code>getProjectBySlug()</code>.</div></li>
           <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>Projects admin page</strong> — A form to create and edit project entries: title, description, tech stack tags, GitHub URL, live URL.</div></li>
@@ -1732,6 +1736,34 @@
         </ol>
       </div>
 
+      <div class="phase" id="phase-10">
+        <div class="phase-header phase-header-post">
+          <div class="phase-number post">10</div>
+          <div>
+            <div class="phase-title">Interview Preparation</div>
+            <div class="phase-subtitle">Turning everything you built into something you can clearly explain to any employer or recruiter</div>
+          </div>
+          <div class="phase-post-badge">Post Launch</div>
+        </div>
+        <ol class="steps">
+          <li><span class="step-num">1</span><div><span class="spriority high">High</span><strong>System design walkthrough document</strong> — Write a structured document that explains the full system: what the app does, how data flows from browser to database, how authentication works, how the admin and public sides are separated. The goal is to walk an interviewer through the entire architecture in under 10 minutes without opening a laptop. This document also becomes the backbone for all other prep in this phase.</div></li>
+          <li><span class="step-num">2</span><div><span class="spriority high">High</span><strong>Architecture and technical decisions script</strong> — For each decision in Chapter 09 of the brief, prepare a short spoken answer: what problem you faced, what options you considered, what you chose, and why. These answers demonstrate that you didn't just follow a tutorial — you reasoned through trade-offs and made deliberate choices. Aim for 60–90 seconds per decision. Cover rate limiting, ISR vs force-dynamic, lazy DB initialisation, the COALESCE PATCH pattern, magic byte validation, and URL scheme enforcement.</div></li>
+          <li><span class="step-num">3</span><div><span class="spriority high">High</span><strong>Security reasoning script</strong> — Prepare spoken answers covering each Phase 04 security fix in plain terms: why magic byte validation is needed even when MIME type is checked, how the rate limiter works and why Neon was chosen over Redis, what the shared "unknown" IP bucket problem is and the safer alternative, why URL scheme validation lives at write time not render time. Security reasoning is a strong signal in DevOps and backend interviews — most candidates who fixed the same bugs couldn't explain why.</div></li>
+          <li><span class="step-num">4</span><div><span class="spriority high">High</span><strong>AI collaboration narrative</strong> — Prepare a clear, honest account of how you worked with AI throughout this project. Explain what you used it for (code review, decision-making, documentation, catching bugs), what you directed (scope, architecture choices, what gets built and when), and what you always owned (understanding the output, testing, debugging, and being able to explain every line). Be ready to answer "did AI write this for you?" with a confident, specific answer that demonstrates genuine comprehension. The ability to effectively direct and collaborate with AI tools is itself a modern engineering skill — own it rather than downplay it.</div></li>
+          <li><span class="step-num">5</span><div><span class="spriority high">High</span><strong>Product management and scope decisions evidence</strong> — Document the decisions about what to build, what to defer, and what to cut — and the reasoning behind each. Which features were prioritised and why? What was explicitly left out of each phase? Why is the roadmap structured the way it is? This demonstrates product thinking: the ability to define scope, manage trade-offs, and make deliberate decisions about effort allocation — not just execute what you were told. Interviewers for DevOps and platform engineering roles increasingly want to see this.</div></li>
+          <li><span class="step-num">6</span><div><span class="spriority high">High</span><strong>CI/CD and infrastructure explanation</strong> — Write a plain-language explanation of the full deployment pipeline: how code goes from a local branch to production, what the GitHub Actions workflow does at each step, how environment variables are managed safely between CI and runtime, how Vercel fits in. Prepare two versions — one for a non-technical recruiter, one for a senior engineer. Same accuracy, different vocabulary.</div></li>
+          <li><span class="step-num">7</span><div><span class="spriority medium">Medium</span><strong>"Tell me about a project you're proud of" answer</strong> — Write and rehearse a structured answer using the STAR format (Situation, Task, Action, Result). Lead with what the app does and why you built it, pivot to a specific technical or product challenge you solved, explain the decision and what you learned. Keep it to 2–3 minutes. This is almost always the first question — have it ready to the point where it feels natural, not recited.</div></li>
+          <li><span class="step-num">8</span><div><span class="spriority medium">Medium</span><strong>"What would you do differently?" answer</strong> — Identify 2–3 honest things you would change with the benefit of hindsight — a library choice, an architecture decision, something you over-engineered or under-engineered, a phase ordering that could have been smarter. Interviewers ask this to assess self-awareness and engineering maturity. A specific, reasoned answer is far stronger than a vague "I'd write more tests".</div></li>
+          <li><span class="step-num">9</span><div><span class="spriority medium">Medium</span><strong>Thought process documentation</strong> — For 3–4 representative moments in the build, write up your thought process in full: what you were trying to solve, what you tried first, why it didn't work, what you did instead, and what you'd do differently now. These become stories you can tell in interviews to demonstrate how you think, not just what you built. The rate limiter "unknown" bucket problem, the stale JWT bug, and the ISR build-time failure are all good candidates.</div></li>
+          <li><span class="step-num">10</span><div><span class="spriority medium">Medium</span><strong>Recruiter-facing one-pager</strong> — A non-technical summary for recruiters who will not read code: what the app does, what problem it solves, what technologies it uses, and what it demonstrates about your capabilities. One page. Plain language. This is what gets forwarded to a hiring manager before they look at your GitHub — it needs to be clear enough for a non-engineer to understand and compelling enough to make a senior engineer want to look at the code.</div></li>
+          <li><span class="step-num">11</span><div><span class="spriority low">Low</span><strong>Live demo script</strong> — Write a scripted walkthrough of the app for a screen-share interview: what to show first, what to click, what to narrate, what to skip. Knowing what not to show is as important as knowing what to show. Time it. Practice until it feels like a conversation, not a presentation. Under 5 minutes is the target.</div></li>
+        </ol>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-muted);">
+          <strong style="color:var(--text)">Why this is its own phase</strong><br><br>
+          Building the app is only half the work. Most technical candidates underinvest in the ability to explain what they built — they can show the code but struggle to articulate the decisions behind it. This phase covers four distinct skills that interviewers actually test: technical depth (can you explain every architectural choice?), security reasoning (can you explain why each fix was necessary?), product thinking (can you explain what you prioritised and why?), and AI literacy (can you explain how you used AI as a tool without it undermining confidence in your own understanding?). Each skill is separately demonstrable and separately valuable.
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1752,6 +1784,7 @@
         <li><a onclick="scrollToSection('arch-rate-limit')"    style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">06</span>Login Rate Limiting</a></li>
         <li><a onclick="scrollToSection('arch-cron-reporting')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">07</span>Cron Job Reporting</a></li>
         <li><a onclick="scrollToSection('arch-r2-upload')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">08</span>R2 Image Upload Flow</a></li>
+        <li><a onclick="scrollToSection('arch-rendering')" style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.15s;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'"><span style="color:var(--text-muted);font-size:10px;">09</span>Rendering Strategy — dynamic vs ISR</a></li>
       </ol>
     </div>
 
@@ -2043,6 +2076,118 @@ sequenceDiagram
     <p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:12px">&#9432; The file extension is extracted server-side from the original filename but the filename itself is never used — a fresh <code>Date.now()-random.ext</code> key is always generated. Trailing slashes on <code>R2_PUBLIC_URL</code> are stripped before building the final URL to prevent double-slash paths.</p>
 
   </div>
+
+  <!-- Arch 09: Rendering Strategy -->
+  <div id="arch-rendering" style="margin-top:48px;">
+    <h3 style="font-family:var(--font-syne);font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">09 — Rendering Strategy — <code>dynamic</code> vs <code>revalidate</code></h3>
+    <p style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:24px;">How Next.js decides when to run your server component — and how to control it explicitly.</p>
+
+    <p style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:16px;">By default Next.js tries to statically render every page at build time. For pages that query a database this causes a build-time failure — there is no database connection during <code>pnpm build</code> on CI. Two directives control this behaviour, and the right choice depends on how frequently the page content changes.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Option A — force-dynamic</div>
+        <div style="font-family:var(--font-syne);font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;">Render on every request</div>
+        <pre style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:12px;overflow-x:auto;">export const dynamic = "force-dynamic"</pre>
+        <p style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:8px;">Page is never cached. Every request runs the server component from scratch — session check, DB query, full render. No stale data ever.</p>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.6;"><strong style="color:var(--text-dim);">Use when:</strong> content must reflect the current database state on every single request with no tolerance for stale data. Used on all admin routes — auth evaluation cannot be cached.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Option B — ISR (Incremental Static Regeneration)</div>
+        <div style="font-family:var(--font-syne);font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;">Cache, then revalidate on a timer</div>
+        <pre style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:12px;overflow-x:auto;">export const revalidate = 3600</pre>
+        <p style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:8px;">Page is statically generated at build time and served from cache. After the interval (in seconds) expires, the next request triggers a background regeneration — the visitor still gets the cached version instantly while the new one is built.</p>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.6;"><strong style="color:var(--text-dim);">Use when:</strong> content changes infrequently and a cached render on transient DB failure is preferable to serving empty content. Used on all public pages — <code>/</code>, <code>/notes</code>, <code>/projects</code>, <code>/about</code>, and detail pages.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:24px;">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">How ISR works — step by step</div>
+      <ol style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+        <li style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);display:flex;gap:10px;"><span style="color:var(--accent);min-width:16px;">1.</span>At build time, Next.js renders the page and stores a static HTML snapshot.</li>
+        <li style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);display:flex;gap:10px;"><span style="color:var(--accent);min-width:16px;">2.</span>All requests within the revalidation window are served from that snapshot — no DB query, near-instant response.</li>
+        <li style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);display:flex;gap:10px;"><span style="color:var(--accent);min-width:16px;">3.</span>Once the window expires, the next incoming request triggers a background re-render while still serving the stale page.</li>
+        <li style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);display:flex;gap:10px;"><span style="color:var(--accent);min-width:16px;">4.</span>When the background render completes, the new snapshot replaces the old one. Subsequent requests get the fresh version.</li>
+      </ol>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">Decision map — which pages use which</div>
+      <table style="width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:400;">Route</th>
+            <th style="text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:400;">Strategy</th>
+            <th style="text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:400;">Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Switched from force-dynamic — see decision note below</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/projects</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Projects added infrequently — 1hr cache is fine</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/notes</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Same reasoning as projects</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/projects/[slug]</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Detail pages rarely change after publish</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/notes/[slug]</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Same reasoning as project detail</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px;color:var(--text-dim);"><code>/about</code></td>
+            <td style="padding:8px 12px;color:var(--accent);">revalidate = 3600</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">CMS-driven page — same pattern as note detail</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 12px;color:var(--text-dim);">All <code>/admin/*</code> routes</td>
+            <td style="padding:8px 12px;color:var(--accent);">force-dynamic</td>
+            <td style="padding:8px 12px;color:var(--text-muted);">Auth check requires per-request evaluation</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;margin-top:16px;">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Decision history — homepage rendering strategy</div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);min-width:64px;padding-top:2px;">v1 — initial</div>
+          <div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin-bottom:4px;"><code>force-dynamic</code></div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);line-height:1.6;">Rationale: the homepage shows live note and project counts, which should reflect the current DB state on every load. Every request re-queries the database.</div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border);"></div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);min-width:64px;padding-top:2px;">v2 — current</div>
+          <div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin-bottom:4px;"><code>revalidate = 3600</code></div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);line-height:1.6;">Rationale: the original justification ("live counts") does not hold up — for a portfolio, content being up to an hour stale is not a real problem. The decisive reason to switch is <strong style="color:var(--text-dim);">resilience</strong>: with <code>force-dynamic</code>, a transient DB failure causes the homepage to serve empty notes and projects sections to real visitors — specifically the employers this app is built to impress. ISR would have served the last cached version with real content instead. The homepage queries the same data as <code>/notes</code> and <code>/projects</code>, which already use ISR for exactly this reason. DB load and consistency were cited as arguments for the switch but are not the deciding factors at portfolio scale.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 
 
 
