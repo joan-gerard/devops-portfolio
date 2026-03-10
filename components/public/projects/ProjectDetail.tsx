@@ -30,6 +30,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   return (

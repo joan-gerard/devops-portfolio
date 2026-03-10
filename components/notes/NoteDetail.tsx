@@ -30,6 +30,7 @@ export function NoteDetail({ note }: NoteDetailProps) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   const output = useMemo(() => {
