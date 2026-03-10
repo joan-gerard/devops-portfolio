@@ -1,6 +1,7 @@
 "use client";
 import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
+import DOMPurify from "dompurify";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import Link from "next/link";
@@ -134,7 +135,8 @@ const emptyContentStyle: React.CSSProperties = {
 function NoteDetailContent({ content, html }: NoteDetailContentProps) {
   const hasContent = content && Object.keys(content).length > 0;
   if (hasContent && html) {
-    return <div className="note-content" dangerouslySetInnerHTML={{ __html: html }} />;
+    const safeHtml = DOMPurify.sanitize(html);
+    return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
   }
   return <p style={emptyContentStyle}>No content yet.</p>;
 }
