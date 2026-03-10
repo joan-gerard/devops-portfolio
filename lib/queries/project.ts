@@ -1,6 +1,6 @@
 import sql from "@/lib/db";
 import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
-import type { Project } from "@/types/projects";
+import type { Project, PublicProject } from "@/types/projects";
 
 export async function getAllProjects() {
   return sql<Project[]>`
@@ -57,8 +57,8 @@ export async function getProjectById(id: string) {
   return project ?? null;
 }
 
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
-  const rows = await sql<Project[]>`
+export async function getProjectBySlug(slug: string): Promise<PublicProject | null> {
+  const rows = await sql<PublicProject[]>`
   SELECT id, title, slug, description, tech_stack, github_url, live_url, updated_at
   FROM projects
   WHERE slug = ${slug}

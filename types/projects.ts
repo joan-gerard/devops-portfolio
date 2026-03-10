@@ -10,3 +10,5 @@ export type Project = {
   created_at: string;
   updated_at: string;
 };
+
+export type PublicProject = Omit<Project, "published" | "created_at">;

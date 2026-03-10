@@ -1,6 +1,6 @@
 "use client";
 
-import type { Project } from "@/types/projects";
+import type { PublicProject } from "@/types/projects";
 import {
   BackToProjectsLink,
   ProjectDescriptionSection,
@@ -22,7 +22,7 @@ const sectionDividerStyle = {
 };
 
 type ProjectDetailProps = {
-  project: Project;
+  project: PublicProject;
 };
 
 export function ProjectDetail({ project }: ProjectDetailProps) {
