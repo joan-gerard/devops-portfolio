@@ -20,6 +20,8 @@ The public homepage is at `app/(public)/page.tsx` and is composed of section com
 
 The public projects list is at `app/(public)/projects/page.tsx`. It uses `getAllPublishedProjects()` from `lib/queries/project.ts` and is composed of `components/public/projects/` (ProjectsPageHeader, ProjectsGrid, ProjectCard). Shared styles for the projects page live in `components/public/projects/projectStyles.ts`.
 
+The public About page is at `app/(public)/about/page.tsx`. It fetches the `about` note via `getNoteBySlug("about")` from `lib/queries/page.ts` and delegates rendering (header + rich text content/fallback) to `components/public/about/AboutPageContent.tsx`. A dedicated redirect route at `app/(public)/notes/about/page.tsx` ensures `/notes/about` requests are redirected to `/about`.
+
 ### Code style (Prettier)
 
 Format all files:
