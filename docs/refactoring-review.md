@@ -167,3 +167,5 @@ Use it in all three so the prerender behaviour and logging live in one place.
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
+
+**Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
