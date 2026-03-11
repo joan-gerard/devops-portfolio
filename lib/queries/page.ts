@@ -61,7 +61,17 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
         AND slug != 'about'
       ORDER BY updated_at DESC
     `;
-  } catch {
-    return [];
+  } catch (error) {
+    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
+    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
+      const summary =
+        error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120);
+      console.warn(
+        "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list.",
+        `Reason: ${summary}`
+      );
+      return [];
+    }
+    throw error;
   }
 }
