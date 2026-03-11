@@ -77,15 +77,18 @@ describe("project queries", () => {
       mockSql.mockRejectedValueOnce(err);
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-      const result = await getAllPublishedProjects();
+      try {
+        const result = await getAllPublishedProjects();
 
-      expect(result).toEqual([]);
-      expect(warnSpy).toHaveBeenCalledWith(
-        "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list.",
-        expect.any(String)
-      );
-      warnSpy.mockRestore();
-      process.env.IS_PRERENDER_BUILD = prev;
+        expect(result).toEqual([]);
+        expect(warnSpy).toHaveBeenCalledWith(
+          "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list.",
+          expect.any(String)
+        );
+      } finally {
+        warnSpy.mockRestore();
+        process.env.IS_PRERENDER_BUILD = prev;
+      }
     });
 
     it("rethrows when not prerender build", async () => {
@@ -95,9 +98,11 @@ describe("project queries", () => {
       err.code = "ECONNREFUSED";
       mockSql.mockRejectedValueOnce(err);
 
-      await expect(getAllPublishedProjects()).rejects.toThrow("Connection refused");
-
-      process.env.IS_PRERENDER_BUILD = prev;
+      try {
+        await expect(getAllPublishedProjects()).rejects.toThrow("Connection refused");
+      } finally {
+        process.env.IS_PRERENDER_BUILD = prev;
+      }
     });
 
     it("rethrows non-connection errors during prerender build", async () => {
@@ -106,9 +111,11 @@ describe("project queries", () => {
       const err = new Error("Generic failure");
       mockSql.mockRejectedValueOnce(err);
 
-      await expect(getAllPublishedProjects()).rejects.toThrow("Generic failure");
-
-      process.env.IS_PRERENDER_BUILD = prev;
+      try {
+        await expect(getAllPublishedProjects()).rejects.toThrow("Generic failure");
+      } finally {
+        process.env.IS_PRERENDER_BUILD = prev;
+      }
     });
   });
 
