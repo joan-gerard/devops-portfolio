@@ -52,6 +52,10 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
   - **What to test** (once consolidated there): converting arbitrary titles to slugs that match the same rules as `isValidSlug`; handling repeated spaces, special characters, and Unicode.
   - **Why**: Prevents drift between displayed slugs and what’s allowed by `validateSlug`.
 
+- **Project URL validation** – `lib/validateProjectUrl.ts`
+  - **What to test**: `isAllowedProjectUrlScheme`: accepts `http:` and `https:` URLs; rejects empty, whitespace, non-string, and URLs over max length (2048); rejects disallowed schemes (`javascript:`, `data:`, `file:`); rejects invalid URL strings; trims before parsing. `normalizeProjectUrl`: null/undefined/blank → null; non-blank string trimmed; non-string → null.
+  - **Why**: Prevents XSS when project links (e.g. github_url, live_url) are rendered as `href`; security-sensitive.
+
 - **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`).
   - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, the three query functions return `null`/`[]` and log a warning; otherwise they rethrow. This logic is subtle and directly impacts build reliability; tests can drive the suggested `withPrerenderFallback` refactor from your doc.
 
