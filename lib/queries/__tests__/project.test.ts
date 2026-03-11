@@ -99,6 +99,17 @@ describe("project queries", () => {
 
       process.env.IS_PRERENDER_BUILD = prev;
     });
+
+    it("rethrows non-connection errors during prerender build", async () => {
+      const prev = process.env.IS_PRERENDER_BUILD;
+      process.env.IS_PRERENDER_BUILD = "true";
+      const err = new Error("Generic failure");
+      mockSql.mockRejectedValueOnce(err);
+
+      await expect(getAllPublishedProjects()).rejects.toThrow("Generic failure");
+
+      process.env.IS_PRERENDER_BUILD = prev;
+    });
   });
 
   describe("getProjectById", () => {
