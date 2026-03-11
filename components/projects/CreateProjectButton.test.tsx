@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, type MockInstance } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@/test/test-utils";
 import { CreateProjectButton } from "./CreateProjectButton";
 import { slugify } from "@/lib/slugify";
@@ -16,18 +16,20 @@ vi.mock("@/lib/slugify", () => ({
 }));
 
 describe("CreateProjectButton", () => {
+  let fetchSpy: MockInstance;
+  let dateNowSpy: MockInstance;
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(global, "fetch").mockResolvedValue({
+    fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,
       json: async () => ({ id: "project-123" }),
     } as Response);
-    vi.spyOn(Date, "now").mockReturnValue(1234567890);
+    dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(1234567890);
   });
 
   afterEach(() => {
-    (global.fetch as unknown as any).mockRestore();
-    (Date.now as unknown as any).mockRestore();
+    fetchSpy.mockRestore();
+    dateNowSpy.mockRestore();
   });
 
   it("creates a project with correct payload and navigates to project page", async () => {
@@ -49,7 +51,7 @@ describe("CreateProjectButton", () => {
   });
 
   it("does not navigate when request fails", async () => {
-    (global.fetch as unknown as any).mockResolvedValueOnce({
+    fetchSpy.mockResolvedValueOnce({
       ok: false,
       json: async () => ({}),
     } as Response);

@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { LoginForm } from "./LoginForm";
 import * as submitLoginModule from "@/lib/submitLogin";
@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/submitLogin");
 
-const mockedSubmitLogin = submitLoginModule.submitLogin as unknown as any;
+const mockedSubmitLogin = submitLoginModule.submitLogin as unknown as Mock;
 
 describe("LoginForm", () => {
   beforeEach(() => {

@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, type MockInstance } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@/test/test-utils";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 
@@ -13,16 +13,17 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("DeleteProjectButton", () => {
+  let fetchSpy: MockInstance;
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(global, "fetch").mockResolvedValue({
+    fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
       ok: true,
       json: async () => ({}),
     } as Response);
   });
 
   afterEach(() => {
-    (global.fetch as unknown as any).mockRestore();
+    fetchSpy.mockRestore();
   });
 
   it("shows confirm UI when clicked", () => {
