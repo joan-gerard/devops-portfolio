@@ -1,29 +1,39 @@
 # Testing Plan: DevOps Portfolio
 
-This document captures testing opportunities across the app. The codebase currently has **no test tooling configured** (`package.json` has no test scripts, no Jest/Vitest/Playwright, and no `*.test.*`/`*spec.*` files). The opportunities below are organised by layer and priority so you can add tests incrementally.
+This document captures testing opportunities across the app and the current testing setup. The opportunities below are organised by layer and priority so you can add tests incrementally.
 
 ---
 
-## 1. Testing Infrastructure (Foundational)
+## Current setup (infrastructure in place)
 
-- **Add a unit test runner**
-  - **Opportunity**: Introduce **Vitest** or **Jest** with TypeScript support.
-  - **Why**: Enables fast feedback on lib functions and non-Next-specific logic.
-  - **Scope**:
-    - Configure `vitest.config.ts` or `jest.config.js`.
-    - Add scripts in `package.json`, e.g. `test`, `test:watch`, `test:ci`.
-    - Set up `ts-node` / `ts-jest` or Vitest + `tsconfig`.
+- **Unit / component tests:** **Vitest** with TypeScript, **React Testing Library**, **jsdom**.
+  - Config: `vitest.config.ts` (uses `vite-tsconfig-paths` for `@/` aliases).
+  - Setup: `test/setup.ts` (imports `@testing-library/jest-dom`).
+  - Helpers: `test/test-utils.tsx` exports a custom `render()` that wraps UI in `AuthSessionProvider` for tests that need session context.
+  - Unit tests live next to code (e.g. `lib/validateSlug.test.ts`) or in `__tests__`; Vitest runs `**/*.test.{ts,tsx}` and `**/*.spec.{ts,tsx}` and excludes `e2e/`.
+- **E2E tests:** **Playwright**.
+  - Config: `playwright.config.ts`; tests live in `e2e/`. The config starts the app via `webServer` (e.g. `pnpm dev`) unless you run with an existing server.
+  - Install browsers once: `pnpm exec playwright install`.
+- **Scripts (in `package.json`):**
+  - `pnpm test` — Vitest in watch mode.
+  - `pnpm test:run` — Vitest single run.
+  - `pnpm test:watch` — Vitest watch (alias for `test`).
+  - `pnpm test:ci` — Vitest single run with verbose reporter.
+  - `pnpm test:e2e` — Playwright e2e tests.
+  - `pnpm test:e2e:ui` — Playwright with UI mode.
 
-- **Add React Testing Library for components**
-  - **Opportunity**: Test key interactive components under realistic DOM conditions.
-  - **Why**: You have several client components with branching UI (e.g. delete buttons, login form, editor/project UI).
-  - **Scope**:
-    - Configure test environment to use `jsdom`.
-    - Helpers for rendering components with providers (e.g. `AuthSessionProvider`).
+---
 
-- **Add e2e tests (Playwright or Cypress)**
-  - **Opportunity**: Cover public flows and admin flows end-to-end.
-  - **Why**: Critical flows (login, create/edit/delete notes/projects) should be exercised as a real user would.
+## 1. Testing Infrastructure (Foundational) — done
+
+- **Unit test runner:** **Vitest** with TypeScript support.
+  - **Done:** `vitest.config.ts`, path aliases via `vite-tsconfig-paths`, scripts `test`, `test:run`, `test:watch`, `test:ci`.
+
+- **React Testing Library for components**
+  - **Done:** jsdom environment, `test/setup.ts` with `@testing-library/jest-dom`, custom `render()` in `test/test-utils.tsx` wrapping `AuthSessionProvider`.
+
+- **E2E tests (Playwright)**
+  - **Done:** `playwright.config.ts`, `e2e/` directory, smoke spec `e2e/smoke.spec.ts`. Run `pnpm exec playwright install` once to install browsers.
 
 ---
 
