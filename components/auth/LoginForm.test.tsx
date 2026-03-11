@@ -54,13 +54,14 @@ describe("LoginForm", () => {
     expect(await screen.findByText("Invalid credentials")).toBeInTheDocument();
   });
 
-  it("shows fallback error message when submitLogin throws", async () => {
-    mockedSubmitLogin.mockRejectedValue(new Error("Network error"));
+  it("shows fallback error message when submitLogin returns a normalized failure", async () => {
+    mockedSubmitLogin.mockResolvedValue({ ok: false, error: "Sign in failed" });
 
     render(<LoginForm />);
 
     fillAndSubmit("user@example.com", "password123");
 
-    expect(await screen.findByText("Network error")).toBeInTheDocument();
+    expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
+  });
   });
 });
