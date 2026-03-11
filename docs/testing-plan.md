@@ -123,7 +123,8 @@ Use **React Testing Library** (with a `jsdom` environment).
   - **Done**: `ProjectCard.test.tsx` covers all of the above (title/description, tech tags, empty tag container, GitHub/Live link presence and attributes, Details link href and aria-label).
 
 - **Public pages layout components** – `NotesPageHeader`, `ProjectsPageHeader`, `NotesEmptyState`, `ProjectsGrid`, `RecentNotesSection`, `FeaturedProjectsSection`, `NoteDetail`, `ProjectDetail`
-  - **What to test**: Given props (or data from mocks), they show correct “empty” messaging when lists are empty; render the right number of cards/rows when data is present; show the correct headings and labels.
+  - **Done:** Page headers: `NotesPageHeader.test.tsx`, `ProjectsPageHeader.test.tsx` (label, heading, description). Empty/list: `NotesEmptyState.test.tsx` (generic vs tag-specific empty message), `ProjectsGrid.test.tsx` (empty state + card count). Sections: `RecentNotesSection.test.tsx`, `FeaturedProjectsSection.test.tsx` (label, heading, empty message, card count, All notes/projects link). Detail: `NoteDetail.test.tsx` (title, tags, date, back link, empty content), `ProjectDetail.test.tsx` (title, date, back link, description, tech stack, links).
+  - **What to extend**: Given props (or data from mocks), they show correct "empty" messaging when lists are empty; render the right number of cards/rows when data is present; show the correct headings and labels.
   - **Why**: Ideal tests to add once you introduce shared components like `PageHeader`, `EmptyState`, `SectionWithGrid`, etc.
 
 ---
