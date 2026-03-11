@@ -1,6 +1,6 @@
 import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
 import { signIn } from "next-auth/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { submitLogin } from "../submitLogin";
 
 vi.mock("next-auth/react", () => ({
@@ -8,6 +8,10 @@ vi.mock("next-auth/react", () => ({
 }));
 
 const mockedSignIn = signIn as unknown as ReturnType<typeof vi.fn>;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("submitLogin", () => {
   it("returns ok: true when signIn succeeds without error", async () => {
@@ -55,7 +59,5 @@ describe("submitLogin", () => {
 
     expect(result).toEqual({ ok: false, error: "Sign in failed" });
     expect(consoleErrorSpy).toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
   });
 });
