@@ -1,6 +1,7 @@
 "use client";
 
 import { labelStyle } from "./editorStyles";
+import { AdminFormField } from "../shared/AdminFormField";
 
 type EditorFormFieldProps = {
   label: string;
@@ -13,21 +14,8 @@ type EditorFormFieldProps = {
  */
 export function EditorFormField({ label, children, hint }: EditorFormFieldProps) {
   return (
-    <div style={{ marginBottom: "20px" }}>
-      <label style={labelStyle}>{label}</label>
+    <AdminFormField label={label} hint={hint} labelStyle={labelStyle}>
       {children}
-      {hint && (
-        <p
-          style={{
-            fontSize: "11px",
-            color: "var(--yellow)",
-            fontFamily: "var(--font-mono)",
-            marginTop: "6px",
-          }}
-        >
-          {hint}
-        </p>
-      )}
-    </div>
+    </AdminFormField>
   );
 }

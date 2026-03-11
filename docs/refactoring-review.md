@@ -6,9 +6,9 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 1. Form Field Components
 
-**Current:** `EditorFormField` (`components/editor/EditorFormField.tsx`) and `ProjectEditFormField` (`components/projects/ProjectEditFormField.tsx`) are nearly identical: label, children, optional hint (same hint styling). The only difference is the wrapper `div` (`marginBottom: "20px"` vs none).
+**Current:** `EditorFormField` (`components/editor/EditorFormField.tsx`) and `ProjectEditFormField` (`components/projects/ProjectEditFormField.tsx`) both delegate to a shared `AdminFormField` (`components/shared/AdminFormField.tsx`) that renders the label, children, and optional hint with a consistent `marginBottom: "20px"` wrapper.
 
-**Suggestion:** Introduce a single shared component (e.g. `FormField` or `AdminFormField`) in `components/ui/` or `components/shared/`, with an optional `spacing` or `marginBottom` prop. Both editor and project forms can consume it.
+**Status:** ✅ Implemented via `AdminFormField`; any future admin form fields should reuse this component.
 
 ---
 
