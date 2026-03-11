@@ -61,7 +61,9 @@ describe("CreateNoteButton", () => {
     fireEvent.click(screen.getByText(/\+ new note/i));
 
     await waitFor(() => {
-      expect(pushMock).not.toHaveBeenCalled();
+      expect(global.fetch).toHaveBeenCalled();
     });
+
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

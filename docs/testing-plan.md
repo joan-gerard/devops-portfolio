@@ -110,7 +110,7 @@ Use **React Testing Library** (with a `jsdom` environment).
   - **Why**: Important admin workflows and a good place for tests once you centralize create logic; current tests protect API contracts, slug generation, and navigation behavior.
 
 - **Slug fields** – `components/editor/EditorSlugField.tsx`, `components/projects/ProjectSlugField.tsx`
-  - **What to test**: Typing into slug field sanitizes input (lowercase, allowed chars, no double hyphens); “Regenerate from title” button uses the title to compute a new slug and respects sanitized rules and `MAX_SLUG_LENGTH`.
+  - **Done:** `components/editor/EditorSlugField.test.tsx` — typing into the slug input lowercases, replaces disallowed chars with hyphens, and collapses multiple hyphens; "↺ from title" button calls `onRegenerateFromTitle`; published hint (break existing URLs) shown only when `published` is true. `components/projects/ProjectSlugField.test.tsx` — same input sanitization; "↺ from title" calls `onChange(slugify(titleForRegenerate))` (slugify mocked); regenerate result respects length limit (≤80 from slugify); published hint when `published` is true.
   - **Why**: Bridge between user input and `validateSlug`/`slugify`; fragile formatting rules.
 
 - **Save-status meta bars** – `components/editor/EditorMetaBar.tsx`, `components/projects/ProjectEditMetaBar.tsx` and hooks mentioned in doc (`useEditorPage`, `useProjectEdit`)
