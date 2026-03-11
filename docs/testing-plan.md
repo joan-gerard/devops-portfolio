@@ -129,7 +129,7 @@ Use **React Testing Library** (with a `jsdom` environment).
 
 ## 5. End-to-End (E2E) Scenarios
 
-Using Playwright or Cypress after basic tooling is in place.
+Using Playwright after basic tooling is in place.
 
 - **Public read-only flows**
   - **What to test**: Visit home page and see recent notes and featured projects sections; clicking a project card goes to the project detail page. Visit `/notes`: list of notes appears; clicking a note shows detail; tag filter changes visible notes. 404 / error states behave as intended.
