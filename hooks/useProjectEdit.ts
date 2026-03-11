@@ -13,6 +13,9 @@ export type ProjectEditFields = {
   live_url: string;
 };
 
+/**
+ * Debounce delay (ms) before persisting field changes to the API.
+ */
 const DEBOUNCE_MS = 1000;
 
 const STATUS_COLOUR: Record<SaveStatus, string> = {
@@ -29,6 +32,18 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   error: "Save failed",
 };
 
+/**
+ * Hook for editing a single project: local form fields, debounced persistence,
+ * and save status.
+ *
+ * Field changes (title, slug, description, github_url, live_url) are persisted
+ * via debounced PATCH to `/api/projects/:id`. Published is toggled immediately
+ * with no debounce. Exposes status colour/label for the project edit UI.
+ *
+ * @param project - The project to edit (used as initial state and for API calls).
+ * @returns fields and setFields for form state, saveStatus, statusColour/statusLabel,
+ *   handleChange(field, value) for debounced updates, togglePublished, and setSaveStatus.
+ */
 export function useProjectEdit(project: Project) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(project.published);

@@ -114,12 +114,13 @@ Use **React Testing Library** (with a `jsdom` environment).
   - **Why**: Bridge between user input and `validateSlug`/`slugify`; fragile formatting rules.
 
 - **Save-status meta bars** – `components/editor/EditorMetaBar.tsx`, `components/projects/ProjectEditMetaBar.tsx` and hooks mentioned in doc (`useEditorPage`, `useProjectEdit`)
-  - **What to test**: Debounced auto-save: modifying content triggers a pending state, then saved state after PATCH completes; publish toggle updates status and calls correct endpoint; visual status changes (label and color correspond to `SaveStatus` state).
+  - **Done:** `components/editor/EditorMetaBar.test.tsx` — when `saveStatus` is idle the status label is hidden; when saving/saved/error the correct label and colour are shown; Publish/Published button calls `onTogglePublished`; back link to `/admin/notes`. `components/projects/ProjectEditMetaBar.test.tsx` — same for project (statusColour, back to `/admin/projects`). `hooks/useEditorPage.test.ts` — initial state; statusColor/statusLabel map to SaveStatus; debounced title/slug change triggers PATCH after 1s and sets saved/error; togglePublished PATCHes immediately and updates or reverts published. `hooks/useProjectEdit.test.ts` — same pattern for project (fields, handleChange debounce, togglePublished).
   - **Why**: Debounced interactions are prone to race conditions; tests help solidify behavior and support refactoring toward a shared `useAdminSave` or similar.
 
 - **Public display components** – e.g. `components/public/projects/ProjectCard.tsx`
   - **What to test**: Renders title and description correctly; renders tech stack tags when present; hides tag container when empty; conditionally renders GitHub and Live links only when URLs exist, with correct `href`, `target`, `rel`, `aria-label`; renders Details link with correct `href` (`/projects/${slug}`).
   - **Why**: Simple, stable components; fast tests that protect UI/aria contracts.
+  - **Done**: `ProjectCard.test.tsx` covers all of the above (title/description, tech tags, empty tag container, GitHub/Live link presence and attributes, Details link href and aria-label).
 
 - **Public pages layout components** – `NotesPageHeader`, `ProjectsPageHeader`, `NotesEmptyState`, `ProjectsGrid`, `RecentNotesSection`, `FeaturedProjectsSection`, `NoteDetail`, `ProjectDetail`
   - **What to test**: Given props (or data from mocks), they show correct “empty” messaging when lists are empty; render the right number of cards/rows when data is present; show the correct headings and labels.

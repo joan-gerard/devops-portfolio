@@ -5,6 +5,9 @@ import type { Page } from "@/types/pages";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
+/**
+ * Debounce delay (ms) before persisting title/slug changes to the API.
+ */
 const DEBOUNCE_MS = 1000;
 
 const STATUS_COLOR: Record<SaveStatus, string> = {
@@ -21,6 +24,19 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   error: "Save failed",
 };
 
+/**
+ * Hook for editing a single page (note) in the editor: local state, debounced
+ * persistence, and save status.
+ *
+ * Title and slug are persisted via debounced PATCH to `/api/pages/:id`. Published
+ * is toggled immediately with no debounce. Exposes status color/label for the
+ * editor meta bar.
+ *
+ * @param note - The page to edit (used as initial state and for API calls).
+ * @returns Local title/slug state, saveStatus, statusColor/statusLabel, and
+ *   handlers: handleTitleChange, handleSlugChange, handleSlugRegenerate,
+ *   togglePublished, plus setSaveStatus for external reset.
+ */
 export function useEditorPage(note: Page) {
   const [title, setTitle] = useState(note.title);
   const [slug, setSlug] = useState(note.slug);
