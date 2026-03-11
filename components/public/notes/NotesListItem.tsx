@@ -35,10 +35,8 @@ export function NotesListItem({ note }: NotesListItemProps) {
           border: "1px solid var(--border)",
           borderRadius: "6px",
           gap: "16px",
-          transition: "border-color 0.15s",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+        className="u-border-accent-hover"
       >
         <div style={{ flex: 1, minWidth: 0 }}>
           <p

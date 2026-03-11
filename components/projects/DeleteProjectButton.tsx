@@ -81,14 +81,7 @@ export function DeleteProjectButton({ id, redirectTo }: { id: string; redirectTo
         cursor: "pointer",
         transition: "color 0.15s, border-color 0.15s",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.color = "var(--red)";
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--red)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
-      }}
+      className="u-text-muted-accent-hover u-border-accent-hover"
     >
       Delete
     </button>

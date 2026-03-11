@@ -8,11 +8,7 @@ type ProjectCardProps = { project: PublishedProject };
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div
-      style={cardBase}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-    >
+    <div style={cardBase} className="u-border-accent-hover">
       <div>
         <h2
           style={{
@@ -56,9 +52,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             href={project.github_url}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ ...linkBase, color: "var(--text-muted)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+            style={{ ...linkBase }}
+            className="u-text-muted-text-hover"
           >
             GitHub →
           </a>
@@ -68,18 +63,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
             href={project.live_url}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ ...linkBase, color: "var(--accent)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--accent)")}
+            style={{ ...linkBase }}
+            className="u-text-accent-text-hover"
           >
             Live →
           </a>
         )}
         <Link
           href={`/projects/${project.slug}`}
-          style={{ ...linkBase, color: "var(--text-muted)", marginLeft: "auto" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          style={{ ...linkBase, marginLeft: "auto" }}
+          className="u-text-muted-text-hover"
         >
           Details →
         </Link>

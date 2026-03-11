@@ -13,11 +13,9 @@ export function NoteCard({ note }: NoteCardProps) {
         style={{
           ...card,
           height: "100%",
-          transition: "border-color 0.15s",
           cursor: "pointer",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+        className="u-border-accent-hover"
       >
         <p
           style={{

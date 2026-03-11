@@ -30,10 +30,8 @@ export function NoteRowLink({ note, isLast }: Props) {
         borderBottom: isLast ? "none" : "1px solid var(--border)",
         textDecoration: "none",
         background: "transparent",
-        transition: "background 0.1s",
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      className="u-bg-surface-hover"
     >
       {/* Title */}
       <span

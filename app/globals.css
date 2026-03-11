@@ -265,3 +265,49 @@ body {
   color: var(--text);
   font-weight: 600;
 }
+
+/* ── Reusable hover/focus utilities ───────────────────────────────────────── */
+.u-border-accent-hover {
+  border-color: var(--border);
+  transition: border-color 0.15s;
+}
+.u-border-accent-hover:hover,
+.u-border-accent-hover:focus-visible {
+  border-color: var(--accent);
+}
+
+.u-bg-surface-hover {
+  background: transparent;
+  transition: background 0.1s;
+}
+.u-bg-surface-hover:hover,
+.u-bg-surface-hover:focus-visible {
+  background: var(--surface);
+}
+
+.u-text-muted-accent-hover {
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.u-text-muted-accent-hover:hover,
+.u-text-muted-accent-hover:focus-visible {
+  color: var(--accent);
+}
+
+.u-text-muted-text-hover {
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.u-text-muted-text-hover:hover,
+.u-text-muted-text-hover:focus-visible {
+  color: var(--text);
+}
+
+.u-text-accent-text-hover {
+  color: var(--accent);
+  transition: color 0.15s;
+}
+.u-text-accent-text-hover:hover,
+.u-text-accent-text-hover:focus-visible {
+  color: var(--text);
+}

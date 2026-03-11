@@ -176,18 +176,7 @@ export function AdminSidebar() {
                 background: isActive ? "var(--accent-dim)" : "transparent",
                 transition: "background 0.15s, color 0.15s",
               }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--text)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                  (e.currentTarget as HTMLElement).style.color = "var(--text-dim)";
-                }
-              }}
+              className={isActive ? undefined : "u-bg-surface-hover u-text-muted-text-hover"}
             >
               <span style={{ opacity: isActive ? 1 : 0.5, flexShrink: 0 }}>{item.icon}</span>
               {item.label}

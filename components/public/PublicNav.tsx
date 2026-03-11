@@ -67,13 +67,7 @@ export function PublicNav() {
                   background: isActive ? "var(--accent-dim)" : "transparent",
                   transition: "color 0.15s, background 0.15s",
                 }}
-                onMouseEnter={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive)
-                    (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-muted)";
-                }}
+                className={isActive ? undefined : "u-text-muted-text-hover"}
               >
                 {label}
               </Link>
