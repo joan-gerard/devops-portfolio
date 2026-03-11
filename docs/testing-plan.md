@@ -57,7 +57,7 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
   - **Why**: Prevents XSS when project links (e.g. github_url, live_url) are rendered as `href`; security-sensitive.
 
 - **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`).
-  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, the three query functions return `null`/`[]` and log a warning; otherwise they rethrow. This logic is subtle and directly impacts build reliability; tests can drive the suggested `withPrerenderFallback` refactor from your doc.
+  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, the three query functions return `null`/`[]` and log a warning; otherwise they rethrow. Also verify that when `IS_PRERENDER_BUILD === "true"` but the error is not a connection/aggregate error, the original error is still rethrown. This logic is subtle and directly impacts build reliability; tests can drive the suggested `withPrerenderFallback` refactor from your doc.
 
 - **Login submission logic** – `lib/submitLogin.ts`
   - **What to test**: When `signIn` returns `{ error: AUTH_ERROR_SERVICE_UNAVAILABLE }`, you map to the friendly “Sign-in is temporarily unavailable…” message; when it returns other `error` values you `decodeURIComponent` them; when no error you return `{ ok: true }`; when `signIn` throws you log and return `{ ok: false, error: DEFAULT_ERROR_MESSAGE }`. Mock `next-auth/react`’s `signIn` in unit tests.
@@ -82,7 +82,7 @@ You can test these with either **integration tests** against a test DB or **high
   - **Done:** `lib/queries/__tests__/page.test.ts` — `getAllPages` returns what sql returns; `getPageById` returns first row or `null`; `getNoteBySlug` returns note or `null`, and on connection error during prerender returns `null` and logs (otherwise rethrows); `getAllPublishedNotes` same prerender fallback to `[]`.
 
 - **Project queries** – `lib/queries/project.ts`
-  - **Done:** `lib/queries/__tests__/project.test.ts` — `getAllProjects`, `getAllPublishedProjects` (with prerender fallback), `getProjectById`, `getProjectBySlug` return expected shapes or `null`; connection-error + prerender returns `[]` for `getAllPublishedProjects`.
+  - **Done:** `lib/queries/__tests__/project.test.ts` — `getAllProjects`, `getAllPublishedProjects` (with prerender fallback), `getProjectById`, `getProjectBySlug` return expected shapes or `null`; connection-error + prerender returns `[]` for `getAllPublishedProjects`, while non-connection errors are rethrown even during prerender builds.
 
 - **Auth and login-attempt tracking** – `lib/queries/loginAttempts.ts`, `lib/auth.ts`
   - **Done:** `lib/queries/__tests__/loginAttempts.test.ts` — `checkRateLimit(undefined)` returns `{ allowed: true }` without calling sql; with IP: no record → insert and allow; expired window → reset and allow; within window under limit → increment and allow; at/over limit → `{ allowed: false, minutesLeft }`. `clearRateLimit(undefined)` no-ops; with IP calls sql. (`AUTH_ERROR_SERVICE_UNAVAILABLE` mapping is covered in `lib/__tests__/submitLogin.test.ts`.)
@@ -95,16 +95,19 @@ You can test these with either **integration tests** against a test DB or **high
 Use **React Testing Library** (with a `jsdom` environment).
 
 - **Login form flow** – `components/auth/LoginForm.tsx`
-  - **What to test**: Submitting with valid email/password triggers `submitLogin`, shows loading state, then on `{ ok: true }` redirects or updates UI; on `{ ok: false, error }` displays the error message; prevents multiple submissions while loading; displays validation errors if you have client-side checks.
-  - **Why**: Critical entry point; tests can also verify that default error copy is correct.
+  - **Done:** `components/auth/LoginForm.test.tsx` — mocks `submitLogin` and `next/navigation`’s `useRouter`; submitting with valid email/password calls `submitLogin` and redirects to `/admin/dashboard` on `{ ok: true }`; `{ ok: false, error }` surfaces the error message; rejected `submitLogin` shows a fallback error message instead of throwing.
+  - **What to extend**: Optionally assert loading/disabled submit state during the request and any client-side validation messages if you add them.
+  - **Why**: Critical entry point; tests also lock in the default error copy and redirect path.
 
 - **Delete buttons** – `components/notes/DeleteNoteButton.tsx`, `components/projects/DeleteProjectButton.tsx`
-  - **What to test**: Click “Delete” shows confirm UI (“Sure?” or similar), then clicking confirm calls `fetch(DELETE)` with correct URL and on success calls `router.push` or `router.refresh`; clicking cancel restores the original button; loading state and disabled button during the request; optional: verify `onPreventDefault`/link-row behavior if present.
-  - **Why**: Risky actions that must behave exactly; ideal candidates for a shared `ConfirmDeleteButton` whose behavior is fully tested.
+  - **Done:** `components/notes/DeleteNoteButton.test.tsx`, `components/projects/DeleteProjectButton.test.tsx` — initial click shows the “Sure?” confirm UI; confirm click issues `fetch(DELETE)` to `/api/pages/:id` or `/api/projects/:id` and, depending on props, either calls `router.refresh()` or `router.push(redirectTo)`; cancel click hides the confirm UI and restores the original `Delete` button.
+  - **What to extend**: Add explicit assertions for loading/disabled state on the confirm button during the request and, if you refactor, cover any shared `ConfirmDeleteButton` abstraction.
+  - **Why**: Risky actions that must behave exactly; tests now guard both the confirm/cancel UX and the correct routing behavior.
 
 - **Create buttons** – `components/notes/CreateNoteButton.tsx`, `components/projects/CreateProjectButton.tsx`
-  - **What to test**: Clicking button sends POST to correct API with the expected payload (title, slug); slug generation uses `slugify(title) + "-" + Date.now()` (you can abstract `Date.now` with a mockable helper). Error paths: failed request shows an error or at least doesn’t navigate.
-  - **Why**: Important admin workflows and a good place for tests once you centralize logic (`useCreateEntity` or `CreateEntityButton`).
+  - **Done:** `components/notes/CreateNoteButton.test.tsx`, `components/projects/CreateProjectButton.test.tsx` — clicking the button sends a `POST` to `/api/pages` or `/api/projects` with `{ title: "Untitled …", slug: slugify(title) + "-" + Date.now() }` (both `slugify` and `Date.now` are mocked for determinism); on success, tests assert navigation to `/admin/editor/:id` (notes) or `/admin/projects/:id` (projects); when the request fails (`res.ok === false`), tests verify no navigation occurs.
+  - **What to extend**: If you surface an explicit error UI on failure, assert that it appears; when you introduce a shared `useCreateEntity` or `CreateEntityButton`, keep these behaviors covered while pointing the tests at the new abstraction.
+  - **Why**: Important admin workflows and a good place for tests once you centralize create logic; current tests protect API contracts, slug generation, and navigation behavior.
 
 - **Slug fields** – `components/editor/EditorSlugField.tsx`, `components/projects/ProjectSlugField.tsx`
   - **What to test**: Typing into slug field sanitizes input (lowercase, allowed chars, no double hyphens); “Regenerate from title” button uses the title to compute a new slug and respects sanitized rules and `MAX_SLUG_LENGTH`.
