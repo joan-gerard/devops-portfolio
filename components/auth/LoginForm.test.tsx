@@ -1,7 +1,7 @@
-import { vi, type Mock } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { LoginForm } from "./LoginForm";
 import * as submitLoginModule from "@/lib/submitLogin";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { vi, type Mock } from "vitest";
+import { LoginForm } from "./LoginForm";
 
 const pushMock = vi.fn();
 
@@ -62,6 +62,5 @@ describe("LoginForm", () => {
     fillAndSubmit("user@example.com", "password123");
 
     expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
-  });
   });
 });
