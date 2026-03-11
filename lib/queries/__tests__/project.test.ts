@@ -87,7 +87,11 @@ describe("project queries", () => {
         );
       } finally {
         warnSpy.mockRestore();
-        process.env.IS_PRERENDER_BUILD = prev;
+        if (prev === undefined || prev === null) {
+          delete process.env.IS_PRERENDER_BUILD;
+        } else {
+          process.env.IS_PRERENDER_BUILD = prev;
+        }
       }
     });
 
@@ -101,7 +105,11 @@ describe("project queries", () => {
       try {
         await expect(getAllPublishedProjects()).rejects.toThrow("Connection refused");
       } finally {
-        process.env.IS_PRERENDER_BUILD = prev;
+        if (prev === undefined || prev === null) {
+          delete process.env.IS_PRERENDER_BUILD;
+        } else {
+          process.env.IS_PRERENDER_BUILD = prev;
+        }
       }
     });
 
@@ -114,7 +122,11 @@ describe("project queries", () => {
       try {
         await expect(getAllPublishedProjects()).rejects.toThrow("Generic failure");
       } finally {
-        process.env.IS_PRERENDER_BUILD = prev;
+        if (prev === undefined || prev === null) {
+          delete process.env.IS_PRERENDER_BUILD;
+        } else {
+          process.env.IS_PRERENDER_BUILD = prev;
+        }
       }
     });
   });
