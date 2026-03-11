@@ -60,5 +60,19 @@ describe("getHomepageData", () => {
       projects: mockProjects,
     });
     expect(mockedSql).toHaveBeenCalledTimes(2);
+
+    // Assert the actual SQL passed to the query function (tagged template first arg)
+    const getSqlFromCall = (call: unknown[]): string =>
+      Array.isArray(call[0]) ? (call[0] as string[]).join("") : String(call[0]);
+
+    const notesSql = getSqlFromCall(mockedSql.mock.calls[0]);
+    expect(notesSql).toContain("WHERE published = true");
+    expect(notesSql).toContain("slug != 'about'");
+    expect(notesSql).toContain("LIMIT 3");
+
+    const projectsSql = getSqlFromCall(mockedSql.mock.calls[1]);
+    expect(projectsSql).toContain("WHERE published = true");
+    expect(projectsSql).toContain("FROM projects");
+    expect(projectsSql).toContain("LIMIT 3");
   });
 });
