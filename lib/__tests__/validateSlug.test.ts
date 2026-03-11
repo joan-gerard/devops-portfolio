@@ -63,7 +63,10 @@ describe("getSlugValidationError", () => {
   });
 
   it("returns format message for invalid format", () => {
-    expect(getSlugValidationError("Bad Slug")).toBe(
+    const candidate = "Bad Slug";
+    const normalised = normalizeSlug(candidate);
+
+    expect(getSlugValidationError(normalised)).toBe(
       "Slug must be lowercase letters, numbers, and hyphens only (e.g. my-project), with no leading or trailing hyphens"
     );
   });

@@ -10,7 +10,7 @@ This document captures testing opportunities across the app and the current test
   - Config: `vitest.config.ts` (uses `vite-tsconfig-paths` for `@/` aliases).
   - Setup: `test/setup.ts` (imports `@testing-library/jest-dom`).
   - Helpers: `test/test-utils.tsx` exports a custom `render()` that wraps UI in `AuthSessionProvider` for tests that need session context.
-  - Unit tests live next to code (e.g. `lib/validateSlug.test.ts`) or in `__tests__`; Vitest runs `**/*.test.{ts,tsx}` and `**/*.spec.{ts,tsx}` and excludes `e2e/`.
+  - Unit tests live next to code (e.g. `lib/validateSlug.test.ts` or `lib/__tests__/validateSlug.test.ts`) or in `__tests__` directories; Vitest runs `**/*.test.{ts,tsx}` and `**/*.spec.{ts,tsx}` and excludes `e2e/`.
 - **E2E tests:** **Playwright**.
   - Config: `playwright.config.ts`; tests live in `e2e/`. The config starts the app via `webServer` (e.g. `pnpm dev`) unless you run with an existing server.
   - Install browsers once: `pnpm exec playwright install`.
