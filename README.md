@@ -16,7 +16,11 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The public homepage is at `app/(public)/page.tsx` and is composed of section components in `components/public/home/` (Hero, Recent Notes, Featured Projects, Roadmap, Tech Stack). Data is loaded via `lib/queries/home.ts`; types and constants live in `types/home.ts` and `lib/constants/home.ts`. If the data fetch fails, the page falls back to empty notes/projects (sections show “No notes/projects published yet”); uncaught errors in the segment are caught by `app/(public)/error.tsx`. The page auto-updates as you edit.
+
+The public projects list is at `app/(public)/projects/page.tsx`. It uses `getAllPublishedProjects()` from `lib/queries/project.ts` and is composed of `components/public/projects/` (ProjectsPageHeader, ProjectsGrid, ProjectCard). Shared styles for the projects page live in `components/public/projects/projectStyles.ts`.
+
+The public About page is at `app/(public)/about/page.tsx`. It fetches the `about` note via `getNoteBySlug("about")` from `lib/queries/page.ts` and delegates rendering (header + rich text content/fallback) to `components/public/about/AboutPageContent.tsx`. A dedicated redirect route at `app/(public)/notes/about/page.tsx` ensures `/notes/about` requests are redirected to `/about`.
 
 ### Code style (Prettier)
 

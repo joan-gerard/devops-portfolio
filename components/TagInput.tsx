@@ -110,12 +110,7 @@ export function TagInput({ noteId, initial, onSave, fieldName, apiPath }: Props)
               display: "flex",
               alignItems: "center",
             }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.color = "var(--red)")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)")
-            }
+            className="u-text-muted-accent-hover"
           >
             ×
           </button>

@@ -1,16 +1,46 @@
 import { CreateNoteButton, NoteRowLink } from "@/components/notes";
-import type { PageRow } from "@/lib/queries/page";
+import type { Page } from "@/types/pages";
 
 type NotesListProps = {
-  notes: PageRow[];
+  notes: Page[];
 };
 
+const RESERVED_ABOUT_SLUG = "about";
+
 export function NotesList({ notes }: NotesListProps) {
+  const aboutNote = notes.find((n) => n.slug === RESERVED_ABOUT_SLUG);
+  const otherNotes = notes.filter((n) => n.slug !== RESERVED_ABOUT_SLUG);
   const publishedCount = notes.filter((n) => n.published).length;
   const unpublishedCount = notes.length - publishedCount;
 
   return (
     <div>
+      {/* Reserved About note (shown above page header) */}
+      {aboutNote && (
+        <div style={{ marginBottom: "16px" }}>
+          <div
+            style={{
+              padding: "0 0 8px",
+              fontSize: "10px",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+            }}
+          >
+            Reserved: About page
+          </div>
+          <div
+            style={{
+              border: "1px solid var(--border)",
+              borderRadius: "6px",
+              overflow: "hidden",
+            }}
+          >
+            <NoteRowLink note={aboutNote} isLast />
+          </div>
+        </div>
+      )}
+
       {/* Page header */}
       <div
         style={{
@@ -31,8 +61,8 @@ export function NotesList({ notes }: NotesListProps) {
         <CreateNoteButton />
       </div>
 
-      {/* Empty state */}
-      {notes.length === 0 && (
+      {/* Empty state (no notes other than optional reserved about) */}
+      {otherNotes.length === 0 && (
         <div
           style={{
             textAlign: "center",
@@ -42,14 +72,14 @@ export function NotesList({ notes }: NotesListProps) {
           }}
         >
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px" }}>
-            No notes yet
+            {aboutNote ? "No other notes yet" : "No notes yet"}
           </p>
           <CreateNoteButton />
         </div>
       )}
 
-      {/* Notes list */}
-      {notes.length > 0 && (
+      {/* Notes list (excluding reserved about, which is shown above) */}
+      {otherNotes.length > 0 && (
         <div
           style={{
             border: "1px solid var(--border)",
@@ -80,8 +110,8 @@ export function NotesList({ notes }: NotesListProps) {
           </div>
 
           {/* Rows */}
-          {notes.map((note, i) => (
-            <NoteRowLink key={note.id} note={note} isLast={i === notes.length - 1} />
+          {otherNotes.map((note, i) => (
+            <NoteRowLink key={note.id} note={note} isLast={i === otherNotes.length - 1} />
           ))}
         </div>
       )}

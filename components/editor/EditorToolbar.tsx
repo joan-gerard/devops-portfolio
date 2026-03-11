@@ -149,18 +149,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
                 cursor: "pointer",
                 transition: "background 0.1s, color 0.1s",
               }}
-              onMouseEnter={(e) => {
-                if (!btn.isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-2)";
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!btn.isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
-                }
-              }}
+              className={btn.isActive ? undefined : "u-bg-surface-hover u-text-muted-text-hover"}
             >
               {btn.label}
             </button>
@@ -195,16 +184,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
             cursor: uploading ? "not-allowed" : "pointer",
             transition: "background 0.1s, color 0.1s",
           }}
-          onMouseEnter={(e) => {
-            if (!uploading) {
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-2)";
-              (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-dim)";
-          }}
+          className={uploading ? undefined : "u-bg-surface-hover u-text-muted-text-hover"}
         >
           {uploading ? "Uploading…" : "+ Image"}
         </button>

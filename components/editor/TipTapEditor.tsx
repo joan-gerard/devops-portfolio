@@ -1,20 +1,13 @@
 "use client";
 
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import Image from "@tiptap/extension-image";
-import Placeholder from "@tiptap/extension-placeholder";
-import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { common, createLowlight } from "lowlight";
 import { useCallback, useEffect, useRef } from "react";
 import EditorToolbar from "./EditorToolbar";
-
-const lowlight = createLowlight(common);
+import { getSharedExtensions } from "@/lib/tipTapExtensions";
 
 type Props = {
   noteId: string;
-  content: Record<string, unknown>;
+  content: Record<string, unknown> | undefined;
   onSave?: (status: "saving" | "saved" | "error") => void;
 };
 
@@ -41,22 +34,8 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false, // replaced by lowlight version
-      }),
-      CodeBlockLowlight.configure({ lowlight }),
-      Placeholder.configure({
-        placeholder: "Start writing…",
-      }),
-      Typography,
-      Image.configure({
-        HTMLAttributes: {
-          class: "tiptap-image",
-        },
-      }),
-    ],
-    content: Object.keys(content).length > 0 ? content : undefined,
+    extensions: getSharedExtensions(),
+    content: content && Object.keys(content).length > 0 ? content : undefined,
     editorProps: {
       attributes: {
         class: "tiptap-editor",
@@ -70,6 +49,15 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
       }, 1500);
     },
   });
+
+  // Sync editor content when noteId or content change (e.g. switching notes).
+  // Skip when editor is null or user is focused to avoid overwriting in-progress edits.
+  useEffect(() => {
+    if (!editor) return;
+    if (editor.isFocused) return;
+    const value = content && Object.keys(content).length > 0 ? content : undefined;
+    editor.commands.setContent(value ?? "", { emitUpdate: false });
+  }, [editor, content, noteId]);
 
   // Cleanup timer on unmount
   useEffect(() => {

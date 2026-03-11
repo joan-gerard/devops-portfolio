@@ -52,14 +52,7 @@ export function ProjectSlugField({
           onClick={handleRegenerate}
           title="Regenerate from title"
           style={secondaryButtonStyle}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--accent)";
-            e.currentTarget.style.color = "var(--accent)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.color = "var(--text-muted)";
-          }}
+          className="u-text-muted-accent-hover u-border-accent-hover"
         >
           ↺ from title
         </button>
