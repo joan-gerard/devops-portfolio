@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import type { PublishedProject } from "@/lib/queries/project";
-import { tag, cardBase, linkRow, linkBase } from "./projectStyles";
+import Link from "next/link";
+import { cardBase, linkBase, linkRow, tag } from "./projectStyles";
 
 type ProjectCardProps = { project: PublishedProject };
 
@@ -50,6 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {project.github_url && (
           <a
             href={project.github_url}
+            aria-label={`GitHub repository for ${project.title}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ ...linkBase }}
@@ -61,6 +62,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {project.live_url && (
           <a
             href={project.live_url}
+            aria-label={`Live demo for ${project.title}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ ...linkBase }}
@@ -71,6 +73,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         )}
         <Link
           href={`/projects/${project.slug}`}
+          aria-label={`Details for ${project.title}`}
           style={{ ...linkBase, marginLeft: "auto" }}
           className="u-text-muted-text-hover"
         >
