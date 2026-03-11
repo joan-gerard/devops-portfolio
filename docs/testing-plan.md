@@ -61,6 +61,7 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
 
 - **Login submission logic** – `lib/submitLogin.ts`
   - **What to test**: When `signIn` returns `{ error: AUTH_ERROR_SERVICE_UNAVAILABLE }`, you map to the friendly “Sign-in is temporarily unavailable…” message; when it returns other `error` values you `decodeURIComponent` them; when no error you return `{ ok: true }`; when `signIn` throws you log and return `{ ok: false, error: DEFAULT_ERROR_MESSAGE }`. Mock `next-auth/react`’s `signIn` in unit tests.
+  - **Done:** `lib/__tests__/submitLogin.test.ts` — covers the happy path (`ok: true`), service-unavailable mapping, `decodeURIComponent` fallback, and the thrown-error path (logging via `console.error` and returning the default error message) with Vitest mocks/spies cleaned up via a file-level `afterEach(vi.restoreAllMocks)`.
   - **Why**: Critical auth UX logic that should never throw in the client.
 
 - **R2 / S3 and file validation utilities** – `lib/r2.ts`, `lib/validateFileBytes.ts`
@@ -69,21 +70,22 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
 
 - **Home page constants and selection logic** – `lib/constants/home.ts`, `lib/queries/home.ts`
   - **What to test**: Any logic that selects “featured projects” or “recent notes” (once you confirm contents); ensure correct filtering/sorting and max counts.
+  - **Done:** `lib/__tests__/home.test.ts` — constants (TECH_STACK, ROADMAP_PHASES); `getHomepageData()` returns notes and projects from mocked `sql`, and the test asserts the actual SQL passed to the mock: notes query includes `WHERE published = true`, `slug != 'about'`, and `LIMIT 3`; projects query includes `WHERE published = true` and `LIMIT 3`.
 
 ---
 
-## 3. Data-Access / Integration-Like Tests (`lib/queries/*.ts`)
+## 3. Data-Access / Integration-Like Tests (`lib/queries/*.ts`) — done
 
-You can test these with either **integration tests** against a test DB or **high-level unit tests with fakes**.
+You can test these with either **integration tests** against a test DB or **high-level unit tests with fakes**. Implemented with **mocked `sql`** in `lib/queries/__tests__/`.
 
 - **Page queries** – `lib/queries/page.ts`
-  - **What to test** (with a fake `sql` or test DB): `getAllPages` returns pages ordered by `updated_at DESC`; `getPageById` returns a single row or `null` when not found; `getNoteBySlug` only returns published notes; `getAllPublishedNotes` excludes `"about"` and only returns `published = true`; error handling / prerender fallbacks as above.
+  - **Done:** `lib/queries/__tests__/page.test.ts` — `getAllPages` returns what sql returns; `getPageById` returns first row or `null`; `getNoteBySlug` returns note or `null`, and on connection error during prerender returns `null` and logs (otherwise rethrows); `getAllPublishedNotes` same prerender fallback to `[]`.
 
 - **Project queries** – `lib/queries/project.ts`
-  - **What to test**: `getAllProjects` returns full admin fields and correct ordering; `getAllPublishedProjects` only returns published projects, in correct order; `getProjectById` returns project or `null`; `getProjectBySlug` only returns published projects; error handling / prerender fallbacks.
+  - **Done:** `lib/queries/__tests__/project.test.ts` — `getAllProjects`, `getAllPublishedProjects` (with prerender fallback), `getProjectById`, `getProjectBySlug` return expected shapes or `null`; connection-error + prerender returns `[]` for `getAllPublishedProjects`.
 
 - **Auth and login-attempt tracking** – `lib/queries/loginAttempts.ts`, `lib/auth.ts`
-  - **What to test**: Any logic around max login attempts, lockout, or rate limiting; mapping DB responses to auth errors (e.g. `AUTH_ERROR_SERVICE_UNAVAILABLE`).
+  - **Done:** `lib/queries/__tests__/loginAttempts.test.ts` — `checkRateLimit(undefined)` returns `{ allowed: true }` without calling sql; with IP: no record → insert and allow; expired window → reset and allow; within window under limit → increment and allow; at/over limit → `{ allowed: false, minutesLeft }`. `clearRateLimit(undefined)` no-ops; with IP calls sql. (`AUTH_ERROR_SERVICE_UNAVAILABLE` mapping is covered in `lib/__tests__/submitLogin.test.ts`.)
   - **Why**: Security-sensitive and behaviorally complex.
 
 ---
