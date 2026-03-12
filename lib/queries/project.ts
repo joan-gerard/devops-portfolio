@@ -3,9 +3,11 @@ import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
 import type { Project, PublicProject } from "@/types/projects";
 import { cache } from "react";
 
+const isE2ETestRuntime = process.env.E2E_TEST === "1";
+
 export async function getAllProjects() {
   return sql<Project[]>`
-    SELECT id, title, slug, description, tech_stack, github_url, live_url, published, created_at, updated_at
+    SELECT id, title, slug, description, tech_stack, github_url, live_url, published, created_at, updated_at, e2e_only
     FROM projects
     ORDER BY updated_at DESC
   `;
@@ -34,6 +36,7 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
       SELECT id, title, slug, description, tech_stack, github_url, live_url
       FROM projects
       WHERE published = true
+        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
       ORDER BY updated_at DESC
     `;
   } catch (error) {
@@ -64,6 +67,7 @@ export const getProjectBySlug = cache(async (slug: string): Promise<PublicProjec
     FROM projects
     WHERE slug = ${slug}
       AND published = true
+      ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
     LIMIT 1
   `;
   return rows[0] ?? null;

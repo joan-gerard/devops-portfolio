@@ -14,6 +14,7 @@ This document captures testing opportunities across the app and the current test
 - **E2E tests:** **Playwright**.
   - Config: `playwright.config.ts`; tests live in `e2e/`. The config starts the app via `webServer` (e.g. `pnpm dev`) unless you run with an existing server.
   - Install browsers once: `pnpm exec playwright install`.
+  - **E2E-only content isolation:** When running e2e against a shared database, the app uses an `E2E_TEST=1` flag and an `e2e_only` column on `pages`/`projects` so that any notes or projects created and published during e2e runs are **hidden from public views** in normal dev/prod.
 - **Scripts (in `package.json`):**
   - `pnpm test` — Vitest in watch mode.
   - `pnpm test:run` — Vitest single run.
@@ -155,6 +156,60 @@ Using Playwright after basic tooling is in place.
   - **Done:** `e2e/destructive.spec.ts` — "Sure?" confirm; cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
 
 **Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped.
+
+You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
+
+- **A good workflow is:**
+  - Keep `pnpm dev` running on port 3000 for manual browsing (default `.next` dist directory).
+  - Let Playwright start/stop `pnpm dev:e2e` on port 3001 automatically when you run `pnpm test:e2e` (using a separate `.next-e2e` dist directory so caches and locks do not conflict).
+
+- **How it behaves now (from `next.config.ts` and `playwright.config.ts`):**
+
+  ```ts
+  // next.config.ts
+  const nextConfig: NextConfig = {
+    distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  };
+
+  // package.json
+  "dev:e2e": "NEXT_DIST_DIR=.next-e2e PORT=3001 E2E_TEST=1 next dev"
+
+  // playwright.config.ts
+  webServer: {
+    command: "pnpm dev:e2e",
+    url: "http://localhost:3001",
+    reuseExistingServer: !process.env.CI,
+  },
+  use: {
+    baseURL: "http://localhost:3001",
+  },
+  ```
+
+  - When you run `pnpm test:e2e`:
+    - If no server is running on `http://localhost:3001`, Playwright runs `pnpm dev:e2e`, which sets `NEXT_DIST_DIR=.next-e2e PORT=3001 E2E_TEST=1 next dev`.
+    - If a `pnpm dev:e2e` is already running on port 3001, Playwright just reuses it (also fine, since that process already has `NEXT_DIST_DIR=.next-e2e` and `E2E_TEST=1`).
+
+### Two dev servers (dev + E2E) architecture
+
+- **Normal dev server:** `pnpm dev`
+  - Port: `3000`
+  - Env: no `E2E_TEST`, default `NEXT_DIST_DIR` → `.next`
+  - Purpose: day-to-day manual testing and development.
+
+- **E2E dev server:** `pnpm dev:e2e`
+  - Port: `3001`
+  - Env: `E2E_TEST=1`, `NEXT_DIST_DIR=.next-e2e`
+  - Purpose: Playwright E2E runs with isolated build artifacts and E2E-only content tagging.
+
+- Because the servers use **different ports** and **different dist directories**, they can run concurrently without fighting over `.next/dev/lock` or corrupting each other’s caches. Public read flows during E2E always hit the E2E server (via `baseURL`), while your manual browsing can stay on the normal dev server.
+
+**E2E-only content behaviour (shared DB without staging):**
+
+- **Schema:** A migration adds `e2e_only BOOLEAN NOT NULL DEFAULT FALSE` to both `pages` and `projects`.
+- **Marking E2E content:** When the app runs with `E2E_TEST=1`, the `POST /api/pages` and `POST /api/projects` routes insert new rows with `e2e_only = true`. The `PATCH /api/pages/[id]` and `PATCH /api/projects/[id]` routes also set `e2e_only = true` when a request (in E2E mode) publishes an entity (`published` explicitly `true` in the body).
+- **Public queries:** All public-facing queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`, `getProjectBySlug`, and `getHomepageData`) add `AND e2e_only = false` to their `WHERE` clauses **unless** `E2E_TEST=1`. In E2E mode the filter is omitted so tests can assert that freshly created notes/projects are visible on `/notes/:slug`, `/projects/:slug`, and in listings.
+- **Public API GETs:** Unauthenticated `GET /api/pages`, `GET /api/projects`, `GET /api/pages/[id]`, and `GET /api/projects/[id]` also exclude `e2e_only` rows when not in E2E mode, so API consumers never see test content in normal dev/prod.
+- **Implication:** You can safely run Playwright E2E against the live database (shared with prod) without polluting real public views; any “E2E Note …” or “E2E Project …” that was created and published during tests is effectively hidden outside of E2E runs.
 
 **E2E project layout (playwright.config.ts):** Auth, public, and smoke specs run in parallel (`chromium` / `firefox` projects with default workers). Admin-content and destructive specs run in a single admin project (`chromium-admin`) with `workers: 1` and a `dependency` on the base Chromium project, so they run after the parallel suite and avoid cross-browser data races against shared admin state.
 
