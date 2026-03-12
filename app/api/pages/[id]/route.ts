@@ -99,8 +99,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
 
+    const resultingPublished = published ?? page.published;
+
     if (slugToWrite !== undefined || published !== undefined) {
       revalidatePath(`/notes/${page.slug}`);
+    }
+
+    if (resultingPublished || published === false) {
       revalidatePath("/notes");
     }
 

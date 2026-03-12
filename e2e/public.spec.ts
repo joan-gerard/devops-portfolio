@@ -43,11 +43,19 @@ test.describe("Public read-only flows", () => {
     await page.goto("/notes");
     await expect(page).toHaveTitle(/Notes — DevOps Learning Portal/i);
     // Notes page has h1 "What I've been learning" or empty state "No notes published yet"
-    const hasHeading = await page
-      .getByRole("heading", { name: /what i've been learning/i })
-      .isVisible();
-    const hasEmpty = await page.getByText(/no notes published/i).isVisible();
-    expect(hasHeading || hasEmpty).toBeTruthy();
+    const heading = page.getByRole("heading", { name: /what i've been learning/i });
+    const empty = page.getByText(/no notes published/i);
+
+    let sawHeading = false;
+    try {
+      await expect(heading).toBeVisible({ timeout: 2000 });
+      sawHeading = true;
+    } catch {
+      // If heading doesn't become visible, fall back to expecting the empty state.
+      await expect(empty).toBeVisible({ timeout: 2000 });
+    }
+
+    expect(sawHeading || (await empty.isVisible())).toBeTruthy();
   });
 
   test("clicking a note goes to note detail page", async ({ page }) => {
@@ -72,15 +80,20 @@ test.describe("Public read-only flows", () => {
       return;
     }
     await allButton.click();
-    // Click first tag if present (other than "all")
-    const tagButtons = page.getByRole("button").filter({ hasNotText: /^all$/i });
+    // Click first tag if present (other than "all") within the tag filter bar
+    const tagButtons = page
+      .getByTestId("notes-tag-filter")
+      .getByRole("button")
+      .filter({ hasNotText: /^all$/i });
     const tagCount = await tagButtons.count();
     if (tagCount === 0) {
       test.skip();
       return;
     }
     await tagButtons.first().click();
-    // Filter is applied (we're still on /notes)
+    // Filter is applied: result count for the active tag is visible
+    await expect(page.getByText(/note[s]? tagged/i)).toBeVisible();
+    // We stay on the notes listing URL
     await expect(page).toHaveURL("/notes");
   });
 
