@@ -30,6 +30,8 @@ describe("FeaturedProjectsSection", () => {
       { ...mockProject, id: "proj-2", title: "Second Project", slug: "second-project" },
     ];
     render(<FeaturedProjectsSection projects={projects} />);
+    const cards = screen.getAllByTestId("featured-project-card");
+    expect(cards).toHaveLength(projects.length);
     expect(screen.getByText("Featured Project")).toBeInTheDocument();
     expect(screen.getByText("Second Project")).toBeInTheDocument();
     expect(screen.queryByText("No projects published yet.")).not.toBeInTheDocument();

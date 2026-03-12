@@ -52,6 +52,7 @@ describe("LoginForm", () => {
     fillAndSubmit("user@example.com", "wrong-password");
 
     expect(await screen.findByText("Invalid credentials")).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("shows fallback error message when submitLogin returns a normalized failure", async () => {
@@ -62,5 +63,6 @@ describe("LoginForm", () => {
     fillAndSubmit("user@example.com", "password123");
 
     expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

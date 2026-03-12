@@ -1,5 +1,5 @@
+import { fireEvent, render, screen, waitFor } from "@/test/test-utils";
 import { vi, type MockInstance } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@/test/test-utils";
 import DeleteNoteButton from "./DeleteNoteButton";
 
 const pushMock = vi.fn();
@@ -63,6 +63,8 @@ describe("DeleteNoteButton", () => {
     fireEvent.click(screen.getByText(/delete/i));
     fireEvent.click(screen.getByText(/cancel/i));
 
-    expect(screen.getByText(/delete/i)).toBeInTheDocument();
+    expect(screen.queryByText(/sure\?/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/cancel/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^delete$/i })).toBeInTheDocument();
   });
 });

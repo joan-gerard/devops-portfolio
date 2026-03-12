@@ -1,7 +1,7 @@
 import { AuthSessionProvider } from "@/components/providers/AuthSessionProvider";
-import { type Session } from "next-auth";
 import { render, type RenderOptions } from "@testing-library/react";
-import type { ReactElement } from "react";
+import { type Session } from "next-auth";
+import type { ReactElement, ReactNode } from "react";
 
 /**
  * Default session for tests: unauthenticated.
@@ -10,7 +10,7 @@ import type { ReactElement } from "react";
 const defaultSession: Session | null = null;
 
 interface AllTheProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
   session?: Session | null;
 }
 

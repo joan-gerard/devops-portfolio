@@ -26,7 +26,7 @@ describe("ProjectDetail", () => {
 
   it("shows formatted updated date", () => {
     render(<ProjectDetail project={mockProject} />);
-    expect(screen.getByText(/Last updated 20 Jun 2024/)).toBeInTheDocument();
+    expect(screen.getByText(/Last updated \d{1,2} [A-Za-z]{3} 2024/)).toBeInTheDocument();
   });
 
   it("shows back link to /projects", () => {

@@ -1,7 +1,7 @@
-import { vi, type MockInstance } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@/test/test-utils";
-import { CreateProjectButton } from "./CreateProjectButton";
 import { slugify } from "@/lib/slugify";
+import { fireEvent, render, screen, waitFor } from "@/test/test-utils";
+import { vi, type MockInstance } from "vitest";
+import { CreateProjectButton } from "./CreateProjectButton";
 
 const pushMock = vi.fn();
 
@@ -61,7 +61,8 @@ describe("CreateProjectButton", () => {
     fireEvent.click(screen.getByText(/\+ new project/i));
 
     await waitFor(() => {
-      expect(pushMock).not.toHaveBeenCalled();
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });
