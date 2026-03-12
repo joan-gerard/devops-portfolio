@@ -33,36 +33,32 @@ describe("loginAttempts", () => {
     });
 
     it("inserts and returns allowed: true when no existing record", async () => {
-      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult(undefined));
+      mockSql.mockResolvedValueOnce(asSqlResult([{ attempts: 1, window_start: FIXED_NOW }]));
 
       const result = await checkRateLimit("192.168.1.1");
 
       expect(result).toEqual({ allowed: true });
-      expect(mockSql).toHaveBeenCalledTimes(2);
+      expect(mockSql).toHaveBeenCalledTimes(1);
     });
 
     it("resets window and returns allowed: true when window expired", async () => {
       const windowStart = new Date("2024-06-01T11:44:00.000Z");
-      mockSql
-        .mockResolvedValueOnce(asSqlResult([{ attempts: 5, window_start: windowStart }]))
-        .mockResolvedValueOnce(asSqlResult(undefined));
+      mockSql.mockResolvedValueOnce(asSqlResult([{ attempts: 1, window_start: windowStart }]));
 
       const result = await checkRateLimit("192.168.1.1");
 
       expect(result).toEqual({ allowed: true });
-      expect(mockSql).toHaveBeenCalledTimes(2);
+      expect(mockSql).toHaveBeenCalledTimes(1);
     });
 
     it("increments and returns allowed: true when within window and under limit", async () => {
       const windowStart = new Date("2024-06-01T11:50:00.000Z");
-      mockSql
-        .mockResolvedValueOnce(asSqlResult([{ attempts: 2, window_start: windowStart }]))
-        .mockResolvedValueOnce(asSqlResult(undefined));
+      mockSql.mockResolvedValueOnce(asSqlResult([{ attempts: 3, window_start: windowStart }]));
 
       const result = await checkRateLimit("192.168.1.1");
 
       expect(result).toEqual({ allowed: true });
-      expect(mockSql).toHaveBeenCalledTimes(2);
+      expect(mockSql).toHaveBeenCalledTimes(1);
     });
 
     it("returns allowed: false with minutesLeft when at or over limit within window", async () => {
