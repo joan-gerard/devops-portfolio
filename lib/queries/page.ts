@@ -1,6 +1,7 @@
 import sql from "@/lib/db";
 import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
 import { Page, PublicNote, PublishedNotePreview } from "@/types/pages";
+import { cache } from "react";
 
 export async function getAllPages() {
   return sql<Page[]>`
@@ -27,7 +28,7 @@ export async function getPageById(id: string): Promise<Page | null> {
  * is unavailable (connection or aggregate error), returns null so the page
  * can render its fallback state and the build succeeds.
  */
-export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
+export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | null> => {
   try {
     console.log("[getNoteBySlug] called with slug:", slug);
     const rows = await sql<PublicNote[]>`
@@ -58,7 +59,7 @@ export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
     }
     throw error;
   }
-}
+});
 
 export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   try {
