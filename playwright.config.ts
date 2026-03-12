@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import "dotenv/config";
 
 /**
  * Playwright config for e2e tests.
@@ -17,9 +18,28 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    // Parallel specs (auth, public, smoke) — default workers
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+      testIgnore: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+    },
+    // Admin + destructive specs — 1 worker each so they don't race with each other or with parallel specs
+    {
+      name: "chromium-admin",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+      workers: 1,
+      dependencies: ["chromium"],
+    },
+    // Admin + destructive specs run only in Chromium to avoid cross-browser
+    // data races against shared state (notes/projects DB, E2E user account).
+    // { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   webServer: {
     command: "pnpm dev",

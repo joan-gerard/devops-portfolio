@@ -55,6 +55,14 @@ describe("useProjectEdit", () => {
       act(() => result.current.setSaveStatus("error"));
       expect(result.current.statusColour).toBe("var(--red)");
       expect(result.current.statusLabel).toBe("Save failed");
+
+      act(() => result.current.setSaveStatus("slugSaving"));
+      expect(result.current.statusColour).toBe("var(--yellow)");
+      expect(result.current.statusLabel).toBe("Saving slug…");
+
+      act(() => result.current.setSaveStatus("slugSaved"));
+      expect(result.current.statusColour).toBe("var(--accent)");
+      expect(result.current.statusLabel).toBe("Title slug saved");
     });
   });
 
@@ -91,6 +99,48 @@ describe("useProjectEdit", () => {
 
       act(() => result.current.handleChange("slug", "new-slug"));
 
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(result.current.saveStatus).toBe("error");
+    });
+  });
+
+  describe("handleSlugRegenerate", () => {
+    it("updates slug and PATCHes with slugSaving then slugSaved after debounce", async () => {
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() => result.current.handleSlugRegenerate("my-new-slug"));
+      expect(result.current.fields.slug).toBe("my-new-slug");
+      expect(result.current.saveStatus).toBe("idle");
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/projects/project-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ slug: "my-new-slug" }),
+        })
+      );
+      expect(result.current.saveStatus).toBe("slugSaved");
+    });
+
+    it("sets error when slug PATCH fails", async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({ ok: false } as Response);
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() => result.current.handleSlugRegenerate("failing-slug"));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1000);
       });

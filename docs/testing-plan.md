@@ -129,25 +129,34 @@ Use **React Testing Library** (with a `jsdom` environment).
 
 ---
 
-## 5. End-to-End (E2E) Scenarios
+## 5. End-to-End (E2E) Scenarios — done
 
 Using Playwright after basic tooling is in place.
 
 - **Public read-only flows**
   - **What to test**: Visit home page and see recent notes and featured projects sections; clicking a project card goes to the project detail page. Visit `/notes`: list of notes appears; clicking a note shows detail; tag filter changes visible notes. 404 / error states behave as intended.
   - **Why**: Core user-facing functionality and good smoke checks for deployments.
+  - **Done:** `e2e/public.spec.ts` — home sections, project/note list and detail links, tag filter, 404 for invalid note/project slugs.
 
 - **Authentication flows**
   - **What to test**: Successful login with valid credentials redirects to admin dashboard or intended page; failed login shows error messaging mapped from `submitLogin` (including the service-unavailable case).
   - **Why**: High impact if broken; ensures frontend and backend auth stay compatible.
+  - **Done:** `e2e/auth.spec.ts` — failed login shows error; successful login redirects when `E2E_USER_EMAIL` and `E2E_USER_PASSWORD` are set; unauthenticated admin access redirects to login.
 
 - **Admin content lifecycle**
   - **What to test**: Create → Edit → Publish → View flow for notes: use create button, land on edit page, change title/content, auto-save, toggle publish; visit corresponding public URL and confirm visibility. Same for projects, including GitHub/Live links.
   - **Why**: This is the “happy path” for your own workflow.
+  - **Done:** `e2e/admin-content.spec.ts` — create note/project → edit → publish → visible on public pages (GitHub/Live links for projects). Requires E2E credentials; skipped when not set.
+  - **Note:** The project edit form uses a single debounce timer (`useProjectEdit`). The project test fills each field (title, description, GitHub URL, live URL) and waits for “saving|saved” after each, so every value is persisted. Link assertions are scoped to `main` so they match the project’s links, not the footer. Save and visibility timeouts are set high enough (12s for save status, 10s for public page content, 8s for link assertions) so tests stay stable when the full e2e suite runs under load.
 
 - **Destructive operations**
   - **What to test**: Deleting a note/project: confirm dialog appears; cancel leaves content unchanged; confirm removes item from admin list and public pages.
   - **Why**: Guards against regressions in delete behavior or route paths.
+  - **Done:** `e2e/destructive.spec.ts` — "Sure?" confirm; cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
+
+**Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped.
+
+**E2E project layout (playwright.config.ts):** Auth, public, and smoke specs run in parallel (`chromium` / `firefox` projects with default workers). Admin-content and destructive specs run in a single admin project (`chromium-admin`) with `workers: 1` and a `dependency` on the base Chromium project, so they run after the parallel suite and avoid cross-browser data races against shared admin state.
 
 ---
 

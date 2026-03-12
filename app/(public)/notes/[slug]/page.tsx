@@ -2,8 +2,8 @@ import { NoteDetail } from "@/components/notes/NoteDetail";
 import { getNoteBySlug } from "@/lib/queries/page";
 import { notFound } from "next/navigation";
 
-/** ISR: regenerate at most once per hour. */
-export const revalidate = 3600;
+/** Force dynamic so newly published notes are visible immediately (no stale 404 from cache). */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

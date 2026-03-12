@@ -66,7 +66,7 @@ describe("ProjectSlugField", () => {
   });
 
   describe("Regenerate from title button", () => {
-    it("calls onChange with slugify(titleForRegenerate) when clicked", () => {
+    it("calls onChange with slugify(titleForRegenerate) when clicked and onRegenerateFromTitle not provided", () => {
       mockedSlugify.mockReturnValue("untitled-project");
       renderField({ value: "old-slug", titleForRegenerate: "Untitled Project" });
 
@@ -74,6 +74,24 @@ describe("ProjectSlugField", () => {
 
       expect(mockedSlugify).toHaveBeenCalledWith("Untitled Project");
       expect(onChange).toHaveBeenCalledWith("untitled-project");
+    });
+
+    it("calls onRegenerateFromTitle when provided instead of onChange", () => {
+      const onRegenerateFromTitle = vi.fn();
+      render(
+        <ProjectSlugField
+          value="old-slug"
+          onChange={onChange}
+          titleForRegenerate="My Project"
+          published={false}
+          onRegenerateFromTitle={onRegenerateFromTitle}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /from title/i }));
+
+      expect(onRegenerateFromTitle).toHaveBeenCalledTimes(1);
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it("regenerate result respects slugify length limit (e.g. 80 chars)", () => {

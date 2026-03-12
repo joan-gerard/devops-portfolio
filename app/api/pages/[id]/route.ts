@@ -3,6 +3,7 @@ import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
 import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { JSONValue } from "postgres";
 
@@ -96,6 +97,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    if (slugToWrite !== undefined || published !== undefined) {
+      revalidatePath(`/notes/${page.slug}`);
+      revalidatePath("/notes");
     }
 
     return NextResponse.json(page);

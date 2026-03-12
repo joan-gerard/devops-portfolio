@@ -29,6 +29,7 @@ export async function getPageById(id: string): Promise<Page | null> {
  */
 export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
   try {
+    console.log("[getNoteBySlug] called with slug:", slug);
     const rows = await sql<PublicNote[]>`
       SELECT id, title, slug, content, tags, updated_at
       FROM pages
@@ -36,7 +37,14 @@ export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
         AND published = true
       LIMIT 1
     `;
-    return rows[0] ?? null;
+    // return rows[0] ?? null;
+
+    const note = rows[0] ?? null;
+    console.log(
+      "[getNoteBySlug] result:",
+      note ? { id: note.id, slug: note.slug, published: true } : null
+    );
+    return note;
   } catch (error) {
     const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
     if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {

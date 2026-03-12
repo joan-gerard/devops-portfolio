@@ -8,6 +8,7 @@
  * - projectEditStyles: shared input/label/button styles
  */
 import { useProjectEdit } from "@/hooks/useProjectEdit";
+import { slugify } from "@/lib/slugify";
 import type { Project } from "@/types/projects";
 import { TagInput } from "../TagInput";
 import { ProjectEditFormField } from "./ProjectEditFormField";
@@ -24,6 +25,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
     statusColour,
     statusLabel,
     handleChange,
+    handleSlugRegenerate,
     togglePublished,
   } = useProjectEdit(project);
 
@@ -53,6 +55,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
         <ProjectSlugField
           value={fields.slug}
           onChange={(value) => handleChange("slug", value)}
+          onRegenerateFromTitle={() => handleSlugRegenerate(slugify(fields.title))}
           titleForRegenerate={fields.title}
           published={published}
         />

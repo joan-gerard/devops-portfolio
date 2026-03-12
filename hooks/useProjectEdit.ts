@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { Project } from "@/types/projects";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
+export type SaveStatus = "idle" | "saving" | "saved" | "error" | "slugSaving" | "slugSaved";
 
 export type ProjectEditFields = {
   title: string;
@@ -23,6 +23,8 @@ const STATUS_COLOUR: Record<SaveStatus, string> = {
   saving: "var(--yellow)",
   saved: "var(--accent)",
   error: "var(--red)",
+  slugSaving: "var(--yellow)",
+  slugSaved: "var(--accent)",
 };
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
@@ -30,6 +32,8 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   saving: "Saving…",
   saved: "Saved",
   error: "Save failed",
+  slugSaving: "Saving slug…",
+  slugSaved: "Title slug saved",
 };
 
 /**
@@ -42,7 +46,8 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
  *
  * @param project - The project to edit (used as initial state and for API calls).
  * @returns fields and setFields for form state, saveStatus, statusColour/statusLabel,
- *   handleChange(field, value) for debounced updates, togglePublished, and setSaveStatus.
+ *   handleChange(field, value) for debounced updates, handleSlugRegenerate for "from title",
+ *   togglePublished, and setSaveStatus.
  */
 export function useProjectEdit(project: Project) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -56,6 +61,7 @@ export function useProjectEdit(project: Project) {
   });
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slugRegenerateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function saveField(updated: Partial<ProjectEditFields>) {
     setSaveStatus("saving");
@@ -72,11 +78,35 @@ export function useProjectEdit(project: Project) {
     }
   }
 
+  async function saveSlugFromTitle(newSlug: string) {
+    setSaveStatus("slugSaving");
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: newSlug }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus("slugSaved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   function handleChange(field: keyof ProjectEditFields, value: string) {
     setFields((prev) => ({ ...prev, [field]: value }));
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveField({ [field]: value });
+    }, DEBOUNCE_MS);
+  }
+
+  function handleSlugRegenerate(generatedSlug: string) {
+    setFields((prev) => ({ ...prev, slug: generatedSlug }));
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    if (slugRegenerateTimer.current) clearTimeout(slugRegenerateTimer.current);
+    slugRegenerateTimer.current = setTimeout(() => {
+      saveSlugFromTitle(generatedSlug);
     }, DEBOUNCE_MS);
   }
 
@@ -107,6 +137,7 @@ export function useProjectEdit(project: Project) {
     statusColour: STATUS_COLOUR[saveStatus],
     statusLabel: STATUS_LABEL[saveStatus],
     handleChange,
+    handleSlugRegenerate,
     togglePublished,
   };
 }

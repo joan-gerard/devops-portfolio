@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { Page } from "@/types/pages";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
+export type SaveStatus = "idle" | "saving" | "saved" | "error" | "slugSaving" | "slugSaved";
 
 /**
  * Debounce delay (ms) before persisting title/slug changes to the API.
@@ -15,6 +15,8 @@ const STATUS_COLOR: Record<SaveStatus, string> = {
   saving: "var(--yellow)",
   saved: "var(--accent)",
   error: "var(--red)",
+  slugSaving: "var(--yellow)",
+  slugSaved: "var(--accent)",
 };
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
@@ -22,6 +24,8 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   saving: "Saving…",
   saved: "Saved",
   error: "Save failed",
+  slugSaving: "Saving slug…",
+  slugSaved: "Title slug saved",
 };
 
 /**
@@ -61,7 +65,7 @@ export function useEditorPage(note: Page) {
     }
   }
 
-  async function saveSlug(newSlug: string) {
+  async function saveSlugFromInput(newSlug: string) {
     setSaveStatus("saving");
     try {
       const res = await fetch(`/api/pages/${note.id}`, {
@@ -71,6 +75,21 @@ export function useEditorPage(note: Page) {
       });
       if (!res.ok) throw new Error();
       setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
+  async function saveSlugFromTitle(newSlug: string) {
+    setSaveStatus("slugSaving");
+    try {
+      const res = await fetch(`/api/pages/${note.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: newSlug }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus("slugSaved");
     } catch {
       setSaveStatus("error");
     }
@@ -103,13 +122,13 @@ export function useEditorPage(note: Page) {
   function handleSlugChange(newSlug: string) {
     setSlug(newSlug);
     if (slugTimer.current) clearTimeout(slugTimer.current);
-    slugTimer.current = setTimeout(() => saveSlug(newSlug), DEBOUNCE_MS);
+    slugTimer.current = setTimeout(() => saveSlugFromInput(newSlug), DEBOUNCE_MS);
   }
 
   function handleSlugRegenerate(generatedSlug: string) {
     setSlug(generatedSlug);
     if (slugTimer.current) clearTimeout(slugTimer.current);
-    slugTimer.current = setTimeout(() => saveSlug(generatedSlug), DEBOUNCE_MS);
+    slugTimer.current = setTimeout(() => saveSlugFromTitle(generatedSlug), DEBOUNCE_MS);
   }
 
   return {
