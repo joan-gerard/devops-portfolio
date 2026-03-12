@@ -61,12 +61,12 @@ describe("project queries", () => {
           live_url: null,
         },
       ];
-      mockSql.mockResolvedValueOnce(asSqlResult(published));
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult(published));
 
       const result = await getAllPublishedProjects();
 
       expect(result).toEqual(published);
-      expect(mockSql).toHaveBeenCalledTimes(1);
+      expect(mockSql).toHaveBeenCalledTimes(2);
     });
 
     it("returns empty array and logs when prerender build and connection error", async () => {
@@ -74,7 +74,7 @@ describe("project queries", () => {
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       try {
@@ -100,7 +100,7 @@ describe("project queries", () => {
       process.env.IS_PRERENDER_BUILD = "false";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
 
       try {
         await expect(getAllPublishedProjects()).rejects.toThrow("Connection refused");
@@ -117,7 +117,7 @@ describe("project queries", () => {
       const prev = process.env.IS_PRERENDER_BUILD;
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Generic failure");
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
 
       try {
         await expect(getAllPublishedProjects()).rejects.toThrow("Generic failure");
@@ -173,7 +173,7 @@ describe("project queries", () => {
         live_url: null,
         updated_at: "2024-06-01T00:00:00Z",
       };
-      mockSql.mockResolvedValueOnce(asSqlResult([project]));
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([project]));
 
       const result = await getProjectBySlug("project");
 
@@ -181,7 +181,7 @@ describe("project queries", () => {
     });
 
     it("returns null when not found", async () => {
-      mockSql.mockResolvedValueOnce(asSqlResult([]));
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([]));
 
       const result = await getProjectBySlug("missing");
 

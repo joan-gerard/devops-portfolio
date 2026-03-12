@@ -84,7 +84,8 @@ describe("page queries", () => {
         tags: [],
         updated_at: "2024-06-01T00:00:00Z",
       };
-      mockSql.mockResolvedValueOnce(asSqlResult([note]));
+      // 2 calls: fragment (e2e_only) then main query
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([note]));
 
       const result = await getNoteBySlug("about");
 
@@ -92,7 +93,7 @@ describe("page queries", () => {
     });
 
     it("returns null when no row", async () => {
-      mockSql.mockResolvedValueOnce(asSqlResult([]));
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([]));
 
       const result = await getNoteBySlug("missing");
 
@@ -104,7 +105,7 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const result = await getNoteBySlug("about");
@@ -123,7 +124,7 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "false";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
 
       await expect(getNoteBySlug("about")).rejects.toThrow("Connection refused");
 
@@ -142,12 +143,12 @@ describe("page queries", () => {
           updated_at: "2024-06-01T00:00:00Z",
         },
       ];
-      mockSql.mockResolvedValueOnce(asSqlResult(notes));
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult(notes));
 
       const result = await getAllPublishedNotes();
 
       expect(result).toEqual(notes);
-      expect(mockSql).toHaveBeenCalledTimes(1);
+      expect(mockSql).toHaveBeenCalledTimes(2);
     });
 
     it("returns empty array and logs when prerender build and connection error", async () => {
@@ -155,7 +156,7 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const result = await getAllPublishedNotes();
@@ -174,7 +175,7 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "false";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockRejectedValueOnce(err);
+      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
 
       await expect(getAllPublishedNotes()).rejects.toThrow("Connection refused");
 

@@ -51,7 +51,14 @@ describe("getHomepageData", () => {
       },
     ];
 
-    mockedSql.mockResolvedValueOnce(mockNotes).mockResolvedValueOnce(mockProjects);
+    // sql is called 4 times: 2 full queries (notes, projects) + 2 conditional fragments (AND e2e_only = false).
+    // Resolve by query content so order of calls does not matter.
+    mockedSql.mockImplementation((strings: unknown) => {
+      const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
+      if (sqlText.includes("FROM pages")) return Promise.resolve(mockNotes);
+      if (sqlText.includes("FROM projects")) return Promise.resolve(mockProjects);
+      return Promise.resolve([]);
+    });
 
     const result = await getHomepageData();
 
@@ -59,18 +66,26 @@ describe("getHomepageData", () => {
       notes: mockNotes,
       projects: mockProjects,
     });
-    expect(mockedSql).toHaveBeenCalledTimes(2);
+    // 4 calls: 2 full queries (notes, projects) + 2 conditional fragments
+    expect(mockedSql).toHaveBeenCalledTimes(4);
 
     // Assert the actual SQL passed to the query function (tagged template first arg)
     const getSqlFromCall = (call: unknown[]): string =>
       Array.isArray(call[0]) ? (call[0] as string[]).join("") : String(call[0]);
 
-    const notesSql = getSqlFromCall(mockedSql.mock.calls[0]);
+    const notesCall = mockedSql.mock.calls.find((c) => getSqlFromCall(c).includes("FROM pages"));
+    const projectsCall = mockedSql.mock.calls.find((c) =>
+      getSqlFromCall(c).includes("FROM projects")
+    );
+    expect(notesCall).toBeDefined();
+    expect(projectsCall).toBeDefined();
+
+    const notesSql = getSqlFromCall(notesCall!);
     expect(notesSql).toContain("WHERE published = true");
     expect(notesSql).toContain("slug != 'about'");
     expect(notesSql).toContain("LIMIT 3");
 
-    const projectsSql = getSqlFromCall(mockedSql.mock.calls[1]);
+    const projectsSql = getSqlFromCall(projectsCall!);
     expect(projectsSql).toContain("WHERE published = true");
     expect(projectsSql).toContain("FROM projects");
     expect(projectsSql).toContain("LIMIT 3");
