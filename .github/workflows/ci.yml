@@ -40,6 +40,14 @@ jobs:
 
       - name: Test (E2E)
         run: pnpm test:e2e
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: placeholder
+          NEXTAUTH_URL: http://localhost:3000
+          ADMIN_EMAIL: placeholder@placeholder.com
+          ADMIN_PASSWORD_HASH: placeholder
+          E2E_USER_EMAIL: placeholder@placeholder.com
+          E2E_USER_PASSWORD: placeholder
 
       - name: Build
         run: pnpm build
