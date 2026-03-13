@@ -34,7 +34,7 @@ This document captures testing opportunities across the app and the current test
   - **Done:** jsdom environment, `test/setup.ts` with `@testing-library/jest-dom`, custom `render()` in `test/test-utils.tsx` wrapping `AuthSessionProvider`.
 
 - **E2E tests (Playwright)**
-  - **Done:** `playwright.config.ts`, `e2e/` directory, smoke spec `e2e/smoke.spec.ts`. Run `pnpm exec playwright install` once to install browsers.
+  - **Done:** `playwright.config.ts`, `e2e/` directory, smoke spec `e2e/smoke.spec.ts`. Run `pnpm exec playwright install` once to install browsers. A Playwright `globalTeardown` (`e2e/global-teardown.ts`) runs after each E2E run to delete any `e2e_only = true` `pages`/`projects` rows so the shared database stays clean.
 
 ---
 
@@ -155,7 +155,7 @@ Using Playwright after basic tooling is in place.
   - **Why**: Guards against regressions in delete behavior or route paths.
   - **Done:** `e2e/destructive.spec.ts` — "Sure?" confirm; cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
 
-**Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped.
+**Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped. After the suite finishes, `globalTeardown` runs and deletes any `e2e_only` rows created during the run, guarded by `E2E_TEST=1`/`CI` so it only affects test environments.
 
 You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
 
