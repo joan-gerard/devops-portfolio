@@ -18,17 +18,26 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!session;
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
     const projects = isAuthenticated
       ? await sql`
-          SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at
+          SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at, e2e_only
           FROM projects
           ORDER BY updated_at DESC
         `
-      : await sql`
+      : isE2ETestRuntime
+        ? await sql`
           SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at
           FROM projects
           WHERE published = true
+          ORDER BY updated_at DESC
+        `
+        : await sql`
+          SELECT id, title, slug, description, tech_stack, github_url, live_url, published, updated_at
+          FROM projects
+          WHERE published = true
+            AND e2e_only = false
           ORDER BY updated_at DESC
         `;
 
@@ -92,9 +101,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
     const [project] = await sql`
-      INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url)
-      VALUES (${title}, ${normalizedSlug}, ${description}, ${tech_stack}, ${normalizedGithubUrl}, ${normalizedLiveUrl})
+      INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url, e2e_only)
+      VALUES (${title}, ${normalizedSlug}, ${description}, ${tech_stack}, ${normalizedGithubUrl}, ${normalizedLiveUrl}, ${isE2ETestRuntime})
       RETURNING *
     `;
     return NextResponse.json(project, { status: 201 });

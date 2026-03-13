@@ -3,6 +3,7 @@ import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
 import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { JSONValue } from "postgres";
 
@@ -16,13 +17,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!session;
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
     const [page] = isAuthenticated
       ? await sql`
           SELECT * FROM pages WHERE id = ${id}
         `
-      : await sql`
+      : isE2ETestRuntime
+        ? await sql`
           SELECT * FROM pages WHERE id = ${id} AND published = true
+        `
+        : await sql`
+          SELECT * FROM pages WHERE id = ${id} AND published = true AND e2e_only = false
         `;
 
     if (!page) {
@@ -58,7 +64,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   try {
     body = await request.json();
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
   }
 
@@ -82,6 +88,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
+  const isE2ETestRuntime = process.env.E2E_TEST === "1";
+
   try {
     const [page] = await sql`
       UPDATE pages SET
@@ -89,13 +97,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         slug      = COALESCE(${slugToWrite ?? null}, slug),
         content   = COALESCE(${content ? sql.json(content as JSONValue) : null}, content),
         tags      = COALESCE(${tags ?? null},      tags),
-        published = COALESCE(${published ?? null}, published)
+        published = COALESCE(${published ?? null}, published),
+        e2e_only  = COALESCE(
+          ${isE2ETestRuntime && published === true ? true : null},
+          e2e_only
+        )
       WHERE id = ${id}
       RETURNING *
     `;
 
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    const resultingPublished = published ?? page.published;
+
+    if (slugToWrite !== undefined || published !== undefined) {
+      revalidatePath(`/notes/${page.slug}`);
+    }
+
+    if (resultingPublished || published === false) {
+      revalidatePath("/notes");
     }
 
     return NextResponse.json(page);

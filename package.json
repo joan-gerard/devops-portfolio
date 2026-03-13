@@ -4,12 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:e2e": "NEXT_DIST_DIR=.next-e2e PORT=3001 E2E_TEST=1 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ci": "vitest run --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1001.0",
@@ -24,6 +32,7 @@
     "@tiptap/starter-kit": "^3.20.0",
     "bcryptjs": "^3.0.3",
     "dompurify": "^3.3.2",
+    "dotenv": "^17.3.1",
     "lowlight": "^3.3.0",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
@@ -32,18 +41,27 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "4.0.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9",
+    "jsdom": "^28.1.0",
     "lint-staged": "^15",
     "prettier": "^3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"

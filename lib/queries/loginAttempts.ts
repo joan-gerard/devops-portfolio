@@ -3,58 +3,50 @@ import sql from "@/lib/db";
 const WINDOW_MINUTES = 15;
 const MAX_ATTEMPTS = 5;
 
+/**
+ * Atomically check and increment the login attempt count for an IP.
+ * Uses INSERT ... ON CONFLICT DO UPDATE to avoid race conditions when
+ * concurrent requests from the same IP both try to create the row.
+ */
 export async function checkRateLimit(
   ip: string | undefined
 ): Promise<{ allowed: boolean; minutesLeft?: number }> {
   const now = new Date();
 
-  // If IP cannot be determined, allow the request — do not rate limit
-  // an unknown key as it would create a shared bucket across all
-  // unidentifiable requests
   if (!ip) return { allowed: true };
 
-  // Note: this is a read-then-write pattern and is not atomic under concurrency.
-  // Simultaneous requests from the same IP could both pass the limit check before
-  // either increments the counter. Acceptable for a single-admin app where
-  // concurrent login attempts from the same IP are not a realistic threat.
-  const [record] = await sql`
-    SELECT attempts, window_start
-    FROM login_attempts
-    WHERE ip = ${ip}
+  const windowCutoff = new Date(now.getTime() - WINDOW_MINUTES * 60 * 1000);
+
+  const [row] = await sql`
+    INSERT INTO login_attempts (ip, attempts, window_start)
+    VALUES (${ip}, 1, ${now})
+    ON CONFLICT (ip) DO UPDATE SET
+      attempts = CASE
+        WHEN login_attempts.window_start < ${windowCutoff} THEN 1
+        WHEN login_attempts.attempts >= ${MAX_ATTEMPTS} THEN login_attempts.attempts
+        ELSE login_attempts.attempts + 1
+      END,
+      window_start = CASE
+        WHEN login_attempts.window_start < ${windowCutoff} THEN ${now}
+        ELSE login_attempts.window_start
+      END
+    RETURNING attempts, window_start
   `;
 
-  if (!record) {
-    await sql`
-      INSERT INTO login_attempts (ip, attempts, window_start)
-      VALUES (${ip}, 1, ${now})
-    `;
-    return { allowed: true };
-  }
+  if (!row) return { allowed: true };
 
-  const windowStart = new Date(record.window_start);
+  const windowStart = new Date(row.window_start);
   const minutesElapsed = (now.getTime() - windowStart.getTime()) / 60000;
 
   if (minutesElapsed >= WINDOW_MINUTES) {
-    // Window expired — reset
-    await sql`
-      UPDATE login_attempts
-      SET attempts = 1, window_start = ${now}
-      WHERE ip = ${ip}
-    `;
     return { allowed: true };
   }
 
-  if (record.attempts >= MAX_ATTEMPTS) {
+  if (row.attempts >= MAX_ATTEMPTS) {
     const minutesLeft = Math.ceil(WINDOW_MINUTES - minutesElapsed);
     return { allowed: false, minutesLeft };
   }
 
-  // Within window, under limit — increment
-  await sql`
-    UPDATE login_attempts
-    SET attempts = attempts + 1
-    WHERE ip = ${ip}
-  `;
   return { allowed: true };
 }
 

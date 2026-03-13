@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { CreateProjectButton, ProjectRow } from "@/components/projects";
 import { getAllProjects } from "@/lib/queries/project";
+import type { Project } from "@/types/projects";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -9,31 +10,15 @@ export default async function ProjectsPage() {
   if (!session) redirect("/admin/login");
 
   const projects = await getAllProjects();
-  const publishedCount = projects.filter((p) => p.published).length;
-  const unpublishedCount = projects.length - publishedCount;
+  const userProjects = projects.filter((project) => !project.e2e_only);
+  const e2eProjects = projects.filter((project) => project.e2e_only);
 
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            {unpublishedCount} unpublished
-          </span>
-          <span style={{ fontSize: "12px", color: "var(--accent)" }}>
-            {publishedCount} published
-          </span>
-        </div>
-        <CreateProjectButton />
-      </div>
+  const publishedCount = userProjects.filter((p) => p.published).length;
+  const unpublishedCount = userProjects.length - publishedCount;
 
-      {projects.length === 0 && (
+  function renderProjectsTable(list: Project[]) {
+    if (list.length === 0) {
+      return (
         <div
           style={{
             textAlign: "center",
@@ -47,42 +32,84 @@ export default async function ProjectsPage() {
           </p>
           <CreateProjectButton />
         </div>
-      )}
+      );
+    }
 
-      {projects.length > 0 && (
+    return (
+      <div
+        style={{
+          border: "1px solid var(--border)",
+          borderRadius: "6px",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header */}
         <div
           style={{
-            border: "1px solid var(--border)",
-            borderRadius: "6px",
-            overflow: "hidden",
+            display: "grid",
+            gridTemplateColumns: "1fr auto auto auto auto",
+            gap: "16px",
+            padding: "10px 16px",
+            background: "var(--surface)",
+            borderBottom: "1px solid var(--border)",
+            fontSize: "10px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
           }}
         >
-          {/* Header */}
+          <span>Title</span>
+          <span>Stack</span>
+          <span>Status</span>
+          <span>Updated</span>
+          <span></span>
+        </div>
+
+        {list.map((project, i) => (
+          <ProjectRow key={project.id} project={project} isLast={i === list.length - 1} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+      <section aria-label="Your projects">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "24px",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              {unpublishedCount} unpublished
+            </span>
+            <span style={{ fontSize: "12px", color: "var(--accent)" }}>
+              {publishedCount} published
+            </span>
+          </div>
+          <CreateProjectButton />
+        </div>
+
+        {renderProjectsTable(userProjects)}
+      </section>
+
+      {e2eProjects.length > 0 && (
+        <section aria-label="E2E test projects">
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto auto auto auto",
-              gap: "16px",
-              padding: "10px 16px",
-              background: "var(--surface)",
-              borderBottom: "1px solid var(--border)",
-              fontSize: "10px",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
+              fontSize: "12px",
               color: "var(--text-muted)",
+              marginBottom: "8px",
             }}
           >
-            <span>Title</span>
-            <span>Stack</span>
-            <span>Status</span>
-            <span>Updated</span>
-            <span></span>
+            E2E test projects (created by automated tests)
           </div>
-
-          {projects.map((project, i) => (
-            <ProjectRow key={project.id} project={project} isLast={i === projects.length - 1} />
-          ))}
-        </div>
+          {renderProjectsTable(e2eProjects)}
+        </section>
       )}
     </div>
   );

@@ -430,5 +430,197 @@
     "body": "Falling back to the string \"unknown\" when no IP can be determined creates a shared rate limit bucket — five failed attempts from different unidentifiable sources would lock out all unidentifiable sources including legitimate ones. Instead, undefined is passed to checkRateLimit which returns { allowed: true } immediately. An unidentifiable request bypasses rate limiting rather than sharing a poisoned bucket. On Vercel in production x-forwarded-for is always set so this path is rarely reached.",
     "phase": "Phase 04",
     "date": "2026-03-07T00:00:00.000Z"
+  },
+  {
+    "id": "1773225322280",
+    "type": "session",
+    "title": "About page Built",
+    "body": "app/(public)/about/page.tsx using getNoteBySlug('about') — about page content is managed through the TipTap editor by publishing a note with the reserved slug \"about\". Page does not 404 when the note is unpublished — shows a placeholder with exact instructions instead. getAllPublishedNotes excludes slug = 'about' so the about note never appears in the /notes index. First end-to-end test of the full publishing flow.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225427162",
+    "type": "session",
+    "title": "Interview prep HTML creation and updates",
+    "body": "Converted the interview prep DOCX to a self-contained dark-themed HTML file with fixed sidebar, IntersectionObserver-based active section highlighting, colour-coded callouts, flow diagrams, comparison grids, and code blocks. Steps 1–6 complete. Decision 07 (ISR vs force-dynamic) updated with resilience rationale, Neon cold start framing, and three new follow-up Q&As covering ISR cache storage location, Vercel+Next.js invisible platform benefits, and deployment cache flush behaviour.",
+    "phase": "",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225644009",
+    "type": "decision",
+    "title": "generateHTML for JSONB note content",
+    "body": "TipTap stores content as a structured JSON document (ProseMirror schema), not a plain HTML string. The column type is JSONB. Calling generateHTML(content, [StarterKit, Image]) server-side converts the document tree to HTML before passing it to dangerouslySetInnerHTML. This is safe because the content source is the admin TipTap editor only — not public user input — so no DOMPurify is needed.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225669894",
+    "type": "decision",
+    "title": "About page uses placeholder, not 404",
+    "body": "/about is a permanent, known route. Returning 404 when the note is unpublished would be confusing and wrong — the page exists, the content just hasn't been written yet. The page shows a placeholder with instructions to create and publish a note with slug \"about\". Note detail pages (/notes/[slug]) do return 404 for missing or unpublished slugs because those are user-navigated or linked URLs where 404 is the correct behaviour.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225903608",
+    "type": "decision",
+    "title": "generateStaticParams not used on detail pages",
+    "body": "Not using generateStaticParams on /notes/[slug] or /projects/[slug]. ISR on-demand generation is sufficient at portfolio scale — pages are generated on first request and cached, without needing to enumerate all slugs at build time. Avoids the CI build complexity of needing a real database connection to enumerate slugs during next build.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225940473",
+    "type": "decision",
+    "title": "Homepage revalidate = 3600 (switched from force-dynamic)",
+    "body": "The original rationale for force-dynamic was \"live note and project counts\". That argument doesn't hold — content being up to an hour stale is not a real problem for a portfolio. The deciding reason is resilience: with force-dynamic, a transient DB failure (e.g. Neon cold start) causes the homepage to serve empty sections to employers. ISR serves the last cached snapshot instead. The DB load and consistency arguments were noted as secondary and not deciding factors at portfolio scale.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773225980856",
+    "type": "decision",
+    "title": "IS_PRERENDER_BUILD guard pattern",
+    "body": "All public query helpers (getAllPublishedProjects, getAllPublishedNotes, getNoteBySlug) use an IS_PRERENDER_BUILD environment variable guard: if the env flag is 'true', a connection error returns an empty result or null with a console.warn rather than throwing. This allows next build to succeed in CI without a real database connection. Runtime errors (non-CI requests) still propagate so ISR can serve the stale cache. The flag is set in ci.yml alongside the placeholder DATABASE_URL.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773226034689",
+    "type": "blocker",
+    "title": "Note content rendering as [object Object]",
+    "body": "Note detail page was rendering the string [object Object] instead of content. Root cause: the content column is JSONB, not TEXT. The server component was passing the raw JavaScript object directly to dangerouslySetInnerHTML.__html. Fixed by calling generateHTML(note.content, [StarterKit, Image]) to convert the TipTap JSON document tree to an HTML string before rendering. Guard added: Object.keys(note.content).length > 0 before calling generateHTML to avoid errors on empty content objects.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773226341886",
+    "type": "lesson",
+    "title": "TipTap content in Postgres is JSONB, not TEXT — never pass it raw to dangerouslySetInnerHTML",
+    "body": "TipTap stores its document as a ProseMirror JSON tree. Calling JSON.stringify on it gives you a JSON string, not HTML. Passing the raw object gives [object Object]. The correct pattern is generateHTML(content, extensions) from @tiptap/html, called server-side, which converts the document tree to an HTML string. The extensions list must match what was used in the editor — missing extensions silently drop nodes.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773226373520",
+    "type": "lesson",
+    "title": "ISR resilience matters most exactly when you most need the site to work",
+    "body": "A Neon cold start or transient network blip is most likely to happen when traffic spikes — exactly when an employer is looking at your portfolio. force-dynamic means that spike causes empty content. ISR means the cached snapshot is served, and the failure is invisible. The performance argument for ISR is secondary; the resilience argument is what actually matters for a portfolio that might go weeks without traffic.",
+    "phase": "Phase 05",
+    "date": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "1773426626148",
+    "type": "session",
+    "title": "Add Full Testing Coverage",
+    "body": "Implemented end-to-end testing coverage across the entire application stack. Set up Vitest and React Testing Library for unit and component tests, and Playwright for E2E testing. Wrote 30+ test files spanning utility functions, data-access queries, React components, custom hooks, and full browser flows. Wired everything into the CI pipeline and added a pre-push Git hook to enforce tests before code reaches the remote. Also introduced an e2e_only flag at the database level to isolate test-generated data from real portfolio content.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426679631",
+    "type": "decision",
+    "title": "Introduce an e2e_only database flag",
+    "body": "Rather than seeding/tearing down a separate test database, E2E tests create real records tagged with e2e_only = true. API routes filter these out from public views when not running in E2E mode. This keeps the E2E environment realistic while protecting the production-facing UI from test noise.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426751982",
+    "type": "decision",
+    "title": "Separate Next.js build directory for E2E (NEXT_DIST_DIR / .next-e2e",
+    "body": "Added a configurable distDir in next.config.ts so that the E2E dev server can run in parallel with the normal dev server without conflicting build artifacts. The dev:e2e script starts the server on port 3001 with this alternate directory.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426792765",
+    "type": "decision",
+    "title": "Replace ISR with force-dynamic on note/project detail pages",
+    "body": "Static regeneration (ISR with revalidate = 3600) caused stale 404s for newly published content during E2E tests. Switching to force-dynamic ensures that published items are immediately visible, which is essential for the E2E publish-and-verify flow.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426845347",
+    "type": "decision",
+    "title": "Atomic INSERT ... ON CONFLICT DO UPDATE for login rate limiting",
+    "body": "Replaced the previous read-then-write pattern in loginAttempts.checkRateLimit with a single UPSERT to eliminate a race condition where concurrent login attempts could slip through the rate limit window.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426875965",
+    "type": "decision",
+    "title": "Wrap getNoteBySlug and getProjectBySlug in React cache()",
+    "body": "After switching to force-dynamic, these functions could be called multiple times per request (e.g., in both generateMetadata and page). Wrapping them in cache() deduplicates the DB calls within a single render pass.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426916302",
+    "type": "blocker",
+    "title": "E2E tests polluting the shared database",
+    "body": "Running E2E tests against a real database meant that created/published notes and projects would appear in the live admin UI and public pages. Resolved by adding the e2e_only flag and a cleanup migration (004_remove_e2e_only_rows.sql) to purge test data, plus filtering it from public routes when not in E2E mode.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426939638",
+    "type": "blocker",
+    "title": "Port conflict between dev and E2E servers",
+    "body": "The E2E Playwright config needed a running app on a predictable port, but the normal dev server occupies port 3000. Resolved by introducing the dev:e2e script (NEXT_DIST_DIR=.next-e2e next dev -p 3001) and pointing playwright.config.ts baseURL at http://localhost:3001.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773426974243",
+    "type": "blocker",
+    "title": "Debounce timing in hook tests",
+    "body": "Tests for useEditorPage and useProjectEdit needed to verify that PATCH requests fire after debounce but not immediately. Required using Vitest's fake timers (vi.useFakeTimers) and vi.advanceTimersByTime() to simulate time advancing without real delays.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773427110696",
+    "type": "lesson",
+    "title": "Test data isolation is a first-class concern for E2E testing against a real database",
+    "body": "A simple boolean flag in the DB schema, combined with environment-aware query filtering, is a lightweight and effective pattern that avoids the complexity of managing separate test databases or full database snapshots.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773427190447",
+    "type": "lesson",
+    "title": "force-dynamic is the safest default when E2E tests must verify content immediately after publishing",
+    "body": "ISR caching is great for production performance, but it breaks the feedback loop in tests. If cache invalidation becomes a priority later, revalidatePath calls (already added to the PATCH routes) can be revisited.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773427220931",
+    "type": "lesson",
+    "title": "React cache() is an important companion to force-dynamic",
+    "body": "Removing ISR means the per-request cache is gone; without cache(), a single page render that calls the same query function twice (e.g., metadata + page body) would hit the database twice unnecessarily.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773427263298",
+    "type": "lesson",
+    "title": "Breaking tests into layers (utility → query → component → hook → E2E) makes the suite maintainable",
+    "body": "Lower-level tests are fast and precise; E2E tests validate the full user journey but are slow and credential-sensitive. Keeping the layers distinct makes it easy to locate failures and run only the relevant subset during development.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
+  },
+  {
+    "id": "1773427316982",
+    "type": "lesson",
+    "title": "A pre-push hook (pnpm test:ci && pnpm test:e2e) is a strong signal of intent, but should be reviewed over time.",
+    "body": "Running E2E tests locally on every push can be slow and requires the dev server to be running. It may be worth splitting the hook to run only unit tests locally and leave E2E exclusively to CI.",
+    "phase": "Phase 06",
+    "date": "2026-03-13T00:00:00.000Z"
   }
 ]

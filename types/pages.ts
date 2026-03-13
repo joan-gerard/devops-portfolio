@@ -2,6 +2,9 @@
  * Page/note from the pages table.
  * `content` and `created_at` are omitted in list queries (getAllPages) and
  * present in single-row queries (getPageById, getNoteBySlug).
+ *
+ * `e2e_only` is used to tag content that was created/published by E2E tests so
+ * it can be filtered or grouped in admin views and hidden from public views.
  */
 export type Page = {
   id: string;
@@ -12,6 +15,7 @@ export type Page = {
   published: boolean;
   created_at?: string;
   updated_at: string;
+  e2e_only?: boolean;
 };
 
 export type PublicNote = Omit<Page, "published" | "created_at">;

@@ -8,6 +8,7 @@ Plain SQL migration files, run in order against Neon.
 
 ## Running a migration
 
+NB: You need to copy/past the actual $DATABASE_URL
 NB: Keep the double quotation marks
 
 psql "$DATABASE_URL" -f migrations/001_init.sql

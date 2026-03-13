@@ -19,10 +19,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const { id } = await params;
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!session;
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
     const [project] = isAuthenticated
       ? await sql`SELECT * FROM projects WHERE id = ${id}`
-      : await sql`SELECT * FROM projects WHERE id = ${id} AND published = true`;
+      : isE2ETestRuntime
+        ? await sql`SELECT * FROM projects WHERE id = ${id} AND published = true`
+        : await sql`SELECT * FROM projects WHERE id = ${id} AND published = true AND e2e_only = false`;
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -92,6 +95,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
   }
 
+  const isE2ETestRuntime = process.env.E2E_TEST === "1";
+
   try {
     const [project] = await sql`
       UPDATE projects SET
@@ -101,7 +106,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         tech_stack  = COALESCE(${tech_stack ?? null},  tech_stack),
         github_url  = COALESCE(${normalizedGithubUrl ?? null},  github_url),
         live_url    = COALESCE(${normalizedLiveUrl ?? null},    live_url),
-        published   = COALESCE(${published ?? null},   published)
+        published   = COALESCE(${published ?? null},   published),
+        e2e_only    = COALESCE(
+          ${isE2ETestRuntime && published === true ? true : null},
+          e2e_only
+        )
       WHERE id = ${id}
       RETURNING *
     `;
