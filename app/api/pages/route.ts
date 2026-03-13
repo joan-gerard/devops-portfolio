@@ -13,17 +13,26 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!session;
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
     const pages = isAuthenticated
       ? await sql`
-          SELECT id, title, slug, tags, published, created_at, updated_at
+          SELECT id, title, slug, tags, published, created_at, updated_at, e2e_only
           FROM pages
           ORDER BY updated_at DESC
         `
-      : await sql`
+      : isE2ETestRuntime
+        ? await sql`
           SELECT id, title, slug, tags, published, created_at, updated_at
           FROM pages
           WHERE published = true
+          ORDER BY updated_at DESC
+        `
+        : await sql`
+          SELECT id, title, slug, tags, published, created_at, updated_at
+          FROM pages
+          WHERE published = true
+            AND e2e_only = false
           ORDER BY updated_at DESC
         `;
 
@@ -60,9 +69,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: slugError }, { status: 400 });
     }
 
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
     const [page] = await sql`
-      INSERT INTO pages (title, slug, tags)
-      VALUES (${title}, ${normalizedSlug}, ${tags})
+      INSERT INTO pages (title, slug, tags, e2e_only)
+      VALUES (${title}, ${normalizedSlug}, ${tags}, ${isE2ETestRuntime})
       RETURNING *
     `;
     return NextResponse.json(page, { status: 201 });

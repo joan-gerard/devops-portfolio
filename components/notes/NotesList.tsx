@@ -1,4 +1,4 @@
-import { CreateNoteButton, NoteRowLink } from "@/components/notes";
+import { NoteRowLink } from "@/components/notes";
 import type { Page } from "@/types/pages";
 
 type NotesListProps = {
@@ -58,7 +58,6 @@ export function NotesList({ notes }: NotesListProps) {
             {publishedCount} published
           </span>
         </div>
-        <CreateNoteButton />
       </div>
 
       {/* Empty state (no notes other than optional reserved about) */}
@@ -74,7 +73,6 @@ export function NotesList({ notes }: NotesListProps) {
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px" }}>
             {aboutNote ? "No other notes yet" : "No notes yet"}
           </p>
-          <CreateNoteButton />
         </div>
       )}
 

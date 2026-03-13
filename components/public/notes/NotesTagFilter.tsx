@@ -24,6 +24,7 @@ export function NotesTagFilter({ allTags, activeTag, onTagChange }: NotesTagFilt
 
   return (
     <div
+      data-testid="notes-tag-filter"
       style={{
         display: "flex",
         flexWrap: "wrap",

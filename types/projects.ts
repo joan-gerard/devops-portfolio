@@ -9,6 +9,11 @@ export type Project = {
   published: boolean;
   created_at: string;
   updated_at: string;
+  /**
+   * True when the project was created/published by E2E tests. Used to separate
+   * test content from real portfolio entries and hide it from public views.
+   */
+  e2e_only?: boolean;
 };
 
 export type PublicProject = Omit<Project, "published" | "created_at">;

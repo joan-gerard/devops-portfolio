@@ -9,6 +9,8 @@ type ProjectSlugFieldProps = {
   onChange: (value: string) => void;
   titleForRegenerate: string;
   published: boolean;
+  /** When set, the "from title" button calls this instead of onChange(slugify(title)). Use for slug-specific save messages. */
+  onRegenerateFromTitle?: () => void;
 };
 
 /** Sanitises input to valid slug characters (lowercase, hyphens only). */
@@ -24,9 +26,14 @@ export function ProjectSlugField({
   onChange,
   titleForRegenerate,
   published,
+  onRegenerateFromTitle,
 }: ProjectSlugFieldProps) {
   function handleRegenerate() {
-    onChange(slugify(titleForRegenerate));
+    if (onRegenerateFromTitle) {
+      onRegenerateFromTitle();
+    } else {
+      onChange(slugify(titleForRegenerate));
+    }
   }
 
   return (

@@ -29,7 +29,7 @@ export function FeaturedProjectsSection({ projects }: FeaturedProjectsSectionPro
           }}
         >
           {projects.map((project) => (
-            <div key={project.id} style={card}>
+            <div key={project.id} style={card} data-testid="featured-project-card">
               <p
                 style={{
                   fontFamily: "var(--font-syne)",

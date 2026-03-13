@@ -3,6 +3,10 @@ import { ProjectsPageHeader, ProjectsGrid } from "@/components/public/projects";
 
 export const revalidate = 3600;
 
+export const metadata = {
+  title: "Projects — DevOps Learning Portal",
+};
+
 const pageContainer: React.CSSProperties = {
   maxWidth: "1100px",
   margin: "0 auto",

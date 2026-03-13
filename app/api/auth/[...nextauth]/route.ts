@@ -9,6 +9,7 @@
  * @see docs/authentication.md
  */
 
+import { AUTH_ERROR_SERVICE_UNAVAILABLE } from "@/lib/auth";
 import { checkRateLimit, clearRateLimit } from "@/lib/queries/loginAttempts";
 import bcrypt from "bcryptjs";
 import NextAuth, { type AuthOptions } from "next-auth";
@@ -28,40 +29,50 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        // Extract IP — x-forwarded-for is set by Vercel in production
-        // Fall back to x-real-ip, then socket address, then undefined
-        const forwarded = req.headers?.["x-forwarded-for"];
-        const ip =
-          (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0])?.trim() ||
-          (req.headers?.["x-real-ip"] as string | undefined)?.trim() ||
-          undefined;
+        try {
+          // Extract IP — x-forwarded-for is set by Vercel in production
+          const forwarded = req.headers?.["x-forwarded-for"];
+          const ip =
+            (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0])?.trim() ||
+            (req.headers?.["x-real-ip"] as string | undefined)?.trim() ||
+            undefined;
 
-        // Check rate limit
-        const { allowed, minutesLeft } = await checkRateLimit(ip);
-        if (!allowed) {
-          throw new Error(
-            `Too many login attempts. Please try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`
+          // Check rate limit (atomic; safe under concurrent requests)
+          const { allowed, minutesLeft } = await checkRateLimit(ip);
+          if (!allowed) {
+            throw new Error(
+              `Too many login attempts. Please try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`
+            );
+          }
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email and password are required");
+          }
+
+          const isValidEmail = credentials.email === process.env.ADMIN_EMAIL;
+          const isValidPassword = await bcrypt.compare(
+            credentials.password,
+            process.env.ADMIN_PASSWORD_HASH ?? ""
           );
+
+          if (!isValidEmail || !isValidPassword) {
+            throw new Error("Invalid email or password");
+          }
+
+          await clearRateLimit(ip);
+          return { id: "1", email: credentials.email, role: "admin" };
+        } catch (err) {
+          if (err instanceof Error && err.message.startsWith("Too many login attempts")) {
+            throw err;
+          }
+          if (err instanceof Error && err.message === "Email and password are required") {
+            throw err;
+          }
+          if (err instanceof Error && err.message === "Invalid email or password") {
+            throw err;
+          }
+          console.error("[auth] authorize error:", err);
+          throw new Error(AUTH_ERROR_SERVICE_UNAVAILABLE);
         }
-        // Validate credentials
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
-        }
-
-        const isValidEmail = credentials.email === process.env.ADMIN_EMAIL;
-        const isValidPassword = await bcrypt.compare(
-          credentials.password,
-          process.env.ADMIN_PASSWORD_HASH ?? ""
-        );
-
-        if (!isValidEmail || !isValidPassword) {
-          throw new Error("Invalid email or password");
-        }
-
-        // Clear rate limit counter on successful login
-        await clearRateLimit(ip);
-
-        return { id: "1", email: credentials.email, role: "admin" };
       },
     }),
   ],

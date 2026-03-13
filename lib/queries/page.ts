@@ -1,10 +1,13 @@
 import sql from "@/lib/db";
 import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
 import { Page, PublicNote, PublishedNotePreview } from "@/types/pages";
+import { cache } from "react";
+
+const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
 export async function getAllPages() {
   return sql<Page[]>`
-    SELECT id, title, slug, tags, published, updated_at
+    SELECT id, title, slug, tags, published, updated_at, e2e_only
     FROM pages
     ORDER BY updated_at DESC
   `;
@@ -12,7 +15,7 @@ export async function getAllPages() {
 
 export async function getPageById(id: string): Promise<Page | null> {
   const rows = await sql<Page[]>`
-    SELECT id, title, slug, content, tags, published, created_at, updated_at
+    SELECT id, title, slug, content, tags, published, created_at, updated_at, e2e_only
     FROM pages
     WHERE id = ${id}
     LIMIT 1
@@ -27,16 +30,25 @@ export async function getPageById(id: string): Promise<Page | null> {
  * is unavailable (connection or aggregate error), returns null so the page
  * can render its fallback state and the build succeeds.
  */
-export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
+export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | null> => {
   try {
+    console.log("[getNoteBySlug] called with slug:", slug);
     const rows = await sql<PublicNote[]>`
       SELECT id, title, slug, content, tags, updated_at
       FROM pages
       WHERE slug = ${slug}
         AND published = true
+        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
       LIMIT 1
     `;
-    return rows[0] ?? null;
+    // return rows[0] ?? null;
+
+    const note = rows[0] ?? null;
+    console.log(
+      "[getNoteBySlug] result:",
+      note ? { id: note.id, slug: note.slug, published: true } : null
+    );
+    return note;
   } catch (error) {
     const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
     if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
@@ -50,7 +62,7 @@ export async function getNoteBySlug(slug: string): Promise<PublicNote | null> {
     }
     throw error;
   }
-}
+});
 
 export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   try {
@@ -59,6 +71,7 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
       FROM pages
       WHERE published = true
         AND slug != 'about'
+        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
       ORDER BY updated_at DESC
     `;
   } catch (error) {

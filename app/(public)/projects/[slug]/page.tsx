@@ -4,10 +4,11 @@ import { getProjectBySlug } from "@/lib/queries/project";
 import { ProjectDetail } from "@/components/public/projects/ProjectDetail";
 import { notFound } from "next/navigation";
 
-// ── ISR — regenerate at most once per hour ─────────────────────────────────────
-// generateStaticParams intentionally omitted — ISR on-demand is sufficient for
-// portfolio scale. No slugs are pre-built; the first real request after
-// deployment triggers regeneration.
+/**
+ * ISR (revalidate 3600) so a Neon cold start serves a cached snapshot instead of an empty page.
+ * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
+ * Segment config must be static; conditional dynamic/revalidate is not supported.
+ */
 export const revalidate = 3600;
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
