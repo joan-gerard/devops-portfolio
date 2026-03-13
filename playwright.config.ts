@@ -46,5 +46,9 @@ export default defineConfig({
     command: "pnpm dev:e2e",
     url: "http://localhost:3001",
     reuseExistingServer: !process.env.CI,
+    env: {
+      /** Ensures note/project detail pages use force-dynamic during E2E so new content is visible; prod uses ISR (revalidate 3600). */
+      E2E_TEST: "1",
+    },
   },
 });

@@ -4,8 +4,12 @@ import { getProjectBySlug } from "@/lib/queries/project";
 import { ProjectDetail } from "@/components/public/projects/ProjectDetail";
 import { notFound } from "next/navigation";
 
-// Force dynamic so newly published projects are visible immediately (no stale 404 from cache).
-export const dynamic = "force-dynamic";
+/**
+ * E2E (E2E_TEST=1): force-dynamic so newly published projects are visible immediately in tests.
+ * Production: ISR (revalidate 3600) so a Neon cold start serves a cached snapshot instead of an empty page.
+ */
+export const dynamic = process.env.E2E_TEST ? "force-dynamic" : undefined;
+export const revalidate = process.env.E2E_TEST ? undefined : 3600;
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
