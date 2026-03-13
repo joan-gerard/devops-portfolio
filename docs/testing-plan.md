@@ -179,7 +179,7 @@ You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
     command: "pnpm dev:e2e",
     url: "http://localhost:3001",
     reuseExistingServer: !process.env.CI,
-    env: { E2E_TEST: "1" },  // detail pages use force-dynamic when set; prod uses ISR
+    env: { E2E_TEST: "1" },
   },
   use: {
     baseURL: "http://localhost:3001",
@@ -201,7 +201,7 @@ You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
   - Port: `3001`
   - Env: `E2E_TEST=1`, `NEXT_DIST_DIR=.next-e2e`
   - Purpose: Playwright E2E runs with isolated build artifacts and E2E-only content tagging.
-  - **Segment config:** Note and project detail pages (`/notes/[slug]`, `/projects/[slug]`) read `E2E_TEST`: when set they use `dynamic = "force-dynamic"` so newly published content is visible immediately in tests; when unset (production) they use `revalidate = 3600` (ISR) so a Neon cold start serves a cached snapshot instead of an empty page.
+  - **Detail pages:** Note and project detail pages use `revalidate = 3600` (ISR). In development (`next dev`), Next.js renders on-demand and does not cache, so E2E still sees newly published content immediately. (Route segment config must be static, so conditional dynamic/revalidate is not supported.)
 
 - Because the servers use **different ports** and **different dist directories**, they can run concurrently without fighting over `.next/dev/lock` or corrupting each other’s caches. Public read flows during E2E always hit the E2E server (via `baseURL`), while your manual browsing can stay on the normal dev server.
 
