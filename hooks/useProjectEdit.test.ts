@@ -157,10 +157,7 @@ describe("useProjectEdit", () => {
       const { result } = renderHook(() => useProjectEdit(mockProject));
 
       await act(async () => {
-        result.current.togglePublished();
-      });
-      await act(async () => {
-        await Promise.resolve();
+        await result.current.togglePublished();
       });
 
       expect(result.current.published).toBe(true);
@@ -179,10 +176,7 @@ describe("useProjectEdit", () => {
       const { result } = renderHook(() => useProjectEdit({ ...mockProject, published: true }));
 
       await act(async () => {
-        result.current.togglePublished();
-      });
-      await act(async () => {
-        await Promise.resolve();
+        await result.current.togglePublished();
       });
 
       expect(result.current.published).toBe(true);
