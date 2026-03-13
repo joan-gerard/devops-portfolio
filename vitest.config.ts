@@ -10,5 +10,10 @@ export default defineConfig({
     include: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     exclude: ["**/node_modules/**", "**/e2e/**", ".next/**"],
     globals: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      reportsDirectory: "./coverage/unit",
+    },
   },
 });

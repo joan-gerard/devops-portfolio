@@ -15,6 +15,7 @@
     "test:run": "vitest run",
     "test:watch": "vitest watch",
     "test:ci": "vitest run --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
@@ -50,6 +51,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "4.0.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9",
