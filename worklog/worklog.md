@@ -1,6 +1,6 @@
 # DevOps Portal — Work Log
 
-_Exported 2026-03-07_
+_Exported 2026-03-13_
 
 ---
 
@@ -71,6 +71,24 @@ Pages routes used session.user.role !== "admin" while projects routes used !sess
 _Phase 04 · 2026-03-07T00:00:00.000Z_
 
 Added migrations/002_login_attempts.sql creating the login_attempts table. Implemented lib/queries/loginAttempts.ts exporting checkRateLimit(ip: string | undefined) and clearRateLimit(ip: string | undefined). Both are no-ops when ip is undefined. Rate limit check wired into the NextAuth authorize callback — 5 attempts per IP per fixed 15-minute window. Counter resets on successful login. IP extracted from x-forwarded-for then x-real-ip, falling back to undefined. Error message includes exact minutes remaining and is decoded from URL-encoding in submitLogin.ts before display.
+
+### About page Built
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+app/(public)/about/page.tsx using getNoteBySlug('about') — about page content is managed through the TipTap editor by publishing a note with the reserved slug "about". Page does not 404 when the note is unpublished — shows a placeholder with exact instructions instead. getAllPublishedNotes excludes slug = 'about' so the about note never appears in the /notes index. First end-to-end test of the full publishing flow.
+
+### Interview prep HTML creation and updates
+
+_General · 2026-03-11T00:00:00.000Z_
+
+Converted the interview prep DOCX to a self-contained dark-themed HTML file with fixed sidebar, IntersectionObserver-based active section highlighting, colour-coded callouts, flow diagrams, comparison grids, and code blocks. Steps 1–6 complete. Decision 07 (ISR vs force-dynamic) updated with resilience rationale, Neon cold start framing, and three new follow-up Q&As covering ISR cache storage location, Vercel+Next.js invisible platform benefits, and deployment cache flush behaviour.
+
+### Add Full Testing Coverage
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Implemented end-to-end testing coverage across the entire application stack. Set up Vitest and React Testing Library for unit and component tests, and Playwright for E2E testing. Wrote 30+ test files spanning utility functions, data-access queries, React components, custom hooks, and full browser flows. Wired everything into the CI pipeline and added a pre-push Git hook to enforce tests before code reaches the remote. Also introduced an e2e_only flag at the database level to isolate test-generated data from real portfolio content.
 
 ## Decisions
 
@@ -207,6 +225,66 @@ _Phase 04 · 2026-03-07T00:00:00.000Z_
 
 Falling back to the string "unknown" when no IP can be determined creates a shared rate limit bucket — five failed attempts from different unidentifiable sources would lock out all unidentifiable sources including legitimate ones. Instead, undefined is passed to checkRateLimit which returns { allowed: true } immediately. An unidentifiable request bypasses rate limiting rather than sharing a poisoned bucket. On Vercel in production x-forwarded-for is always set so this path is rarely reached.
 
+### generateHTML for JSONB note content
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+TipTap stores content as a structured JSON document (ProseMirror schema), not a plain HTML string. The column type is JSONB. Calling generateHTML(content, [StarterKit, Image]) server-side converts the document tree to HTML before passing it to dangerouslySetInnerHTML. This is safe because the content source is the admin TipTap editor only — not public user input — so no DOMPurify is needed.
+
+### About page uses placeholder, not 404
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+/about is a permanent, known route. Returning 404 when the note is unpublished would be confusing and wrong — the page exists, the content just hasn't been written yet. The page shows a placeholder with instructions to create and publish a note with slug "about". Note detail pages (/notes/[slug]) do return 404 for missing or unpublished slugs because those are user-navigated or linked URLs where 404 is the correct behaviour.
+
+### generateStaticParams not used on detail pages
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+Not using generateStaticParams on /notes/[slug] or /projects/[slug]. ISR on-demand generation is sufficient at portfolio scale — pages are generated on first request and cached, without needing to enumerate all slugs at build time. Avoids the CI build complexity of needing a real database connection to enumerate slugs during next build.
+
+### Homepage revalidate = 3600 (switched from force-dynamic)
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+The original rationale for force-dynamic was "live note and project counts". That argument doesn't hold — content being up to an hour stale is not a real problem for a portfolio. The deciding reason is resilience: with force-dynamic, a transient DB failure (e.g. Neon cold start) causes the homepage to serve empty sections to employers. ISR serves the last cached snapshot instead. The DB load and consistency arguments were noted as secondary and not deciding factors at portfolio scale.
+
+### IS_PRERENDER_BUILD guard pattern
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+All public query helpers (getAllPublishedProjects, getAllPublishedNotes, getNoteBySlug) use an IS_PRERENDER_BUILD environment variable guard: if the env flag is 'true', a connection error returns an empty result or null with a console.warn rather than throwing. This allows next build to succeed in CI without a real database connection. Runtime errors (non-CI requests) still propagate so ISR can serve the stale cache. The flag is set in ci.yml alongside the placeholder DATABASE_URL.
+
+### Introduce an e2e_only database flag
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Rather than seeding/tearing down a separate test database, E2E tests create real records tagged with e2e_only = true. API routes filter these out from public views when not running in E2E mode. This keeps the E2E environment realistic while protecting the production-facing UI from test noise.
+
+### Separate Next.js build directory for E2E (NEXT_DIST_DIR / .next-e2e
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Added a configurable distDir in next.config.ts so that the E2E dev server can run in parallel with the normal dev server without conflicting build artifacts. The dev:e2e script starts the server on port 3001 with this alternate directory.
+
+### Replace ISR with force-dynamic on note/project detail pages
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Static regeneration (ISR with revalidate = 3600) caused stale 404s for newly published content during E2E tests. Switching to force-dynamic ensures that published items are immediately visible, which is essential for the E2E publish-and-verify flow.
+
+### Atomic INSERT ... ON CONFLICT DO UPDATE for login rate limiting
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Replaced the previous read-then-write pattern in loginAttempts.checkRateLimit with a single UPSERT to eliminate a race condition where concurrent login attempts could slip through the rate limit window.
+
+### Wrap getNoteBySlug and getProjectBySlug in React cache()
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+After switching to force-dynamic, these functions could be called multiple times per request (e.g., in both generateMetadata and page). Wrapping them in cache() deduplicates the DB calls within a single render pass.
+
 ## Blockers
 
 ### psql command not found after installing libpq
@@ -263,6 +341,30 @@ The original implementation had no handling for the case where PutObjectCommand 
 _Phase 04 · 2026-03-07T00:00:00.000Z_
 
 POST /api/pages and DELETE /api/pages/[id] returning 401 despite being authenticated. Root cause: stale JWT in the browser cookie from before session.user.role was added to the NextAuth callbacks. The existing dev session token didn't have the role field, so session.user.role !== "admin" was always true. Fixed by signing out and back in. Resolved permanently by removing the role check entirely.
+
+### Note content rendering as [object Object]
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+Note detail page was rendering the string [object Object] instead of content. Root cause: the content column is JSONB, not TEXT. The server component was passing the raw JavaScript object directly to dangerouslySetInnerHTML.\_\_html. Fixed by calling generateHTML(note.content, [StarterKit, Image]) to convert the TipTap JSON document tree to an HTML string before rendering. Guard added: Object.keys(note.content).length > 0 before calling generateHTML to avoid errors on empty content objects.
+
+### E2E tests polluting the shared database
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Running E2E tests against a real database meant that created/published notes and projects would appear in the live admin UI and public pages. Resolved by adding the e2e_only flag and a cleanup migration (004_remove_e2e_only_rows.sql) to purge test data, plus filtering it from public routes when not in E2E mode.
+
+### Port conflict between dev and E2E servers
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+The E2E Playwright config needed a running app on a predictable port, but the normal dev server occupies port 3000. Resolved by introducing the dev:e2e script (NEXT_DIST_DIR=.next-e2e next dev -p 3001) and pointing playwright.config.ts baseURL at http://localhost:3001.
+
+### Debounce timing in hook tests
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Tests for useEditorPage and useProjectEdit needed to verify that PATCH requests fire after debounce but not immediately. Required using Vitest's fake timers (vi.useFakeTimers) and vi.advanceTimersByTime() to simulate time advancing without real delays.
 
 ## Lessons
 
@@ -370,3 +472,45 @@ Any change to the JWT or session callbacks — adding fields, changing what's on
 _Phase 04 · 2026-03-07T00:00:00.000Z_
 
 URL scheme validation belongs in the API route handler at write time, not in the UI at render time. The same principle applies to slug validation, MIME type checks, and magic byte validation — enforce constraints when data enters the system so the database always contains only valid values, regardless of how many places that data is later read or rendered.
+
+### TipTap content in Postgres is JSONB, not TEXT — never pass it raw to dangerouslySetInnerHTML
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+TipTap stores its document as a ProseMirror JSON tree. Calling JSON.stringify on it gives you a JSON string, not HTML. Passing the raw object gives [object Object]. The correct pattern is generateHTML(content, extensions) from @tiptap/html, called server-side, which converts the document tree to an HTML string. The extensions list must match what was used in the editor — missing extensions silently drop nodes.
+
+### ISR resilience matters most exactly when you most need the site to work
+
+_Phase 05 · 2026-03-11T00:00:00.000Z_
+
+A Neon cold start or transient network blip is most likely to happen when traffic spikes — exactly when an employer is looking at your portfolio. force-dynamic means that spike causes empty content. ISR means the cached snapshot is served, and the failure is invisible. The performance argument for ISR is secondary; the resilience argument is what actually matters for a portfolio that might go weeks without traffic.
+
+### Test data isolation is a first-class concern for E2E testing against a real database
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+A simple boolean flag in the DB schema, combined with environment-aware query filtering, is a lightweight and effective pattern that avoids the complexity of managing separate test databases or full database snapshots.
+
+### force-dynamic is the safest default when E2E tests must verify content immediately after publishing
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+ISR caching is great for production performance, but it breaks the feedback loop in tests. If cache invalidation becomes a priority later, revalidatePath calls (already added to the PATCH routes) can be revisited.
+
+### React cache() is an important companion to force-dynamic
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Removing ISR means the per-request cache is gone; without cache(), a single page render that calls the same query function twice (e.g., metadata + page body) would hit the database twice unnecessarily.
+
+### Breaking tests into layers (utility → query → component → hook → E2E) makes the suite maintainable
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Lower-level tests are fast and precise; E2E tests validate the full user journey but are slow and credential-sensitive. Keeping the layers distinct makes it easy to locate failures and run only the relevant subset during development.
+
+### A pre-push hook (pnpm test:ci && pnpm test:e2e) is a strong signal of intent, but should be reviewed over time.
+
+_Phase 06 · 2026-03-13T00:00:00.000Z_
+
+Running E2E tests locally on every push can be slow and requires the dev server to be running. It may be worth splitting the hook to run only unit tests locally and leave E2E exclusively to CI.
