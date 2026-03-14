@@ -44,7 +44,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Suggestion:** Either a **CreateEntityButton** that accepts `apiPath`, `redirectPath`, `defaultTitle`, `buttonLabel`, and optionally `creatingLabel`, or a small **useCreateEntity** hook that returns `{ create, loading }` and a shared button UI. Both create buttons then just wire config to this.
 
-**Status:** ✅ Implemented. Shared **CreateEntityButton** in `components/shared/CreateEntityButton.tsx` accepts `apiPath`, `defaultTitle`, `redirectPathPrefix` (we redirect to `${redirectPathPrefix}/${response.id}`), `buttonLabel`, and optional `creatingLabel` and `errorMessage`. It POSTs `{ title, slug }` with `slug = slugify(defaultTitle) + "-" + Date.now()` and uses the same button styling. **CreateNoteButton** and **CreateProjectButton** are thin wrappers that pass the appropriate config. Existing tests for both buttons still pass.
+**Status:** ✅ Implemented. Shared **CreateEntityButton** in `components/shared/CreateEntityButton.tsx` accepts `apiPath`, `defaultTitle`, `redirectPathPrefix` (we redirect to `${redirectPathPrefix}/${response.id}`), `buttonLabel`, and optional `creatingLabel` and `errorMessage`. It POSTs `{ title, slug }` with `slug = slugify(defaultTitle) + "-" + Date.now()` and uses the same button styling. Admin notes and projects pages use **CreateEntityButton** directly with the appropriate config; wrapper components were removed. Tests live in `components/shared/CreateEntityButton.test.tsx` (note-like config, project-like config, and failure case).
 
 ---
 
@@ -152,7 +152,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField          |
 | Admin form styles  | editorStyles + projectEditStyles | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed |
 | Delete buttons     | Note + Project                   | ✅ `ConfirmDeleteButton` + thin wrappers                             |
-| Create buttons     | Note + Project                   | ✅ `CreateEntityButton` + thin wrappers                              |
+| Create buttons     | Note + Project                   | ✅ `CreateEntityButton` used directly in admin pages                 |
 | Meta bars          | Editor + Project                 | Single `EditMetaBar` with `deleteAction`                             |
 | Back links         | 4 places                         | Shared `BackLink`                                                    |
 | Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                        |
@@ -169,6 +169,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers. Section 5: shared `CreateEntityButton` in `components/shared/CreateEntityButton.tsx`; CreateNoteButton and CreateProjectButton are thin wrappers.
+**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers. Section 5: shared `CreateEntityButton` in `components/shared/CreateEntityButton.tsx`; used directly in admin notes and projects pages; tests in `CreateEntityButton.test.tsx`.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.

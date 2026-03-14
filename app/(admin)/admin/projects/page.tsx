@@ -1,5 +1,6 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { CreateProjectButton, ProjectRow } from "@/components/projects";
+import { CreateEntityButton } from "@/components/shared/CreateEntityButton";
+import { ProjectRow } from "@/components/projects";
 import { getAllProjects } from "@/lib/queries/project";
 import type { Project } from "@/types/projects";
 import { getServerSession } from "next-auth";
@@ -30,7 +31,13 @@ export default async function ProjectsPage() {
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px" }}>
             No projects yet
           </p>
-          <CreateProjectButton />
+          <CreateEntityButton
+            apiPath="/api/projects"
+            defaultTitle="Untitled Project"
+            redirectPathPrefix="/admin/projects"
+            buttonLabel="+ New project"
+            errorMessage="Failed to create project"
+          />
         </div>
       );
     }
@@ -91,7 +98,13 @@ export default async function ProjectsPage() {
               {publishedCount} published
             </span>
           </div>
-          <CreateProjectButton />
+          <CreateEntityButton
+            apiPath="/api/projects"
+            defaultTitle="Untitled Project"
+            redirectPathPrefix="/admin/projects"
+            buttonLabel="+ New project"
+            errorMessage="Failed to create project"
+          />
         </div>
 
         {renderProjectsTable(userProjects)}
