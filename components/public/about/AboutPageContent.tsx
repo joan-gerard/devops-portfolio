@@ -6,6 +6,7 @@ import { useMemo } from "react";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { EmptyState } from "@/components/public/EmptyState";
+import { PageContainer } from "@/components/public/PageContainer";
 
 export type AboutPageContentProps = {
   aboutNote: PublicNote | null;
@@ -28,11 +29,11 @@ export function AboutPageContent({ aboutNote }: AboutPageContentProps) {
   }, [aboutNote?.content]);
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
+    <PageContainer>
       <AboutHeader title={aboutNote?.title ?? "About this project"} updatedAt={updatedAt ?? null} />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }} />
       <AboutBody content={aboutNote?.content} html={output} />
-    </div>
+    </PageContainer>
   );
 }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { pageContainerBaseStyle } from "@/components/public/PageContainer";
+
 export function PublicFooter() {
   return (
     <footer
@@ -11,8 +13,7 @@ export function PublicFooter() {
     >
       <div
         style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
+          ...pageContainerBaseStyle,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",

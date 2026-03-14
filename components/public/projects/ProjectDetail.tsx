@@ -3,17 +3,12 @@
 import type { PublicProject } from "@/types/projects";
 import { BackLink } from "@/components/shared/BackLink";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
+import { PageContainer } from "@/components/public/PageContainer";
 import {
   ProjectDescriptionSection,
   ProjectLinksSection,
   ProjectTechStackSection,
 } from "./project-page";
-
-const containerStyle = {
-  maxWidth: "1100px",
-  margin: "0 auto",
-  padding: "48px 24px 80px",
-};
 
 const sectionDividerStyle = {
   border: "none",
@@ -42,13 +37,13 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
   const metadata = <p style={metadataDateStyle}>Last updated {updatedAt}</p>;
 
   return (
-    <div style={containerStyle}>
+    <PageContainer>
       <BackLink href="/projects">← All projects</BackLink>
       <DetailPageHeader label="Project" title={project.title} metadata={metadata} />
       <hr style={sectionDividerStyle} />
       <ProjectDescriptionSection description={project.description} />
       <ProjectTechStackSection techStack={project.tech_stack} />
       <ProjectLinksSection githubUrl={project.github_url} liveUrl={project.live_url} />
-    </div>
+    </PageContainer>
   );
 }

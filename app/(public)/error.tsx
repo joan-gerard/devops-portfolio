@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { PageContainer } from "@/components/public/PageContainer";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -35,14 +36,7 @@ export default function PublicError({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div
-      style={{
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "80px 24px",
-        textAlign: "center",
-      }}
-    >
+    <PageContainer style={{ padding: "80px 24px", textAlign: "center" }}>
       <h1
         style={{
           fontFamily: "var(--font-syne)",
@@ -77,6 +71,6 @@ export default function PublicError({ error, reset }: ErrorProps) {
       >
         Try again
       </button>
-    </div>
+    </PageContainer>
   );
 }

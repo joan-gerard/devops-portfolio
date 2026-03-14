@@ -126,6 +126,8 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 **Suggestion:** A shared constant (e.g. `pageContainerStyle`) or a **PageContainer** component used on all these public (and error) pages. That makes it easy to change width/padding in one place.
 
+**Done:** Added **PageContainer** (`components/public/PageContainer.tsx`) with `pageContainerBaseStyle` (maxWidth 1100px, margin 0 auto), `pageContainerStyle` (base + padding 48px 24px 80px), and a **PageContainer** component that accepts optional `style` and `className`. **ProjectDetail**, **NoteDetail**, **AboutPageContent**, notes page, projects page, and **error.tsx** use **PageContainer** (homepage and error pass a `style` override for padding). **PublicNav** and **PublicFooter** use `pageContainerBaseStyle` for their inner wrapper so maxWidth/margin stay in one place.
+
 ---
 
 ## 14. Save Status in Admin Hooks
@@ -174,7 +176,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Empty states       | Notes + Projects + About                                       | ✅ `EmptyState` (message/children/style); AboutEmptyState removed                    |
 | Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | ✅ **HomeSection**; sections use it; FeaturedProjects uses **ProjectCard**           |
 | Design tokens      | sectionStyles + projectStyles                                  | ✅ **publicPageStyles.ts**; sectionStyles + projectStyles removed                    |
-| Page container     | 6+ places                                                      | `pageContainerStyle` or `PageContainer`                                              |
+| Page container     | 6+ places                                                      | ✅ **PageContainer** + `pageContainerBaseStyle`; nav/footer use base                 |
 | Save status        | 2 hooks                                                        | Shared types/constants (+ optional hook)                                             |
 | Prerender fallback | 3 query functions                                              | `withPrerenderFallback`                                                              |
 | Link pills         | 2 places (ProjectCard + ProjectLinksSection)                   | `LinkPill` / `ExternalLink`                                                          |
@@ -183,6 +185,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–12: implemented (see status in each section). Sections 13–16: **Current** and **Suggestion** as above; #16 updated to reference publicPageStyles (linkBaseStyle) after #12.
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–13: implemented (see status in each section). Sections 14–16: **Current** and **Suggestion** as above; #16 updated to reference publicPageStyles (linkBaseStyle) after #12.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.

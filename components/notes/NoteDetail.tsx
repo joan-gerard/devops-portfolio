@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { BackLink } from "@/components/shared/BackLink";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
+import { PageContainer } from "@/components/public/PageContainer";
 import { useMemo } from "react";
 
 const tagStyle: React.CSSProperties = {
@@ -61,12 +62,12 @@ export function NoteDetail({ note }: NoteDetailProps) {
   );
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
+    <PageContainer>
       <BackLink href="/notes">← All notes</BackLink>
       <DetailPageHeader label="Note" title={note.title} metadata={metadata} />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }} />
       <NoteDetailContent content={note.content} html={output} />
-    </div>
+    </PageContainer>
   );
 }
 

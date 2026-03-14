@@ -5,6 +5,7 @@ import {
   RoadmapSection,
   TechStackSection,
 } from "@/components/public/home";
+import { PageContainer } from "@/components/public/PageContainer";
 import { getHomepageData } from "@/lib/queries/home";
 
 export const revalidate = 3600;
@@ -23,13 +24,13 @@ export default async function HomePage() {
   }
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 80px" }}>
+    <PageContainer style={{ padding: "0 24px 80px" }}>
       <HeroSection />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 72px" }} />
       <RecentNotesSection notes={notes} />
       <FeaturedProjectsSection projects={projects} />
       <RoadmapSection />
       <TechStackSection />
-    </div>
+    </PageContainer>
   );
 }
