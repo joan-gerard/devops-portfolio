@@ -1,33 +1,8 @@
 /**
  * Shared inline styles for the public projects page.
- * Keeps section label, heading, cards, and tags consistent.
+ * Page header styles (label, heading, description) live in PageHeader (components/public/PageHeader.tsx).
+ * Keeps section cards and tags consistent.
  */
-
-export const pageLabel: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
-  color: "var(--accent)",
-  textTransform: "uppercase",
-  letterSpacing: "0.15em",
-  marginBottom: "12px",
-};
-
-export const pageHeading: React.CSSProperties = {
-  fontFamily: "var(--font-syne)",
-  fontSize: "32px",
-  fontWeight: "800",
-  color: "var(--text)",
-  marginBottom: "12px",
-  letterSpacing: "-0.02em",
-};
-
-export const pageDescription: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "13px",
-  color: "var(--text-dim)",
-  maxWidth: "480px",
-  lineHeight: 1.7,
-};
 
 export const tag: React.CSSProperties = {
   fontFamily: "var(--font-mono)",

@@ -1,5 +1,6 @@
+import { PageHeader } from "@/components/public/PageHeader";
+import { ProjectsGrid } from "@/components/public/projects";
 import { getAllPublishedProjects } from "@/lib/queries/project";
-import { ProjectsPageHeader, ProjectsGrid } from "@/components/public/projects";
 
 export const revalidate = 3600;
 
@@ -18,7 +19,11 @@ export default async function ProjectsPage() {
 
   return (
     <div style={pageContainer}>
-      <ProjectsPageHeader />
+      <PageHeader
+        label="Projects"
+        heading="What I've been building"
+        description="Real projects built while learning DevOps — each one documented from infrastructure decisions to deployment."
+      />
       <ProjectsGrid projects={projects} />
     </div>
   );

@@ -68,11 +68,13 @@ This document captures refactoring opportunities across the app to increase reus
 
 ---
 
-## 8. Public Page Headers
+## 8. Public Page Headers ✅ Done
 
 **Current:** **NotesPageHeader** (`components/public/notes/NotesPageHeader.tsx`) uses inline styles for label, heading, and description. **ProjectsPageHeader** (`components/public/projects/ProjectsPageHeader.tsx`) uses `projectStyles` (`pageLabel`, `pageHeading`, `pageDescription` from `components/public/projects/projectStyles.ts`). The structure is the same: small label, main heading, description paragraph.
 
 **Suggestion:** Either a **PageHeader** component: `PageHeader({ label, heading, description })` that uses shared style constants, or shared design tokens (e.g. in `components/public/styles.ts` or `lib/styles/public.ts`) for “page label”, “page heading”, “page description”, and have both headers use them. That way Notes and Projects (and any future similar pages) stay consistent and you don’t repeat the same inline object.
+
+**Done:** Added **PageHeader** in `components/public/PageHeader.tsx` with shared style constants (`pageHeaderLabelStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`) and props `label`, `heading`, `description`. Notes and Projects pages use **PageHeader** directly; **NotesPageHeader** and **ProjectsPageHeader** wrappers removed. Removed `pageLabel`, `pageHeading`, `pageDescription` from `projectStyles.ts`.
 
 ---
 
@@ -159,7 +161,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Create buttons     | Note + Project                                                 | ✅ `CreateEntityButton` used directly in admin pages                                 |
 | Meta bars          | Editor + Project                                               | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
 | Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                 |
-| Page headers       | Notes inline, Projects styles                                  | `PageHeader` or shared tokens                                                        |
+| Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed              |
 | Detail headers     | Note + Project                                                 | `DetailPageHeader`                                                                   |
 | Empty states       | Notes + Projects + About                                       | `EmptyState` + shared styles                                                         |
 | Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | `SectionWithGrid` / `HomeSection`                                                    |
@@ -173,6 +175,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–7: implemented (see status in each section). Sections 8–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–8: implemented (see status in each section). Sections 9–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
