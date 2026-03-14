@@ -34,6 +34,8 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Suggestion:** A single **ConfirmDeleteButton** (or **DeleteEntityButton**) that takes `deleteUrl`, `redirectTo?`, and optional `onPreventDefault` (for use in rows/cards where you need to stop link navigation). Both current buttons become one-liners that pass the right URL and redirect.
 
+**Status:** ✅ Implemented. Shared **ConfirmDeleteButton** in `components/shared/ConfirmDeleteButton.tsx` takes `deleteUrl` and optional `redirectTo`; it handles confirm UI, loading, DELETE request, and navigation. The trigger button calls `e.preventDefault()` and `e.stopPropagation()` so it works inside links (e.g. NoteRowLink, ProjectRow). **DeleteNoteButton** and **DeleteProjectButton** are thin wrappers that pass `/api/pages/${id}` and `/api/projects/${id}` respectively. Existing tests for both buttons still pass.
+
 ---
 
 ## 5. Create Buttons
@@ -147,7 +149,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Form field         | Editor + Project                 | ✅ `AdminFormField` + shared `formStyles` (label)                    |
 | Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField          |
 | Admin form styles  | editorStyles + projectEditStyles | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed |
-| Delete buttons     | Note + Project                   | Single `ConfirmDeleteButton`                                         |
+| Delete buttons     | Note + Project                   | ✅ `ConfirmDeleteButton` + thin wrappers                             |
 | Create buttons     | Note + Project                   | `CreateEntityButton` or `useCreateEntity`                            |
 | Meta bars          | Editor + Project                 | Single `EditMetaBar` with `deleteAction`                             |
 | Back links         | 4 places                         | Shared `BackLink`                                                    |
@@ -165,6 +167,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`.
+**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
