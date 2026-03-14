@@ -1,18 +1,14 @@
 import type { CSSProperties, ReactNode } from "react";
+import {
+  emptyMessageStyle,
+  emptyStateWrapperStyle as wrapperStyleFromTokens,
+} from "./publicPageStyles";
 
-/**
- * Shared styles for empty-state blocks across public pages (Notes, Projects, About).
- */
-export const emptyStateWrapperStyle: CSSProperties = {
-  padding: "64px 0",
-  textAlign: "center",
-};
+/** Re-export for backward compatibility; same as emptyMessageStyle. */
+export const emptyStateTextStyle: CSSProperties = emptyMessageStyle;
 
-export const emptyStateTextStyle: CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "13px",
-  color: "var(--text-muted)",
-};
+/** Re-export so consumers can reference the token. */
+export const emptyStateWrapperStyle: CSSProperties = wrapperStyleFromTokens;
 
 export type EmptyStateProps = {
   /** Short message (single paragraph). Omit when using children for richer content. */
@@ -28,15 +24,16 @@ export type EmptyStateProps = {
 /**
  * Shared empty-state block: centered message and/or custom children.
  * Use for Notes (message only), Projects (message only), and About (children with instructions).
+ * Text and wrapper styles come from publicPageStyles.ts.
  */
 export function EmptyState({ message, children, style, className }: EmptyStateProps) {
   const wrapperStyle: CSSProperties = style
-    ? { ...emptyStateWrapperStyle, ...style }
-    : emptyStateWrapperStyle;
+    ? { ...wrapperStyleFromTokens, ...style }
+    : wrapperStyleFromTokens;
 
   return (
     <div style={wrapperStyle} className={className}>
-      {message != null && <p style={emptyStateTextStyle}>{message}</p>}
+      {message != null && <p style={emptyMessageStyle}>{message}</p>}
       {children}
     </div>
   );

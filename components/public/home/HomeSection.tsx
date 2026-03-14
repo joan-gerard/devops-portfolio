@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import {
-  sectionHeading,
-  sectionLabel,
-  viewAllLink,
-  emptyMessage as emptyMessageStyle,
-} from "./sectionStyles";
+  sectionHeadingStyle,
+  sectionLabelStyle,
+  viewAllLinkStyle,
+  emptyMessageStyle,
+} from "@/components/public/publicPageStyles";
 
 export type HomeSectionProps = {
   /** Small uppercase label above the heading (e.g. "Recent Notes"). */
@@ -52,14 +52,14 @@ export function HomeSection({
 
   return (
     <section style={sectionStyle}>
-      <p style={sectionLabel}>{label}</p>
-      <h2 style={sectionHeading}>{heading}</h2>
+      <p style={sectionLabelStyle}>{label}</p>
+      <h2 style={sectionHeadingStyle}>{heading}</h2>
 
       {hasContent && children}
       {showEmpty && <p style={emptyMessageStyle}>{emptyMessage}</p>}
 
       {viewAllHref != null && viewAllLabel != null && (
-        <Link href={viewAllHref} style={viewAllLink}>
+        <Link href={viewAllHref} style={viewAllLinkStyle}>
           {viewAllLabel}
         </Link>
       )}

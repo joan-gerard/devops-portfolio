@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { cardBase, linkBase, linkRow, tag } from "./projectStyles";
+import {
+  cardProjectStyle,
+  linkBaseStyle,
+  linkRowStyle,
+  tagStyle,
+} from "@/components/public/publicPageStyles";
 
 /**
  * Minimal project shape used by ProjectCard.
@@ -21,7 +26,7 @@ type ProjectCardProps = { project: ProjectCardProject };
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div style={cardBase} className="u-border-accent-hover" data-testid="project-card">
+    <div style={cardProjectStyle} className="u-border-accent-hover" data-testid="project-card">
       <div>
         <h2
           style={{
@@ -52,21 +57,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {project.tech_stack.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {project.tech_stack.map((t) => (
-            <span key={t} style={tag}>
+            <span key={t} style={tagStyle}>
               {t}
             </span>
           ))}
         </div>
       )}
 
-      <div style={linkRow}>
+      <div style={linkRowStyle}>
         {project.github_url && (
           <a
             href={project.github_url}
             aria-label={`GitHub repository for ${project.title}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ ...linkBase }}
+            style={{ ...linkBaseStyle }}
             className="u-text-muted-text-hover"
           >
             GitHub →
@@ -78,7 +83,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             aria-label={`Live demo for ${project.title}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ ...linkBase }}
+            style={{ ...linkBaseStyle }}
             className="u-text-accent-text-hover"
           >
             Live →
@@ -87,7 +92,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <Link
           href={`/projects/${project.slug}`}
           aria-label={`Details for ${project.title}`}
-          style={{ ...linkBase, marginLeft: "auto" }}
+          style={{ ...linkBaseStyle, marginLeft: "auto" }}
           className="u-text-muted-text-hover"
         >
           Details →

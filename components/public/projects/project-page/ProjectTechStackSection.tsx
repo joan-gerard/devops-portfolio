@@ -1,4 +1,4 @@
-import { tag as tagStyle } from "../projectStyles";
+import { tagStyle } from "@/components/public/publicPageStyles";
 
 type ProjectTechStackSectionProps = {
   techStack: string[];

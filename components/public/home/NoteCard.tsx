@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { RecentNote } from "@/types/home";
-import { card, tag } from "./sectionStyles";
+import { cardSectionStyle, tagStyle } from "@/components/public/publicPageStyles";
 
 type NoteCardProps = { note: RecentNote };
 
@@ -11,7 +11,7 @@ export function NoteCard({ note }: NoteCardProps) {
     <Link href={`/notes/${note.slug}`} style={{ textDecoration: "none" }}>
       <div
         style={{
-          ...card,
+          ...cardSectionStyle,
           height: "100%",
           cursor: "pointer",
         }}
@@ -31,7 +31,7 @@ export function NoteCard({ note }: NoteCardProps) {
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
           {note.tags.slice(0, 3).map((t) => (
-            <span key={t} style={tag}>
+            <span key={t} style={tagStyle}>
               {t}
             </span>
           ))}

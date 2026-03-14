@@ -112,9 +112,11 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 ## 12. Design Tokens Across Public Pages
 
-**Current:** **sectionStyles** (`components/public/home/sectionStyles.ts`) and **projectStyles** (`components/public/projects/projectStyles.ts`) both define label (small uppercase mono), heading (Syne, bold), tag (mono, muted, pill), and card-like styles. Home uses sectionStyles in RecentNotesSection, FeaturedProjectsSection, TechStackSection, RoadmapSection, and NoteCard. Projects use projectStyles in ProjectsPageHeader, ProjectsGrid, ProjectCard, and project-page components (e.g. ProjectDetailHeader could use them but currently uses inline styles). Notes page uses inline styles only. Values are similar but live in two (or three) places.
+**Current:** **sectionStyles** (`components/public/home/sectionStyles.ts`) defines label, heading, viewAllLink, emptyMessage, card, and tag. **projectStyles** (`components/public/projects/projectStyles.ts`) defines tag, cardBase, linkRow, and linkBase. Home uses sectionStyles via **HomeSection** (label, heading, viewAllLink, emptyMessage) and **NoteCard** (card, tag); homepage featured projects use **ProjectCard**, which uses projectStyles (cardBase, tag, linkBase, linkRow). Projects page uses projectStyles in ProjectsPageHeader, ProjectsGrid, ProjectCard. Project-detail and Notes pages still use inline styles in places (e.g. ProjectDetailHeader). Values are similar but live in two files with no shared tokens.
 
-**Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, and optionally “view all” link and empty state. Home, projects, and Notes (if refactored) import from there. That reduces duplication and keeps the public look consistent.
+**Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, link row/base, “view all” link, and empty state. Home, projects, and Notes (if refactored) import from there. That reduces duplication and keeps the public look consistent.
+
+**Done:** Added **publicPageStyles** (`components/public/publicPageStyles.ts`) with unified tokens: label base → `sectionLabelStyle` / `pageHeaderLabelStyle`, `sectionHeadingStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`, `viewAllLinkStyle`, `tagStyle`, `cardSectionStyle` / `cardProjectStyle`, `linkRowStyle`, `linkBaseStyle`, `emptyMessageStyle`, `emptyStateWrapperStyle`. **HomeSection**, **NoteCard**, **ProjectCard**, **ProjectTechStackSection**, **PageHeader**, and **EmptyState** import from it. Removed `sectionStyles.ts` and `projectStyles.ts`; all public page styles now live in one file.
 
 ---
 
@@ -150,9 +152,9 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## 16. External Link / “Pill” Styling
 
-**Current:** **ProjectLinksSection** (`components/public/projects/project-page/ProjectLinksSection.tsx`) uses inline styles for “GitHub →” and “Live demo →” (mono 12px, border, padding, hover classes). **ProjectCard** (`components/public/projects/ProjectCard.tsx`) uses `linkBase` from projectStyles plus hover classes for “GitHub →” and “Live →”. **FeaturedProjectsSection** (`components/public/home/FeaturedProjectsSection.tsx`) uses inline mono 11px styles for the same links. Styling is similar but duplicated in three places with small variations (font size, border vs no border on home).
+**Current:** **ProjectLinksSection** (`components/public/projects/project-page/ProjectLinksSection.tsx`) uses inline styles for “GitHub →” and “Live demo →” (mono 12px, bordered pill, padding, hover classes). **ProjectCard** (`components/public/projects/ProjectCard.tsx`) uses `linkBaseStyle` from publicPageStyles plus hover classes for “GitHub →”, “Live →”, and “Details →”; it is used on both the projects page and the homepage (**FeaturedProjectsSection**), so list/card link styling is already unified there. Remaining duplication: ProjectLinksSection (pill style on project detail page) vs ProjectCard (plain link style); similar intent but two implementations.
 
-**Suggestion:** A small **LinkPill** or **ExternalLink** component (or shared style set) with variants (e.g. muted vs accent) so these links are implemented once and stay consistent.
+**Suggestion:** A small **LinkPill** or **ExternalLink** component (or shared style set) with variants (e.g. muted vs accent, pill vs plain) so project-detail links and card links can share one implementation and stay consistent.
 
 ---
 
@@ -170,17 +172,17 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed              |
 | Detail headers     | Note + Project                                                 | ✅ `DetailPageHeader` + shared styles; ProjectDetailHeader removed                   |
 | Empty states       | Notes + Projects + About                                       | ✅ `EmptyState` (message/children/style); AboutEmptyState removed                    |
-| Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | `SectionWithGrid` / `HomeSection`                                                    |
-| Design tokens      | sectionStyles + projectStyles                                  | Unified public page tokens                                                           |
+| Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | ✅ **HomeSection**; sections use it; FeaturedProjects uses **ProjectCard**           |
+| Design tokens      | sectionStyles + projectStyles                                  | ✅ **publicPageStyles.ts**; sectionStyles + projectStyles removed                    |
 | Page container     | 6+ places                                                      | `pageContainerStyle` or `PageContainer`                                              |
 | Save status        | 2 hooks                                                        | Shared types/constants (+ optional hook)                                             |
 | Prerender fallback | 3 query functions                                              | `withPrerenderFallback`                                                              |
-| Link pills         | 3+ places                                                      | `LinkPill` / `ExternalLink`                                                          |
+| Link pills         | 2 places (ProjectCard + ProjectLinksSection)                   | `LinkPill` / `ExternalLink`                                                          |
 
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–10: implemented (see status in each section). Sections 11–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–12: implemented (see status in each section). Sections 13–16: **Current** and **Suggestion** as above; #16 updated to reference publicPageStyles (linkBaseStyle) after #12.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
