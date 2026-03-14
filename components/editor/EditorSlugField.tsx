@@ -1,7 +1,7 @@
 "use client";
 
+import { inputStyle, secondaryButtonStyle } from "@/components/admin/formStyles";
 import { SlugField } from "@/components/shared/SlugField";
-import { inputStyle, secondaryButtonStyle } from "./editorStyles";
 
 type EditorSlugFieldProps = {
   value: string;

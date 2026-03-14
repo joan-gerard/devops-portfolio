@@ -14,7 +14,7 @@ import { TagInput } from "../TagInput";
 import { ProjectEditFormField } from "./ProjectEditFormField";
 import { ProjectEditMetaBar } from "./ProjectEditMetaBar";
 import { ProjectSlugField } from "./ProjectSlugField";
-import { inputStyle } from "./projectEditStyles";
+import { inputStyle } from "@/components/admin/formStyles";
 
 export function ProjectEditClient({ project }: { project: Project }) {
   const {

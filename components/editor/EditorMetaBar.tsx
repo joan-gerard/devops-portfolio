@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import DeleteNoteButton from "../notes/DeleteNoteButton";
-import { publishButtonStyle } from "./editorStyles";
+import { publishButtonStyle } from "@/components/admin/formStyles";
 
 type EditorMetaBarProps = {
   saveStatus: string;

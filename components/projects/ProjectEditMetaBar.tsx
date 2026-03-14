@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { DeleteProjectButton } from "./DeleteProjectButton";
-import { publishButtonStyle } from "./projectEditStyles";
+import { publishButtonStyle } from "@/components/admin/formStyles";
 
 type ProjectEditMetaBarProps = {
   saveStatus: string;
