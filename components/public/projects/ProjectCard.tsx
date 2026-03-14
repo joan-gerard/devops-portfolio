@@ -1,14 +1,27 @@
 "use client";
 
-import type { PublishedProject } from "@/lib/queries/project";
 import Link from "next/link";
 import { cardBase, linkBase, linkRow, tag } from "./projectStyles";
 
-type ProjectCardProps = { project: PublishedProject };
+/**
+ * Minimal project shape used by ProjectCard.
+ * Compatible with PublishedProject (projects page) and FeaturedProject (homepage).
+ */
+export type ProjectCardProject = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  tech_stack: string[];
+  github_url: string | null;
+  live_url: string | null;
+};
+
+type ProjectCardProps = { project: ProjectCardProject };
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div style={cardBase} className="u-border-accent-hover">
+    <div style={cardBase} className="u-border-accent-hover" data-testid="project-card">
       <div>
         <h2
           style={{

@@ -48,3 +48,10 @@ export const tag: React.CSSProperties = {
   padding: "2px 8px",
   textTransform: "lowercase",
 };
+
+/** Used by HomeSection when rendering emptyMessage. */
+export const emptyMessage: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "13px",
+  color: "var(--text-muted)",
+};

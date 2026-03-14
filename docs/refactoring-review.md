@@ -106,6 +106,8 @@ This document captures refactoring opportunities across the app to increase reus
 
 Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.tsx`) or a shared card for the homepage featured projects: **FeaturedProject** and **PublishedProject** are compatible in shape, so the home section could render the same card component with the same styles and link behaviour.
 
+**Done:** Added **HomeSection** in `components/public/home/HomeSection.tsx` with props `label`, `heading`, `emptyMessage?`, `viewAllHref?`, `viewAllLabel?`, `children?`, and optional `wrapperStyle?`. Section layout and "View all" link live in one place. **RecentNotesSection**, **FeaturedProjectsSection**, **TechStackSection**, and **RoadmapSection** now use **HomeSection** and pass their content as children. **FeaturedProjectsSection** reuses **ProjectCard** (from `components/public/projects/ProjectCard.tsx`): **ProjectCard** accepts a shared **ProjectCardProject** type compatible with **FeaturedProject** and **PublishedProject**, so the homepage and projects page share the same card styles and link behaviour. Added `emptyMessage` style to `sectionStyles.ts` for consistent empty-state text. **ProjectCard** exports `data-testid="project-card"`; **FeaturedProjectsSection** tests updated to use it.
+
 ---
 
 ## 12. Design Tokens Across Public Pages
