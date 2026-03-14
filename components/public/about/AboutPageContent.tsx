@@ -5,6 +5,7 @@ import { generateHTML } from "@tiptap/html";
 import { useMemo } from "react";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
+import { EmptyState } from "@/components/public/EmptyState";
 
 export type AboutPageContentProps = {
   aboutNote: PublicNote | null;
@@ -88,55 +89,41 @@ type AboutBodyProps = {
   html: string;
 };
 
+const aboutEmptyMessageStyle: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "13px",
+  color: "var(--text-muted)",
+  marginBottom: "12px",
+};
+
+const aboutEmptyHintStyle: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "12px",
+  color: "var(--text-muted)",
+  lineHeight: 1.7,
+  opacity: 0.7,
+};
+
+const aboutSlugChipStyle: React.CSSProperties = {
+  color: "var(--accent)",
+  background: "var(--surface-2)",
+  border: "1px solid var(--border)",
+  borderRadius: "3px",
+  padding: "1px 6px",
+};
+
 function AboutBody({ content, html }: AboutBodyProps) {
   const hasContent = content && Object.keys(content).length > 0;
   if (hasContent && html) {
     return <div className="note-content" dangerouslySetInnerHTML={{ __html: html }} />;
   }
-  return <AboutEmptyState />;
-}
-
-function AboutEmptyState() {
   return (
-    <div
-      style={{
-        padding: "48px 0",
-        borderRadius: "6px",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "13px",
-          color: "var(--text-muted)",
-          marginBottom: "12px",
-        }}
-      >
-        This page isn&apos;t written yet.
-      </p>
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "12px",
-          color: "var(--text-muted)",
-          lineHeight: 1.7,
-          opacity: 0.7,
-        }}
-      >
+    <EmptyState style={{ padding: "48px 0", borderRadius: "6px" }}>
+      <p style={aboutEmptyMessageStyle}>This page isn&apos;t written yet.</p>
+      <p style={aboutEmptyHintStyle}>
         To publish this page: create a note in the admin editor, set its slug to{" "}
-        <span
-          style={{
-            color: "var(--accent)",
-            background: "var(--surface-2)",
-            border: "1px solid var(--border)",
-            borderRadius: "3px",
-            padding: "1px 6px",
-          }}
-        >
-          about
-        </span>
-        , write your content, then publish it.
+        <span style={aboutSlugChipStyle}>about</span>, write your content, then publish it.
       </p>
-    </div>
+    </EmptyState>
   );
 }

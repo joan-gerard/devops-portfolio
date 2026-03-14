@@ -25,17 +25,6 @@ export const cardBase: React.CSSProperties = {
   transition: "border-color 0.15s",
 };
 
-export const emptyState: React.CSSProperties = {
-  padding: "64px 0",
-  textAlign: "center",
-};
-
-export const emptyStateText: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "13px",
-  color: "var(--text-muted)",
-};
-
 export const linkRow: React.CSSProperties = {
   display: "flex",
   gap: "16px",

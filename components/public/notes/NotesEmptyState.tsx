@@ -1,5 +1,7 @@
 "use client";
 
+import { EmptyState } from "@/components/public/EmptyState";
+
 type NotesEmptyStateProps = {
   activeTag: string | null;
 };
@@ -12,17 +14,5 @@ export function NotesEmptyState({ activeTag }: NotesEmptyStateProps) {
     ? `No notes tagged "${activeTag}".`
     : "No notes published yet — check back soon.";
 
-  return (
-    <div style={{ padding: "64px 0", textAlign: "center" }}>
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "13px",
-          color: "var(--text-muted)",
-        }}
-      >
-        {message}
-      </p>
-    </div>
-  );
+  return <EmptyState message={message} />;
 }

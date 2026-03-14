@@ -88,11 +88,13 @@ This document captures refactoring opportunities across the app to increase reus
 
 ---
 
-## 10. Empty States
+## 10. Empty States ✅ Done
 
 **Current:** **NotesEmptyState** (`components/public/notes/NotesEmptyState.tsx`) uses inline styles (e.g. padding 64px vertical, mono 13px muted). The empty branch in **ProjectsGrid** (`components/public/projects/ProjectsGrid.tsx`) uses `emptyState` and `emptyStateText` from `projectStyles`. **AboutPageContent** (`components/public/about/AboutPageContent.tsx`) has an internal **AboutEmptyState** (padding 48px vertical, mono 13px/12px muted) that follows the same pattern. Layout and typography are repeated in three places.
 
 **Suggestion:** A single **EmptyState** component that takes `message` (and optionally `className`/style or `children` for richer content like About’s instructions), and shared styles (e.g. in a shared “public page” styles file). Use it on Notes, Projects, and About so copy and layout stay consistent and you don’t duplicate the layout object.
+
+**Done:** Added **EmptyState** in `components/public/EmptyState.tsx` with shared styles (`emptyStateWrapperStyle`, `emptyStateTextStyle`) and props `message?`, `children?`, `style?`, `className?`. **NotesEmptyState** and **ProjectsGrid** use it with `message`; **AboutPageContent** uses it with `children` (instructions + slug hint) and a style override (48px padding, border-radius). Removed **AboutEmptyState** and `emptyState` / `emptyStateText` from `projectStyles.ts`.
 
 ---
 
@@ -165,7 +167,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                 |
 | Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed              |
 | Detail headers     | Note + Project                                                 | ✅ `DetailPageHeader` + shared styles; ProjectDetailHeader removed                   |
-| Empty states       | Notes + Projects + About                                       | `EmptyState` + shared styles                                                         |
+| Empty states       | Notes + Projects + About                                       | ✅ `EmptyState` (message/children/style); AboutEmptyState removed                    |
 | Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | `SectionWithGrid` / `HomeSection`                                                    |
 | Design tokens      | sectionStyles + projectStyles                                  | Unified public page tokens                                                           |
 | Page container     | 6+ places                                                      | `pageContainerStyle` or `PageContainer`                                              |
@@ -177,6 +179,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–9: implemented (see status in each section). Sections 10–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–10: implemented (see status in each section). Sections 11–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.

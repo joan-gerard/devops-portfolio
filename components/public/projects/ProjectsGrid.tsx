@@ -1,6 +1,6 @@
 import type { PublishedProject } from "@/lib/queries/project";
+import { EmptyState } from "@/components/public/EmptyState";
 import { ProjectCard } from "./ProjectCard";
-import { emptyState, emptyStateText } from "./projectStyles";
 
 type ProjectsGridProps = { projects: PublishedProject[] };
 
@@ -12,11 +12,7 @@ const gridStyle: React.CSSProperties = {
 
 export function ProjectsGrid({ projects }: ProjectsGridProps) {
   if (projects.length === 0) {
-    return (
-      <div style={emptyState}>
-        <p style={emptyStateText}>No projects published yet — check back soon.</p>
-      </div>
-    );
+    return <EmptyState message="No projects published yet — check back soon." />;
   }
 
   return (
