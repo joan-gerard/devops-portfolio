@@ -110,8 +110,8 @@ Use **React Testing Library** (with a `jsdom` environment).
   - **What to extend**: If you surface an explicit error UI on failure, assert that it appears; when you introduce a shared `useCreateEntity` or `CreateEntityButton`, keep these behaviors covered while pointing the tests at the new abstraction.
   - **Why**: Important admin workflows and a good place for tests once you centralize create logic; current tests protect API contracts, slug generation, and navigation behavior.
 
-- **Slug fields** – `components/editor/EditorSlugField.tsx`, `components/projects/ProjectSlugField.tsx`
-  - **Done:** `components/editor/EditorSlugField.test.tsx` — typing into the slug input lowercases, replaces disallowed chars with hyphens, and collapses multiple hyphens; "↺ from title" button calls `onRegenerateFromTitle`; published hint (break existing URLs) shown only when `published` is true. `components/projects/ProjectSlugField.test.tsx` — same input sanitization; "↺ from title" calls `onChange(slugify(titleForRegenerate))` (slugify mocked); regenerate result respects length limit (≤80 from slugify); published hint when `published` is true.
+- **Slug fields** – Shared UI: `components/shared/SlugField.tsx`; thin wrappers: `EditorSlugField.tsx`, `ProjectSlugField.tsx`. Sanitisation: `lib/slugify.ts` (`sanitiseSlugForInput`).
+  - **Done:** `lib/__tests__/slugify.test.ts` — `sanitiseSlugForInput` lowercases, replaces disallowed chars with hyphens, collapses hyphens. `EditorSlugField.test.tsx` — slug input sanitization, "↺ from title" calls `onRegenerateFromTitle`, published hint. `ProjectSlugField.test.tsx` — same sanitization (uses real `sanitiseSlugForInput`, mocked `slugify`); "↺ from title" calls `onChange(slugify(titleForRegenerate))` or `onRegenerateFromTitle`; length limit (≤80); published hint.
   - **Why**: Bridge between user input and `validateSlug`/`slugify`; fragile formatting rules.
 
 - **Save-status meta bars** – `components/editor/EditorMetaBar.tsx`, `components/projects/ProjectEditMetaBar.tsx` and hooks mentioned in doc (`useEditorPage`, `useProjectEdit`)

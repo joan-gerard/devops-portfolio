@@ -16,10 +16,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Current:** `EditorSlugField` and `ProjectSlugField` duplicate the same `sanitiseSlugInput` (lowercase, `a-z0-9-`, collapse hyphens) and the same layout (input + “↺ from title” button and hint text). They differ only in which form field wrapper they use and how “regenerate from title” is implemented (editor gets slug from parent, project uses `slugify(titleForRegenerate)`).
 
-**Suggestions:**
-
-- Move **slug sanitisation** into `lib/slugify.ts` (e.g. `sanitiseSlugForInput(raw: string)`) and use it in both components. That keeps one source of truth for slug rules and avoids drift from `slugify()`.
-- Introduce a single **SlugField** (or keep two thin wrappers) that receives: `value`, `onChange`, `onRegenerate`, `published`, `hint`, `placeholder`, `ariaLabel`. Both current components become thin wrappers that pass the right `onRegenerate` and use the shared `FormField`.
+**Status:** ✅ Implemented. Slug sanitisation moved to `lib/slugify.ts` as `sanitiseSlugForInput(raw: string)`; shared **SlugField** in `components/shared/SlugField.tsx` uses it and `AdminFormField` for label/hint. **EditorSlugField** and **ProjectSlugField** are thin wrappers that pass `onRegenerate`, `hint`, `placeholder`, `ariaLabel`, and context-specific `inputStyle`/`secondaryButtonStyle` from editorStyles or projectEditStyles.
 
 ---
 
@@ -145,29 +142,29 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## Summary Table
 
-| Area               | Current duplication              | Reuse approach                                                   |
-| ------------------ | -------------------------------- | ---------------------------------------------------------------- |
-| Form field         | Editor + Project                 | Single `FormField` / `AdminFormField`                            |
-| Slug field         | 2 components + 2× sanitise       | Shared `sanitiseSlugForInput` + one SlugField (or thin wrappers) |
-| Admin form styles  | editorStyles + projectEditStyles | One admin form styles module                                     |
-| Delete buttons     | Note + Project                   | Single `ConfirmDeleteButton`                                     |
-| Create buttons     | Note + Project                   | `CreateEntityButton` or `useCreateEntity`                        |
-| Meta bars          | Editor + Project                 | Single `EditMetaBar` with `deleteAction`                         |
-| Back links         | 4 places                         | Shared `BackLink`                                                |
-| Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                    |
-| Detail headers     | Note + Project                   | `DetailPageHeader`                                               |
-| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                     |
-| Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                                |
-| Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                       |
-| Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                          |
-| Save status        | 2 hooks                          | Shared types/constants (+ optional hook)                         |
-| Prerender fallback | 3 query functions                | `withPrerenderFallback`                                          |
-| Link pills         | 3+ places                        | `LinkPill` / `ExternalLink`                                      |
+| Area               | Current duplication              | Reuse approach                                              |
+| ------------------ | -------------------------------- | ----------------------------------------------------------- |
+| Form field         | Editor + Project                 | Single `FormField` / `AdminFormField`                       |
+| Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField |
+| Admin form styles  | editorStyles + projectEditStyles | One admin form styles module                                |
+| Delete buttons     | Note + Project                   | Single `ConfirmDeleteButton`                                |
+| Create buttons     | Note + Project                   | `CreateEntityButton` or `useCreateEntity`                   |
+| Meta bars          | Editor + Project                 | Single `EditMetaBar` with `deleteAction`                    |
+| Back links         | 4 places                         | Shared `BackLink`                                           |
+| Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                               |
+| Detail headers     | Note + Project                   | `DetailPageHeader`                                          |
+| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                |
+| Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                           |
+| Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                  |
+| Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                     |
+| Save status        | 2 hooks                          | Shared types/constants (+ optional hook)                    |
+| Prerender fallback | 3 query functions                | `withPrerenderFallback`                                     |
+| Link pills         | 3+ places                        | `LinkPill` / `ExternalLink`                                 |
 
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2025 — paths and component locations verified; added ProjectDetailHeader path (`project-page/`), About empty state (Section 10), TechStackSection/RoadmapSection and design-token consumers (Sections 11–12). Section 1 completed: shared `components/admin/formStyles.ts` for label style; AdminFormField uses it by default; duplicate labelStyle removed from editor/project edit styles.
+**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` in `lib/slugify.ts`; shared `SlugField` in `components/shared/SlugField.tsx`; EditorSlugField and ProjectSlugField are thin wrappers.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.

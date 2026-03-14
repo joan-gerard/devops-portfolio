@@ -3,17 +3,21 @@ import { render, screen, fireEvent } from "@/test/test-utils";
 import { ProjectSlugField } from "./ProjectSlugField";
 import { slugify } from "@/lib/slugify";
 
-vi.mock("@/lib/slugify", () => ({
-  slugify: vi.fn((value: string) =>
-    value
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .substring(0, 80)
-  ),
-}));
+vi.mock("@/lib/slugify", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/slugify")>();
+  return {
+    ...actual,
+    slugify: vi.fn((value: string) =>
+      value
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .substring(0, 80)
+    ),
+  };
+});
 
 const mockedSlugify = vi.mocked(slugify);
 
