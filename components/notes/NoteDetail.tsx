@@ -4,7 +4,7 @@ import { generateHTML } from "@tiptap/html";
 import DOMPurify from "dompurify";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
-import Link from "next/link";
+import { BackLink } from "@/components/shared/BackLink";
 import { useMemo } from "react";
 
 const tagStyle: React.CSSProperties = {
@@ -42,19 +42,11 @@ export function NoteDetail({ note }: NoteDetailProps) {
 
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
-      <NoteBackLink />
+      <BackLink href="/notes">← All notes</BackLink>
       <NoteDetailHeader title={note.title} tags={note.tags} updatedAt={updatedAt} />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }} />
       <NoteDetailContent content={note.content} html={output} />
     </div>
-  );
-}
-
-function NoteBackLink() {
-  return (
-    <Link href="/notes" className="notes-back-link">
-      ← All notes
-    </Link>
   );
 }
 

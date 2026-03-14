@@ -139,8 +139,8 @@ body {
   display: block;
 }
 
-/* ── Note detail layout ──────────────────────────────────────────────────── */
-.notes-back-link {
+/* ── Shared back link (admin + public) ────────────────────────────────────── */
+.back-link {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
@@ -149,9 +149,14 @@ body {
   align-items: center;
   gap: 4px;
   margin-bottom: 48px;
+  transition: color 0.15s;
 }
-.notes-back-link:hover {
+.back-link:hover,
+.back-link:focus-visible {
   color: var(--accent);
+}
+.back-link--compact {
+  margin-bottom: 0;
 }
 
 /* ── Note prose content ──────────────────────────────────────────────────── */

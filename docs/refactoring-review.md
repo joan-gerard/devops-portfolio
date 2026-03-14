@@ -58,17 +58,19 @@ This document captures refactoring opportunities across the app to increase reus
 
 ---
 
-## 7. Back Link Styling
+## 7. Back Link Styling ✅ Done
 
-**Current:** Back links appear in `EditorMetaBar` / `ProjectEditMetaBar` (inline `backLinkStyle`), `BackToProjectsLink` (`components/public/projects/project-page/BackToProjectsLink.tsx`; class `notes-back-link` + `u-text-muted-accent-hover`), and `NoteDetail`’s `NoteBackLink` (class `notes-back-link`).
+**Current:** Back links appear in **EditMetaBar** (`components/shared/EditMetaBar.tsx`; inline `backLinkStyle`), **BackToProjectsLink** (`components/public/projects/project-page/BackToProjectsLink.tsx`; class `notes-back-link` + `u-text-muted-accent-hover`), and `NoteDetail`’s `NoteBackLink` (`components/notes/NoteDetail.tsx`; class `notes-back-link`). Admin uses inline styles; public pages use CSS classes.
 
-**Suggestion:** A shared **BackLink** component that takes `href` and `children`, and uses one style (either a shared class or a small shared style object). Use it in meta bars, `BackToProjectsLink`, and `NoteDetail` so back links look and behave the same everywhere.
+**Suggestion:** A shared **BackLink** component that takes `href` and `children`, and uses one style (either a shared class or a small shared style object). Use it in EditMetaBar, BackToProjectsLink, and NoteDetail so back links look and behave the same everywhere.
+
+**Done:** Added `components/shared/BackLink.tsx` (props: `href`, `children`, optional `className`). Styling lives in `app/globals.css` under `.back-link` (and `.back-link--compact` for admin bars). EditMetaBar, ProjectDetail, and NoteDetail use BackLink directly; removed wrappers BackToProjectsLink and NoteBackLink, inline `backLinkStyle`, and the old `.notes-back-link` class.
 
 ---
 
 ## 8. Public Page Headers
 
-**Current:** `NotesPageHeader` uses inline styles for label, heading, and description. `ProjectsPageHeader` uses `projectStyles` (`pageLabel`, `pageHeading`, `pageDescription`). The structure is the same: small label, main heading, description paragraph.
+**Current:** **NotesPageHeader** (`components/public/notes/NotesPageHeader.tsx`) uses inline styles for label, heading, and description. **ProjectsPageHeader** (`components/public/projects/ProjectsPageHeader.tsx`) uses `projectStyles` (`pageLabel`, `pageHeading`, `pageDescription` from `components/public/projects/projectStyles.ts`). The structure is the same: small label, main heading, description paragraph.
 
 **Suggestion:** Either a **PageHeader** component: `PageHeader({ label, heading, description })` that uses shared style constants, or shared design tokens (e.g. in `components/public/styles.ts` or `lib/styles/public.ts`) for “page label”, “page heading”, “page description”, and have both headers use them. That way Notes and Projects (and any future similar pages) stay consistent and you don’t repeat the same inline object.
 
@@ -76,7 +78,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 9. Detail Page Headers
 
-**Current:** `NoteDetailHeader` (inside `NoteDetail.tsx`) and `ProjectDetailHeader` (`components/public/projects/project-page/ProjectDetailHeader.tsx`) use the same layout: small uppercase label (“Note” / “Project”), large title, then metadata (tags + date vs date only). Inline styles are repeated.
+**Current:** **NoteDetailHeader** (inside `components/notes/NoteDetail.tsx`) and **ProjectDetailHeader** (`components/public/projects/project-page/ProjectDetailHeader.tsx`) use the same layout: small uppercase label (“Note” / “Project”), large title, then metadata (tags + date vs date only). Inline styles are duplicated (e.g. label and title styles match `projectStyles.pageLabel` / `pageHeading` but are redefined in each file).
 
 **Suggestion:** A **DetailPageHeader** component with props like `label`, `title`, and `metadata?: ReactNode`, and shared styles for label, title, and metadata container. Note detail passes tags + date; project detail passes only date. This keeps one place for typography and spacing.
 
@@ -84,7 +86,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 10. Empty States
 
-**Current:** `NotesEmptyState` and the empty branch in `ProjectsGrid` both use: centered block, padding (e.g. 64px vertical), mono 13px muted text. Projects uses `emptyState` and `emptyStateText` from `projectStyles`; Notes uses inline styles. The About page has an internal **AboutEmptyState** in `AboutPageContent.tsx` (centered block, mono muted text) that follows the same pattern.
+**Current:** **NotesEmptyState** (`components/public/notes/NotesEmptyState.tsx`) uses inline styles (e.g. padding 64px vertical, mono 13px muted). The empty branch in **ProjectsGrid** (`components/public/projects/ProjectsGrid.tsx`) uses `emptyState` and `emptyStateText` from `projectStyles`. **AboutPageContent** (`components/public/about/AboutPageContent.tsx`) has an internal **AboutEmptyState** (padding 48px vertical, mono 13px/12px muted) that follows the same pattern. Layout and typography are repeated in three places.
 
 **Suggestion:** A single **EmptyState** component that takes `message` (and optionally `className`/style or `children` for richer content like About’s instructions), and shared styles (e.g. in a shared “public page” styles file). Use it on Notes, Projects, and About so copy and layout stay consistent and you don’t duplicate the layout object.
 
@@ -92,25 +94,25 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 11. Homepage Section Layout
 
-**Current:** `RecentNotesSection` and `FeaturedProjectsSection` share the same structure: section wrapper, label, heading, then either an empty message or a grid, then a “View all” link. Only content and copy differ. **TechStackSection** and **RoadmapSection** also use the same section tokens (`sectionLabel`, `sectionHeading`, and `viewAllLink` where applicable) from `sectionStyles`, so a shared section wrapper would benefit all four home sections for consistency.
+**Current:** **RecentNotesSection**, **FeaturedProjectsSection**, **TechStackSection**, and **RoadmapSection** (all in `components/public/home/`) share the same section structure: section wrapper, `sectionLabel`, `sectionHeading`, then content, and where applicable a “View all” link via `viewAllLink` from `sectionStyles.ts`. **RecentNotesSection** and **FeaturedProjectsSection** also share: label, heading, empty message or grid, then “View all” link. **NoteCard** uses `sectionStyles` (card, tag); **FeaturedProjectsSection** builds its own card layout and link styles instead of reusing **ProjectCard**.
 
 **Suggestion:** A **SectionWithGrid** (or **HomeSection**) component with props like `label`, `heading`, `emptyMessage`, `viewAllHref`, `viewAllLabel`, and `children`. Each section renders its grid/content as children. That keeps layout and “view all” behaviour in one place.
 
-You can also consider reusing **ProjectCard** (or a shared card) for the homepage featured projects: **FeaturedProject** and **PublishedProject** are compatible in shape, so the home section could render the same card component with the same styles and link behaviour.
+Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.tsx`) or a shared card for the homepage featured projects: **FeaturedProject** and **PublishedProject** are compatible in shape, so the home section could render the same card component with the same styles and link behaviour.
 
 ---
 
 ## 12. Design Tokens Across Public Pages
 
-**Current:** `sectionStyles.ts` (home) and `projectStyles.ts` (projects) both define label (small uppercase mono), heading (Syne, bold), tag (mono, muted, pill), and card-like styles. Home sections that use these include `RecentNotesSection`, `FeaturedProjectsSection`, `TechStackSection`, `RoadmapSection`, and `NoteCard` (sectionStyles); projects use `ProjectsPageHeader`, `ProjectsGrid`, `ProjectCard`, and `ProjectTechStackSection` (projectStyles).
+**Current:** **sectionStyles** (`components/public/home/sectionStyles.ts`) and **projectStyles** (`components/public/projects/projectStyles.ts`) both define label (small uppercase mono), heading (Syne, bold), tag (mono, muted, pill), and card-like styles. Home uses sectionStyles in RecentNotesSection, FeaturedProjectsSection, TechStackSection, RoadmapSection, and NoteCard. Projects use projectStyles in ProjectsPageHeader, ProjectsGrid, ProjectCard, and project-page components (e.g. ProjectDetailHeader could use them but currently uses inline styles). Notes page uses inline styles only. Values are similar but live in two (or three) places.
 
-**Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, and optionally “view all” link and empty state. Home and projects (and Notes if you refactor it) import from there. That reduces duplication and keeps the public look consistent.
+**Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, and optionally “view all” link and empty state. Home, projects, and Notes (if refactored) import from there. That reduces duplication and keeps the public look consistent.
 
 ---
 
 ## 13. Page Container Layout
 
-**Current:** The same container style appears in many places: `maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px"` (or very close) in `ProjectDetail`, `NoteDetail`, `AboutPageContent`, notes page, projects page, `PublicNav`, `PublicFooter`, `error.tsx`, etc.
+**Current:** The same container style appears in many places: `maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px"` in **ProjectDetail** (`components/public/projects/ProjectDetail.tsx`), **NoteDetail** (`components/notes/NoteDetail.tsx`), **AboutPageContent** (`components/public/about/AboutPageContent.tsx`), notes page (`app/(public)/notes/page.tsx`), projects page (`app/(public)/projects/page.tsx`); **PublicNav** and **PublicFooter** use the same maxWidth with their own padding; **error.tsx** (`app/(public)/error.tsx`) uses the same maxWidth. The homepage (`app/(public)/page.tsx`) uses `padding: "0 24px 80px"` (no top 48px). Each defines the object locally.
 
 **Suggestion:** A shared constant (e.g. `pageContainerStyle`) or a **PageContainer** component used on all these public (and error) pages. That makes it easy to change width/padding in one place.
 
@@ -118,15 +120,15 @@ You can also consider reusing **ProjectCard** (or a shared card) for the homepag
 
 ## 14. Save Status in Admin Hooks
 
-**Current:** `useEditorPage` and `useProjectEdit` both define `SaveStatus` type, `DEBOUNCE_MS`, `STATUS_COLOR` / `STATUS_COLOUR` and `STATUS_LABEL`, and similar debounced PATCH and publish toggle pattern.
+**Current:** **useEditorPage** (`hooks/useEditorPage.ts`) and **useProjectEdit** (`hooks/useProjectEdit.ts`) both define the same `SaveStatus` type, `DEBOUNCE_MS` (1000), `STATUS_COLOR` / `STATUS_COLOUR` (editor uses American spelling, project uses British), `STATUS_LABEL`, and similar debounced PATCH and publish-toggle pattern. **EditMetaBar** expects `statusColor`; ProjectEditClient maps `statusColour` to it.
 
-**Suggestion:** Extract shared pieces into something like `lib/adminSave.ts` or `hooks/useAdminSave.ts`: the `SaveStatus` type and constants (`DEBOUNCE_MS`, `STATUS_COLOR`, `STATUS_LABEL`; standardise on “colour” once). Optionally a small `useDebouncedPatch(baseUrl)` or shared “save status” logic that both hooks use. The hooks can stay separate but share types and constants (and possibly a bit of generic save/publish logic).
+**Suggestion:** Extract shared pieces into something like `lib/adminSave.ts` or `hooks/useAdminSave.ts`: the `SaveStatus` type and constants (`DEBOUNCE_MS`, `STATUS_COLOR`, `STATUS_LABEL`; standardise on one spelling for the public API, e.g. `statusColor` to match EditMetaBar). Optionally a small `useDebouncedPatch(baseUrl)` or shared “save status” logic that both hooks use. The hooks can stay separate but share types and constants (and possibly a bit of generic save/publish logic).
 
 ---
 
 ## 15. Prerender Fallback in Queries
 
-**Current:** `getNoteBySlug`, `getAllPublishedNotes`, and `getAllPublishedProjects` use the same pattern: try/catch, `IS_PRERENDER_BUILD`, `isConnectionErrorOrAggregate`, `console.warn`, return a fallback (null or empty array).
+**Current:** **getNoteBySlug** and **getAllPublishedNotes** (`lib/queries/page.ts`) and **getAllPublishedProjects** (`lib/queries/project.ts`) use the same pattern: try/catch, check `process.env.IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)`, `console.warn` with context, return a fallback (null or empty array). The logic is duplicated in three places.
 
 **Suggestion:** A helper, e.g. in `lib/db-errors.ts` or `lib/queries/prerender.ts`:
 
@@ -140,7 +142,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## 16. External Link / “Pill” Styling
 
-**Current:** `ProjectLinksSection`, `ProjectCard`, and `FeaturedProjectsSection` repeat similar styling for “GitHub →” and “Live →” links (mono, size, border, hover).
+**Current:** **ProjectLinksSection** (`components/public/projects/project-page/ProjectLinksSection.tsx`) uses inline styles for “GitHub →” and “Live demo →” (mono 12px, border, padding, hover classes). **ProjectCard** (`components/public/projects/ProjectCard.tsx`) uses `linkBase` from projectStyles plus hover classes for “GitHub →” and “Live →”. **FeaturedProjectsSection** (`components/public/home/FeaturedProjectsSection.tsx`) uses inline mono 11px styles for the same links. Styling is similar but duplicated in three places with small variations (font size, border vs no border on home).
 
 **Suggestion:** A small **LinkPill** or **ExternalLink** component (or shared style set) with variants (e.g. muted vs accent) so these links are implemented once and stay consistent.
 
@@ -148,29 +150,29 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## Summary Table
 
-| Area               | Current duplication              | Reuse approach                                                                       |
-| ------------------ | -------------------------------- | ------------------------------------------------------------------------------------ |
-| Form field         | Editor + Project                 | ✅ `AdminFormField` + shared `formStyles` (label)                                    |
-| Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField                          |
-| Admin form styles  | editorStyles + projectEditStyles | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed                 |
-| Delete buttons     | Note + Project                   | ✅ `ConfirmDeleteButton` + thin wrappers                                             |
-| Create buttons     | Note + Project                   | ✅ `CreateEntityButton` used directly in admin pages                                 |
-| Meta bars          | Editor + Project                 | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
-| Back links         | 4 places                         | Shared `BackLink`                                                                    |
-| Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                                        |
-| Detail headers     | Note + Project                   | `DetailPageHeader`                                                                   |
-| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                                         |
-| Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                                                    |
-| Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                                           |
-| Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                                              |
-| Save status        | 2 hooks                          | Shared types/constants (+ optional hook)                                             |
-| Prerender fallback | 3 query functions                | `withPrerenderFallback`                                                              |
-| Link pills         | 3+ places                        | `LinkPill` / `ExternalLink`                                                          |
+| Area               | Current duplication                                            | Reuse approach                                                                       |
+| ------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Form field         | Editor + Project                                               | ✅ `AdminFormField` + shared `formStyles` (label)                                    |
+| Slug field         | 2 components + 2× sanitise                                     | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField                          |
+| Admin form styles  | editorStyles + projectEditStyles                               | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed                 |
+| Delete buttons     | Note + Project                                                 | ✅ `ConfirmDeleteButton` + thin wrappers                                             |
+| Create buttons     | Note + Project                                                 | ✅ `CreateEntityButton` used directly in admin pages                                 |
+| Meta bars          | Editor + Project                                               | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
+| Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                 |
+| Page headers       | Notes inline, Projects styles                                  | `PageHeader` or shared tokens                                                        |
+| Detail headers     | Note + Project                                                 | `DetailPageHeader`                                                                   |
+| Empty states       | Notes + Projects + About                                       | `EmptyState` + shared styles                                                         |
+| Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | `SectionWithGrid` / `HomeSection`                                                    |
+| Design tokens      | sectionStyles + projectStyles                                  | Unified public page tokens                                                           |
+| Page container     | 6+ places                                                      | `pageContainerStyle` or `PageContainer`                                              |
+| Save status        | 2 hooks                                                        | Shared types/constants (+ optional hook)                                             |
+| Prerender fallback | 3 query functions                                              | `withPrerenderFallback`                                                              |
+| Link pills         | 3+ places                                                      | `LinkPill` / `ExternalLink`                                                          |
 
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers. Section 5: shared `CreateEntityButton` in `components/shared/CreateEntityButton.tsx`; used directly in admin notes and projects pages; tests in `CreateEntityButton.test.tsx`. Section 6: shared `EditMetaBar` in `components/shared/EditMetaBar.tsx`; EditorPageClient and ProjectEditClient use it with `deleteAction`; tests in `EditMetaBar.test.tsx`.
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–7: implemented (see status in each section). Sections 8–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.

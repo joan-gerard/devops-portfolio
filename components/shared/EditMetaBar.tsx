@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { publishButtonStyle } from "@/components/admin/formStyles";
+import { BackLink } from "@/components/shared/BackLink";
 
 export type EditMetaBarProps = {
   backHref: string;
@@ -16,13 +16,6 @@ export type EditMetaBarProps = {
   deleteAction: ReactNode;
   /** Bottom margin of the bar. Default "16px". */
   marginBottom?: string;
-};
-
-const backLinkStyle: React.CSSProperties = {
-  fontSize: "11px",
-  color: "var(--text-muted)",
-  textDecoration: "none",
-  letterSpacing: "0.06em",
 };
 
 /**
@@ -49,9 +42,9 @@ export function EditMetaBar({
         marginBottom,
       }}
     >
-      <Link href={backHref} style={backLinkStyle}>
+      <BackLink href={backHref} className="back-link--compact">
         {backLabel}
-      </Link>
+      </BackLink>
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         {saveStatus !== "idle" && (
           <span style={{ fontSize: "11px", color: statusColor }}>{statusLabel}</span>

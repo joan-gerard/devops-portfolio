@@ -1,8 +1,8 @@
 "use client";
 
 import type { PublicProject } from "@/types/projects";
+import { BackLink } from "@/components/shared/BackLink";
 import {
-  BackToProjectsLink,
   ProjectDescriptionSection,
   ProjectDetailHeader,
   ProjectLinksSection,
@@ -35,7 +35,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
 
   return (
     <div style={containerStyle}>
-      <BackToProjectsLink />
+      <BackLink href="/projects">← All projects</BackLink>
       <ProjectDetailHeader title={project.title} updatedAt={updatedAt} />
       <hr style={sectionDividerStyle} />
       <ProjectDescriptionSection description={project.description} />
