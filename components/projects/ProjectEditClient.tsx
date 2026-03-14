@@ -23,7 +23,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
     saveStatus,
     setSaveStatus,
     published,
-    statusColour,
+    statusColor,
     statusLabel,
     handleChange,
     handleSlugRegenerate,
@@ -36,7 +36,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
         backHref="/admin/projects"
         backLabel="← Projects"
         saveStatus={saveStatus}
-        statusColor={statusColour}
+        statusColor={statusColor}
         statusLabel={statusLabel}
         published={published}
         onTogglePublished={togglePublished}

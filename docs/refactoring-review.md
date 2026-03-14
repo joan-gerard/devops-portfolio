@@ -136,6 +136,8 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 **Suggestion:** Extract shared pieces into something like `lib/adminSave.ts` or `hooks/useAdminSave.ts`: the `SaveStatus` type and constants (`DEBOUNCE_MS`, `STATUS_COLOR`, `STATUS_LABEL`; standardise on one spelling for the public API, e.g. `statusColor` to match EditMetaBar). Optionally a small `useDebouncedPatch(baseUrl)` or shared “save status” logic that both hooks use. The hooks can stay separate but share types and constants (and possibly a bit of generic save/publish logic).
 
+**Done:** Added **lib/adminSave.ts** with `SaveStatus` type, `DEBOUNCE_MS` (1000), `STATUS_COLOR`, and `STATUS_LABEL`. **useEditorPage** and **useProjectEdit** import from it and re-export `SaveStatus`; both use American spelling `statusColor` to match **EditMetaBar**. **useProjectEdit** now returns `statusColor` (replacing `statusColour`); **ProjectEditClient** passes `statusColor` directly to EditMetaBar. Hooks remain separate; only types and constants are shared.
+
 ---
 
 ## 15. Prerender Fallback in Queries
@@ -162,29 +164,29 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## Summary Table
 
-| Area               | Current duplication                                            | Reuse approach                                                                       |
-| ------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Form field         | Editor + Project                                               | ✅ `AdminFormField` + shared `formStyles` (label)                                    |
-| Slug field         | 2 components + 2× sanitise                                     | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField                          |
-| Admin form styles  | editorStyles + projectEditStyles                               | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed                 |
-| Delete buttons     | Note + Project                                                 | ✅ `ConfirmDeleteButton` + thin wrappers                                             |
-| Create buttons     | Note + Project                                                 | ✅ `CreateEntityButton` used directly in admin pages                                 |
-| Meta bars          | Editor + Project                                               | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
-| Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                 |
-| Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed              |
-| Detail headers     | Note + Project                                                 | ✅ `DetailPageHeader` + shared styles; ProjectDetailHeader removed                   |
-| Empty states       | Notes + Projects + About                                       | ✅ `EmptyState` (message/children/style); AboutEmptyState removed                    |
-| Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | ✅ **HomeSection**; sections use it; FeaturedProjects uses **ProjectCard**           |
-| Design tokens      | sectionStyles + projectStyles                                  | ✅ **publicPageStyles.ts**; sectionStyles + projectStyles removed                    |
-| Page container     | 6+ places                                                      | ✅ **PageContainer** + `pageContainerBaseStyle`; nav/footer use base                 |
-| Save status        | 2 hooks                                                        | Shared types/constants (+ optional hook)                                             |
-| Prerender fallback | 3 query functions                                              | `withPrerenderFallback`                                                              |
-| Link pills         | 2 places (ProjectCard + ProjectLinksSection)                   | `LinkPill` / `ExternalLink`                                                          |
+| Area               | Current duplication                                            | Reuse approach                                                                                 |
+| ------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Form field         | Editor + Project                                               | ✅ `AdminFormField` + shared `formStyles` (label)                                              |
+| Slug field         | 2 components + 2× sanitise                                     | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField                                    |
+| Admin form styles  | editorStyles + projectEditStyles                               | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed                           |
+| Delete buttons     | Note + Project                                                 | ✅ `ConfirmDeleteButton` + thin wrappers                                                       |
+| Create buttons     | Note + Project                                                 | ✅ `CreateEntityButton` used directly in admin pages                                           |
+| Meta bars          | Editor + Project                                               | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient           |
+| Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                           |
+| Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed                        |
+| Detail headers     | Note + Project                                                 | ✅ `DetailPageHeader` + shared styles; ProjectDetailHeader removed                             |
+| Empty states       | Notes + Projects + About                                       | ✅ `EmptyState` (message/children/style); AboutEmptyState removed                              |
+| Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | ✅ **HomeSection**; sections use it; FeaturedProjects uses **ProjectCard**                     |
+| Design tokens      | sectionStyles + projectStyles                                  | ✅ **publicPageStyles.ts**; sectionStyles + projectStyles removed                              |
+| Page container     | 6+ places                                                      | ✅ **PageContainer** + `pageContainerBaseStyle`; nav/footer use base                           |
+| Save status        | 2 hooks                                                        | ✅ **lib/adminSave.ts** (SaveStatus, DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL); statusColor API |
+| Prerender fallback | 3 query functions                                              | `withPrerenderFallback`                                                                        |
+| Link pills         | 2 places (ProjectCard + ProjectLinksSection)                   | `LinkPill` / `ExternalLink`                                                                    |
 
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–13: implemented (see status in each section). Sections 14–16: **Current** and **Suggestion** as above; #16 updated to reference publicPageStyles (linkBaseStyle) after #12.
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–14: implemented (see status in each section). Sections 15–16: **Current** and **Suggestion** as above; #16 updated to reference publicPageStyles (linkBaseStyle) after #12.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
