@@ -1,13 +1,21 @@
 "use client";
 
+import { labelStyle as defaultLabelStyle } from "@/components/admin/formStyles";
+
 type AdminFormFieldProps = {
   label: string;
   children: React.ReactNode;
   hint?: React.ReactNode;
-  labelStyle: React.CSSProperties;
+  /** Optional override; defaults to shared admin form label style. */
+  labelStyle?: React.CSSProperties;
 };
 
-export function AdminFormField({ label, children, hint, labelStyle }: AdminFormFieldProps) {
+export function AdminFormField({
+  label,
+  children,
+  hint,
+  labelStyle = defaultLabelStyle,
+}: AdminFormFieldProps) {
   return (
     <div style={{ marginBottom: "20px" }}>
       <label style={labelStyle}>{label}</label>

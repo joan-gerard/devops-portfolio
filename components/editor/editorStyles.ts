@@ -1,16 +1,5 @@
 import type { CSSProperties } from "react";
 
-/** Label styling for editor form fields (notes/pages). */
-export const labelStyle: CSSProperties = {
-  display: "block",
-  fontSize: "10px",
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "var(--text-muted)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-mono)",
-};
-
 /** Input styling for slug and other editor fields. */
 export const inputStyle: CSSProperties = {
   flex: 1,

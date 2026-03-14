@@ -15,17 +15,6 @@ export const inputStyle: CSSProperties = {
   transition: "border-color 0.15s",
 };
 
-/** Label styling for project edit form fields. */
-export const labelStyle: CSSProperties = {
-  display: "block",
-  fontSize: "10px",
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "var(--text-muted)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-mono)",
-};
-
 /** Secondary action button (e.g. "from title" for slug). */
 export const secondaryButtonStyle: CSSProperties = {
   flexShrink: 0,

@@ -8,7 +8,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Current:** `EditorFormField` (`components/editor/EditorFormField.tsx`) and `ProjectEditFormField` (`components/projects/ProjectEditFormField.tsx`) both delegate to a shared `AdminFormField` (`components/shared/AdminFormField.tsx`) that renders the label, children, and optional hint with a consistent `marginBottom: "20px"` wrapper.
 
-**Status:** ✅ Implemented via `AdminFormField`; any future admin form fields should reuse this component.
+**Status:** ✅ Implemented. Shared `AdminFormField` uses a single label style from `components/admin/formStyles.ts` (`labelStyle`); `labelStyle` is optional so callers can override. Duplicate `labelStyle` removed from `editorStyles.ts` and `projectEditStyles.ts`. Any future admin form fields should reuse `AdminFormField` (and the shared form styles where applicable).
 
 ---
 
@@ -168,6 +168,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** 14th March 2025 — paths and component locations verified; added ProjectDetailHeader path (`project-page/`), About empty state (Section 10), TechStackSection/RoadmapSection and design-token consumers (Sections 11–12). No refactors above have been implemented since the original review except Section 1 (AdminFormField).
+**Last reviewed:** March 2025 — paths and component locations verified; added ProjectDetailHeader path (`project-page/`), About empty state (Section 10), TechStackSection/RoadmapSection and design-token consumers (Sections 11–12). Section 1 completed: shared `components/admin/formStyles.ts` for label style; AdminFormField uses it by default; duplicate labelStyle removed from editor/project edit styles.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
