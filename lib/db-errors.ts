@@ -25,3 +25,31 @@ export function isConnectionErrorOrAggregate(error: unknown): boolean {
   const { errors } = error as { errors?: unknown[] };
   return Array.isArray(errors) && errors.some(isConnectionError);
 }
+
+/**
+ * Runs a query function and, during prerender builds, returns a fallback
+ * if the database is unavailable (connection or aggregate error) instead of
+ * failing the build. Use for public data queries that run at build time.
+ *
+ * @param queryFn - Async function that performs the query (e.g. sql`...`)
+ * @param fallback - Value to return when DB is unavailable during prerender
+ * @param logContext - Message for console.warn (e.g. "[getNoteBySlug] DB unavailable during prerender — returning null.")
+ */
+export async function withPrerenderFallback<T>(
+  queryFn: () => Promise<T>,
+  fallback: T,
+  logContext: string
+): Promise<T> {
+  try {
+    return await queryFn();
+  } catch (error) {
+    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
+    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
+      const summary =
+        error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120);
+      console.warn(`${logContext} Reason: ${summary}`);
+      return fallback;
+    }
+    throw error;
+  }
+}

@@ -1,5 +1,5 @@
 import sql from "@/lib/db";
-import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
+import { withPrerenderFallback } from "@/lib/db-errors";
 import type { Project, PublicProject } from "@/types/projects";
 import { cache } from "react";
 
@@ -26,32 +26,23 @@ export type PublishedProject = Pick<
  * Fetches all published projects for public listing.
  *
  * During prerender builds (`IS_PRERENDER_BUILD === "true"`), if the database
- * is temporarily unavailable (connection or aggregate error), the catch block
- * logs a warning and returns an empty list instead of failing the build.
- * For all other errors or at runtime, the original error is rethrown.
+ * is temporarily unavailable (connection or aggregate error), logs a warning
+ * and returns an empty list instead of failing the build. For all other
+ * errors or at runtime, the original error is rethrown.
  */
 export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
-  try {
-    return await sql<PublishedProject[]>`
-      SELECT id, title, slug, description, tech_stack, github_url, live_url
-      FROM projects
-      WHERE published = true
-        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-      ORDER BY updated_at DESC
-    `;
-  } catch (error) {
-    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
-    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
-      const summary =
-        error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120);
-      console.warn(
-        "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list.",
-        `Reason: ${summary}`
-      );
-      return [];
-    }
-    throw error;
-  }
+  return withPrerenderFallback<PublishedProject[]>(
+    () =>
+      sql<PublishedProject[]>`
+        SELECT id, title, slug, description, tech_stack, github_url, live_url
+        FROM projects
+        WHERE published = true
+          ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
+        ORDER BY updated_at DESC
+      `,
+    [],
+    "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list."
+  );
 }
 
 export async function getProjectById(id: string) {

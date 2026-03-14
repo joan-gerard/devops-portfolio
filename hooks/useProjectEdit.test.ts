@@ -36,32 +36,32 @@ describe("useProjectEdit", () => {
       expect(result.current.published).toBe(false);
       expect(result.current.saveStatus).toBe("idle");
       expect(result.current.statusLabel).toBe("");
-      expect(result.current.statusColour).toBe("var(--text-muted)");
+      expect(result.current.statusColor).toBe("var(--text-muted)");
     });
   });
 
-  describe("status colour and label", () => {
-    it("maps saveStatus to statusColour and statusLabel", () => {
+  describe("status color and label", () => {
+    it("maps saveStatus to statusColor and statusLabel", () => {
       const { result } = renderHook(() => useProjectEdit(mockProject));
 
       act(() => result.current.setSaveStatus("saving"));
-      expect(result.current.statusColour).toBe("var(--yellow)");
+      expect(result.current.statusColor).toBe("var(--yellow)");
       expect(result.current.statusLabel).toBe("Saving…");
 
       act(() => result.current.setSaveStatus("saved"));
-      expect(result.current.statusColour).toBe("var(--accent)");
+      expect(result.current.statusColor).toBe("var(--accent)");
       expect(result.current.statusLabel).toBe("Saved");
 
       act(() => result.current.setSaveStatus("error"));
-      expect(result.current.statusColour).toBe("var(--red)");
+      expect(result.current.statusColor).toBe("var(--red)");
       expect(result.current.statusLabel).toBe("Save failed");
 
       act(() => result.current.setSaveStatus("slugSaving"));
-      expect(result.current.statusColour).toBe("var(--yellow)");
+      expect(result.current.statusColor).toBe("var(--yellow)");
       expect(result.current.statusLabel).toBe("Saving slug…");
 
       act(() => result.current.setSaveStatus("slugSaved"));
-      expect(result.current.statusColour).toBe("var(--accent)");
+      expect(result.current.statusColor).toBe("var(--accent)");
       expect(result.current.statusLabel).toBe("Title slug saved");
     });
   });

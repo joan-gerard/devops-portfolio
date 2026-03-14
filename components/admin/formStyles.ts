@@ -1,6 +1,22 @@
 import type { CSSProperties } from "react";
 
-/** Shared input styling for project edit form (admin theme tokens). */
+/**
+ * Shared admin form styles (editor/notes and project edit).
+ * Single source of truth so inputs and buttons look consistent; use width: "100%" for inputs so one style works in both flex and block layouts.
+ */
+
+/** Label for admin form fields. */
+export const labelStyle: CSSProperties = {
+  display: "block",
+  fontSize: "10px",
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  color: "var(--text-muted)",
+  marginBottom: "6px",
+  fontFamily: "var(--font-mono)",
+};
+
+/** Text inputs and textareas (slug, title, description, etc.). */
 export const inputStyle: CSSProperties = {
   width: "100%",
   background: "var(--surface)",
@@ -15,18 +31,7 @@ export const inputStyle: CSSProperties = {
   transition: "border-color 0.15s",
 };
 
-/** Label styling for project edit form fields. */
-export const labelStyle: CSSProperties = {
-  display: "block",
-  fontSize: "10px",
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "var(--text-muted)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-mono)",
-};
-
-/** Secondary action button (e.g. "from title" for slug). */
+/** Secondary action button (e.g. "↺ from title" for slug). */
 export const secondaryButtonStyle: CSSProperties = {
   flexShrink: 0,
   padding: "9px 12px",

@@ -1,45 +1,50 @@
 "use client";
 
-import Link from "next/link";
-import DeleteNoteButton from "../notes/DeleteNoteButton";
-import { publishButtonStyle } from "./editorStyles";
+import type { ReactNode } from "react";
+import { publishButtonStyle } from "@/components/admin/formStyles";
+import { BackLink } from "@/components/shared/BackLink";
 
-type EditorMetaBarProps = {
+export type EditMetaBarProps = {
+  backHref: string;
+  backLabel: string;
   saveStatus: string;
-  noteId: string;
   statusColor: string;
   statusLabel: string;
   published: boolean;
   onTogglePublished: () => void;
+  /** Delete button or link (e.g. DeleteNoteButton or DeleteProjectButton). */
+  deleteAction: ReactNode;
+  /** Bottom margin of the bar. Default "16px". */
+  marginBottom?: string;
 };
 
-const backLinkStyle: React.CSSProperties = {
-  fontSize: "11px",
-  color: "var(--text-muted)",
-  textDecoration: "none",
-  letterSpacing: "0.06em",
-};
-
-export function EditorMetaBar({
+/**
+ * Shared admin edit meta bar: back link, save status, publish toggle, and delete action.
+ * Used on note editor and project edit pages; callers pass backHref/backLabel and deleteAction.
+ */
+export function EditMetaBar({
+  backHref,
+  backLabel,
   saveStatus,
-  noteId,
   statusColor,
   statusLabel,
   published,
   onTogglePublished,
-}: EditorMetaBarProps) {
+  deleteAction,
+  marginBottom = "16px",
+}: EditMetaBarProps) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        marginBottom: "16px",
+        marginBottom,
       }}
     >
-      <Link href="/admin/notes" style={backLinkStyle}>
-        ← Notes
-      </Link>
+      <BackLink href={backHref} className="back-link--compact">
+        {backLabel}
+      </BackLink>
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         {saveStatus !== "idle" && (
           <span style={{ fontSize: "11px", color: statusColor }}>{statusLabel}</span>
@@ -55,7 +60,7 @@ export function EditorMetaBar({
         >
           {published ? "Published" : "Publish"}
         </button>
-        <DeleteNoteButton id={noteId} redirectTo="/admin/notes" />
+        {deleteAction}
       </div>
     </div>
   );

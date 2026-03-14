@@ -1,14 +1,33 @@
 "use client";
 
-import type { PublishedProject } from "@/lib/queries/project";
 import Link from "next/link";
-import { cardBase, linkBase, linkRow, tag } from "./projectStyles";
+import { ExternalLink } from "@/components/public/ExternalLink";
+import {
+  cardProjectStyle,
+  linkBaseStyle,
+  linkRowStyle,
+  tagStyle,
+} from "@/components/public/publicPageStyles";
 
-type ProjectCardProps = { project: PublishedProject };
+/**
+ * Minimal project shape used by ProjectCard.
+ * Compatible with PublishedProject (projects page) and FeaturedProject (homepage).
+ */
+export type ProjectCardProject = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  tech_stack: string[];
+  github_url: string | null;
+  live_url: string | null;
+};
+
+type ProjectCardProps = { project: ProjectCardProject };
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div style={cardBase} className="u-border-accent-hover">
+    <div style={cardProjectStyle} className="u-border-accent-hover" data-testid="project-card">
       <div>
         <h2
           style={{
@@ -39,42 +58,38 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {project.tech_stack.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {project.tech_stack.map((t) => (
-            <span key={t} style={tag}>
+            <span key={t} style={tagStyle}>
               {t}
             </span>
           ))}
         </div>
       )}
 
-      <div style={linkRow}>
+      <div style={linkRowStyle}>
         {project.github_url && (
-          <a
+          <ExternalLink
             href={project.github_url}
+            variant="plain"
+            tone="muted"
             aria-label={`GitHub repository for ${project.title}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ ...linkBase }}
-            className="u-text-muted-text-hover"
           >
             GitHub →
-          </a>
+          </ExternalLink>
         )}
         {project.live_url && (
-          <a
+          <ExternalLink
             href={project.live_url}
+            variant="plain"
+            tone="accent"
             aria-label={`Live demo for ${project.title}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ ...linkBase }}
-            className="u-text-accent-text-hover"
           >
             Live →
-          </a>
+          </ExternalLink>
         )}
         <Link
           href={`/projects/${project.slug}`}
           aria-label={`Details for ${project.title}`}
-          style={{ ...linkBase, marginLeft: "auto" }}
+          style={{ ...linkBaseStyle, marginLeft: "auto" }}
           className="u-text-muted-text-hover"
         >
           Details →

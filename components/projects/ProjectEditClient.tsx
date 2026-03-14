@@ -3,7 +3,7 @@
 /**
  * Project edit form (admin). Composes:
  * - useProjectEdit: save state, debounced PATCH, publish toggle
- * - ProjectEditMetaBar: back link, status, publish, delete
+ * - EditMetaBar: back link, status, publish, delete
  * - ProjectEditFormField / ProjectSlugField: labeled fields and slug with regenerate
  * - projectEditStyles: shared input/label/button styles
  */
@@ -11,10 +11,11 @@ import { useProjectEdit } from "@/hooks/useProjectEdit";
 import { slugify } from "@/lib/slugify";
 import type { Project } from "@/types/projects";
 import { TagInput } from "../TagInput";
+import { EditMetaBar } from "@/components/shared/EditMetaBar";
 import { ProjectEditFormField } from "./ProjectEditFormField";
-import { ProjectEditMetaBar } from "./ProjectEditMetaBar";
 import { ProjectSlugField } from "./ProjectSlugField";
-import { inputStyle } from "./projectEditStyles";
+import { DeleteProjectButton } from "./DeleteProjectButton";
+import { inputStyle } from "@/components/admin/formStyles";
 
 export function ProjectEditClient({ project }: { project: Project }) {
   const {
@@ -22,7 +23,7 @@ export function ProjectEditClient({ project }: { project: Project }) {
     saveStatus,
     setSaveStatus,
     published,
-    statusColour,
+    statusColor,
     statusLabel,
     handleChange,
     handleSlugRegenerate,
@@ -31,13 +32,16 @@ export function ProjectEditClient({ project }: { project: Project }) {
 
   return (
     <div style={{ maxWidth: "680px", margin: "0 auto" }}>
-      <ProjectEditMetaBar
+      <EditMetaBar
+        backHref="/admin/projects"
+        backLabel="← Projects"
         saveStatus={saveStatus}
-        statusColour={statusColour}
+        statusColor={statusColor}
         statusLabel={statusLabel}
         published={published}
         onTogglePublished={togglePublished}
-        projectId={project.id}
+        deleteAction={<DeleteProjectButton id={project.id} redirectTo="/admin/projects" />}
+        marginBottom="28px"
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

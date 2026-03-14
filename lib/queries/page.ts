@@ -1,5 +1,5 @@
 import sql from "@/lib/db";
-import { isConnectionErrorOrAggregate } from "@/lib/db-errors";
+import { withPrerenderFallback } from "@/lib/db-errors";
 import { Page, PublicNote, PublishedNotePreview } from "@/types/pages";
 import { cache } from "react";
 
@@ -31,60 +31,41 @@ export async function getPageById(id: string): Promise<Page | null> {
  * can render its fallback state and the build succeeds.
  */
 export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | null> => {
-  try {
-    console.log("[getNoteBySlug] called with slug:", slug);
-    const rows = await sql<PublicNote[]>`
-      SELECT id, title, slug, content, tags, updated_at
-      FROM pages
-      WHERE slug = ${slug}
-        AND published = true
-        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-      LIMIT 1
-    `;
-    // return rows[0] ?? null;
-
-    const note = rows[0] ?? null;
-    console.log(
-      "[getNoteBySlug] result:",
-      note ? { id: note.id, slug: note.slug, published: true } : null
-    );
-    return note;
-  } catch (error) {
-    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
-    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
-      const summary =
-        error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120);
-      console.warn(
-        "[getNoteBySlug] DB unavailable during prerender build — returning null.",
-        `Slug: ${slug}. Reason: ${summary}`
+  return withPrerenderFallback(
+    async () => {
+      console.log("[getNoteBySlug] called with slug:", slug);
+      const rows = await sql<PublicNote[]>`
+        SELECT id, title, slug, content, tags, updated_at
+        FROM pages
+        WHERE slug = ${slug}
+          AND published = true
+          ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
+        LIMIT 1
+      `;
+      const note = rows[0] ?? null;
+      console.log(
+        "[getNoteBySlug] result:",
+        note ? { id: note.id, slug: note.slug, published: true } : null
       );
-      return null;
-    }
-    throw error;
-  }
+      return note;
+    },
+    null,
+    `[getNoteBySlug] DB unavailable during prerender build — returning null. Slug: ${slug}.`
+  );
 });
 
 export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
-  try {
-    return await sql<PublishedNotePreview[]>`
-      SELECT id, title, slug, tags, updated_at
-      FROM pages
-      WHERE published = true
-        AND slug != 'about'
-        ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-      ORDER BY updated_at DESC
-    `;
-  } catch (error) {
-    const isPrerenderBuild = process.env.IS_PRERENDER_BUILD === "true";
-    if (isPrerenderBuild && isConnectionErrorOrAggregate(error)) {
-      const summary =
-        error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120);
-      console.warn(
-        "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list.",
-        `Reason: ${summary}`
-      );
-      return [];
-    }
-    throw error;
-  }
+  return withPrerenderFallback<PublishedNotePreview[]>(
+    () =>
+      sql<PublishedNotePreview[]>`
+        SELECT id, title, slug, tags, updated_at
+        FROM pages
+        WHERE published = true
+          AND slug != 'about'
+          ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
+        ORDER BY updated_at DESC
+      `,
+    [],
+    "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list."
+  );
 }

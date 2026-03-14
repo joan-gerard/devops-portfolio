@@ -1,6 +1,6 @@
 "use client";
 
-import { labelStyle } from "./projectEditStyles";
+import { AdminFormField } from "../shared/AdminFormField";
 
 type ProjectEditFormFieldProps = {
   label: string;
@@ -10,24 +10,12 @@ type ProjectEditFormFieldProps = {
 
 /**
  * Wraps a form control with a consistent label (and optional hint) for the project edit form.
+ * Uses shared admin form label style from AdminFormField.
  */
 export function ProjectEditFormField({ label, children, hint }: ProjectEditFormFieldProps) {
   return (
-    <div>
-      <label style={labelStyle}>{label}</label>
+    <AdminFormField label={label} hint={hint}>
       {children}
-      {hint && (
-        <p
-          style={{
-            fontSize: "11px",
-            color: "var(--yellow)",
-            fontFamily: "var(--font-mono)",
-            marginTop: "6px",
-          }}
-        >
-          {hint}
-        </p>
-      )}
-    </div>
+    </AdminFormField>
   );
 }

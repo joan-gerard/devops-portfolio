@@ -1,7 +1,7 @@
 "use client";
 
-import { inputStyle, secondaryButtonStyle } from "./editorStyles";
-import { EditorFormField } from "./EditorFormField";
+import { inputStyle, secondaryButtonStyle } from "@/components/admin/formStyles";
+import { SlugField } from "@/components/shared/SlugField";
 
 type EditorSlugFieldProps = {
   value: string;
@@ -10,14 +10,7 @@ type EditorSlugFieldProps = {
   published: boolean;
 };
 
-/** Sanitises input to valid slug characters (lowercase, hyphens only). */
-function sanitiseSlugInput(raw: string): string {
-  return raw
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-");
-}
-
+/** Slug field for the note/page editor; thin wrapper around shared SlugField with editor styles. */
 export function EditorSlugField({
   value,
   onChange,
@@ -25,31 +18,17 @@ export function EditorSlugField({
   published,
 }: EditorSlugFieldProps) {
   return (
-    <EditorFormField
-      label="Slug"
+    <SlugField
+      value={value}
+      onChange={onChange}
+      onRegenerate={onRegenerateFromTitle}
       hint={
         published ? "⚠ Changing the slug of a published note will break existing URLs." : undefined
       }
-    >
-      <div style={{ display: "flex", gap: "8px" }}>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(sanitiseSlugInput(e.target.value))}
-          style={inputStyle}
-          placeholder="note-slug"
-          aria-label="Note URL slug"
-        />
-        <button
-          type="button"
-          onClick={onRegenerateFromTitle}
-          title="Regenerate from title"
-          style={secondaryButtonStyle}
-          className="u-text-muted-accent-hover u-border-accent-hover"
-        >
-          ↺ from title
-        </button>
-      </div>
-    </EditorFormField>
+      placeholder="note-slug"
+      ariaLabel="Note URL slug"
+      inputStyle={inputStyle}
+      secondaryButtonStyle={secondaryButtonStyle}
+    />
   );
 }

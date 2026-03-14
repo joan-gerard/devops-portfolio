@@ -2,8 +2,10 @@
 
 import { useRef, useState } from "react";
 import type { Project } from "@/types/projects";
+import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
+import type { SaveStatus } from "@/lib/adminSave";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error" | "slugSaving" | "slugSaved";
+export type { SaveStatus } from "@/lib/adminSave";
 
 export type ProjectEditFields = {
   title: string;
@@ -14,38 +16,15 @@ export type ProjectEditFields = {
 };
 
 /**
- * Debounce delay (ms) before persisting field changes to the API.
- */
-const DEBOUNCE_MS = 1000;
-
-const STATUS_COLOUR: Record<SaveStatus, string> = {
-  idle: "var(--text-muted)",
-  saving: "var(--yellow)",
-  saved: "var(--accent)",
-  error: "var(--red)",
-  slugSaving: "var(--yellow)",
-  slugSaved: "var(--accent)",
-};
-
-const STATUS_LABEL: Record<SaveStatus, string> = {
-  idle: "",
-  saving: "Saving…",
-  saved: "Saved",
-  error: "Save failed",
-  slugSaving: "Saving slug…",
-  slugSaved: "Title slug saved",
-};
-
-/**
  * Hook for editing a single project: local form fields, debounced persistence,
  * and save status.
  *
  * Field changes (title, slug, description, github_url, live_url) are persisted
  * via debounced PATCH to `/api/projects/:id`. Published is toggled immediately
- * with no debounce. Exposes status colour/label for the project edit UI.
+ * with no debounce. Exposes status color/label for the project edit UI (EditMetaBar expects statusColor).
  *
  * @param project - The project to edit (used as initial state and for API calls).
- * @returns fields and setFields for form state, saveStatus, statusColour/statusLabel,
+ * @returns fields and setFields for form state, saveStatus, statusColor/statusLabel,
  *   handleChange(field, value) for debounced updates, handleSlugRegenerate for "from title",
  *   togglePublished, and setSaveStatus.
  */
@@ -134,7 +113,7 @@ export function useProjectEdit(project: Project) {
     saveStatus,
     setSaveStatus,
     published,
-    statusColour: STATUS_COLOUR[saveStatus],
+    statusColor: STATUS_COLOR[saveStatus],
     statusLabel: STATUS_LABEL[saveStatus],
     handleChange,
     handleSlugRegenerate,

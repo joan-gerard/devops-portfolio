@@ -1,4 +1,5 @@
-import { CreateNoteButton, NotesList } from "@/components/notes";
+import { CreateEntityButton } from "@/components/shared/CreateEntityButton";
+import { NotesList } from "@/components/notes";
 import { getAllPages } from "@/lib/queries/page";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -14,7 +15,13 @@ export default async function NotesPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <CreateNoteButton />
+        <CreateEntityButton
+          apiPath="/api/pages"
+          defaultTitle="Untitled Note"
+          redirectPathPrefix="/admin/editor"
+          buttonLabel="+ New note"
+          errorMessage="Failed to create note"
+        />
       </div>
 
       <section aria-label="Your notes">

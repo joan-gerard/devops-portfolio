@@ -1,4 +1,6 @@
-import { NotesPageClient, NotesPageHeader } from "@/components/public";
+import { NotesPageClient } from "@/components/public";
+import { PageContainer } from "@/components/public/PageContainer";
+import { PageHeader } from "@/components/public/PageHeader";
 import { getAllPublishedNotes } from "@/lib/queries/page";
 
 export const revalidate = 3600;
@@ -15,9 +17,13 @@ export default async function NotesPage() {
   const allTags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort();
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
-      <NotesPageHeader />
+    <PageContainer>
+      <PageHeader
+        label="Notes"
+        heading="What I've been learning"
+        description="Notes written while working through my DevOps course — covering infrastructure, security, tooling, and everything in between."
+      />
       <NotesPageClient notes={notes} allTags={allTags} />
-    </div>
+    </PageContainer>
   );
 }

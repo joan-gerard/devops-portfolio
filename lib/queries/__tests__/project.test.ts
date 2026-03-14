@@ -82,8 +82,9 @@ describe("project queries", () => {
 
         expect(result).toEqual([]);
         expect(warnSpy).toHaveBeenCalledWith(
-          "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list.",
-          expect.any(String)
+          expect.stringContaining(
+            "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list. Reason:"
+          )
         );
       } finally {
         warnSpy.mockRestore();

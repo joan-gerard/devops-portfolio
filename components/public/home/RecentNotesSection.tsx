@@ -1,43 +1,31 @@
-import Link from "next/link";
 import type { RecentNote } from "@/types/home";
-import { sectionLabel, sectionHeading, viewAllLink } from "./sectionStyles";
+import { HomeSection } from "./HomeSection";
 import { NoteCard } from "./NoteCard";
+
+const notesGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+  gap: "12px",
+};
 
 type RecentNotesSectionProps = { notes: RecentNote[] };
 
 export function RecentNotesSection({ notes }: RecentNotesSectionProps) {
   return (
-    <section style={{ marginBottom: "72px" }}>
-      <p style={sectionLabel}>Recent Notes</p>
-      <h2 style={sectionHeading}>What I&apos;ve been writing</h2>
-
-      {notes.length === 0 ? (
-        <p
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "13px",
-            color: "var(--text-muted)",
-          }}
-        >
-          No notes published yet.
-        </p>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: "12px",
-          }}
-        >
+    <HomeSection
+      label="Recent Notes"
+      heading="What I've been writing"
+      emptyMessage="No notes published yet."
+      viewAllHref="/notes"
+      viewAllLabel="All notes →"
+    >
+      {notes.length > 0 ? (
+        <div style={notesGridStyle}>
           {notes.map((note) => (
             <NoteCard key={note.id} note={note} />
           ))}
         </div>
-      )}
-
-      <Link href="/notes" style={viewAllLink}>
-        All notes →
-      </Link>
-    </section>
+      ) : null}
+    </HomeSection>
   );
 }

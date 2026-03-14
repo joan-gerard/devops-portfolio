@@ -1,17 +1,19 @@
 import { vi } from "vitest";
 import { render, screen, fireEvent } from "@/test/test-utils";
-import { EditorMetaBar } from "./EditorMetaBar";
+import { EditMetaBar } from "./EditMetaBar";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
 const defaultProps = {
-  noteId: "note-1",
+  backHref: "/admin/notes",
+  backLabel: "← Notes",
   onTogglePublished: vi.fn(),
+  deleteAction: <span data-testid="delete-action">Delete</span>,
 };
 
-describe("EditorMetaBar", () => {
+describe("EditMetaBar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -19,7 +21,7 @@ describe("EditorMetaBar", () => {
   describe("save status display", () => {
     it("does not show status label when saveStatus is idle", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="idle"
           statusColor="var(--text-muted)"
@@ -34,7 +36,7 @@ describe("EditorMetaBar", () => {
 
     it("shows Saving… with statusColor when saveStatus is saving", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="saving"
           statusColor="var(--yellow)"
@@ -49,7 +51,7 @@ describe("EditorMetaBar", () => {
 
     it("shows Saved with statusColor when saveStatus is saved", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="saved"
           statusColor="var(--accent)"
@@ -64,7 +66,7 @@ describe("EditorMetaBar", () => {
 
     it("shows Save failed with statusColor when saveStatus is error", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="error"
           statusColor="var(--red)"
@@ -81,7 +83,7 @@ describe("EditorMetaBar", () => {
   describe("publish toggle", () => {
     it("shows Publish button when not published and calls onTogglePublished on click", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="idle"
           statusColor="var(--text-muted)"
@@ -96,7 +98,7 @@ describe("EditorMetaBar", () => {
 
     it("shows Published button when published and calls onTogglePublished on click", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
           saveStatus="idle"
           statusColor="var(--text-muted)"
@@ -111,10 +113,12 @@ describe("EditorMetaBar", () => {
   });
 
   describe("back link", () => {
-    it("renders back link to /admin/notes", () => {
+    it("renders back link with backHref and backLabel (notes)", () => {
       render(
-        <EditorMetaBar
+        <EditMetaBar
           {...defaultProps}
+          backHref="/admin/notes"
+          backLabel="← Notes"
           saveStatus="idle"
           statusColor="var(--text-muted)"
           statusLabel=""
@@ -123,6 +127,38 @@ describe("EditorMetaBar", () => {
       );
       const link = screen.getByRole("link", { name: /← notes/i });
       expect(link).toHaveAttribute("href", "/admin/notes");
+    });
+
+    it("renders back link with backHref and backLabel (projects)", () => {
+      render(
+        <EditMetaBar
+          {...defaultProps}
+          backHref="/admin/projects"
+          backLabel="← Projects"
+          saveStatus="idle"
+          statusColor="var(--text-muted)"
+          statusLabel=""
+          published={false}
+        />
+      );
+      const link = screen.getByRole("link", { name: /← projects/i });
+      expect(link).toHaveAttribute("href", "/admin/projects");
+    });
+  });
+
+  describe("delete action", () => {
+    it("renders deleteAction slot", () => {
+      render(
+        <EditMetaBar
+          {...defaultProps}
+          saveStatus="idle"
+          statusColor="var(--text-muted)"
+          statusLabel=""
+          published={false}
+        />
+      );
+      expect(screen.getByTestId("delete-action")).toBeInTheDocument();
+      expect(screen.getByText("Delete")).toBeInTheDocument();
     });
   });
 });

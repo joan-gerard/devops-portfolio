@@ -1,6 +1,6 @@
 "use client";
 
-import { labelStyle } from "./editorStyles";
+import { AdminFormField } from "../shared/AdminFormField";
 
 type EditorFormFieldProps = {
   label: string;
@@ -10,24 +10,12 @@ type EditorFormFieldProps = {
 
 /**
  * Wraps a form control with a consistent label (and optional hint) for the editor/notes form.
+ * Uses shared admin form label style from AdminFormField.
  */
 export function EditorFormField({ label, children, hint }: EditorFormFieldProps) {
   return (
-    <div style={{ marginBottom: "20px" }}>
-      <label style={labelStyle}>{label}</label>
+    <AdminFormField label={label} hint={hint}>
       {children}
-      {hint && (
-        <p
-          style={{
-            fontSize: "11px",
-            color: "var(--yellow)",
-            fontFamily: "var(--font-mono)",
-            marginTop: "6px",
-          }}
-        >
-          {hint}
-        </p>
-      )}
-    </div>
+    </AdminFormField>
   );
 }

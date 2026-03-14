@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { pageContainerBaseStyle } from "@/components/public/PageContainer";
 
 const NAV_LINKS = [
   { href: "/notes", label: "Notes" },
@@ -25,8 +26,7 @@ export function PublicNav() {
     >
       <div
         style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
+          ...pageContainerBaseStyle,
           padding: "0 24px",
           height: "56px",
           display: "flex",

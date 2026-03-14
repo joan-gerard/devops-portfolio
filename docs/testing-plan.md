@@ -87,7 +87,7 @@ You can test these with either **integration tests** against a test DB or **high
 
 - **Auth and login-attempt tracking** – `lib/queries/loginAttempts.ts`, `lib/auth.ts`
   - **Done:** `lib/queries/__tests__/loginAttempts.test.ts` — `checkRateLimit(undefined)` returns `{ allowed: true }` without calling sql; with IP: no record → insert and allow; expired window → reset and allow; within window under limit → increment and allow; at/over limit → `{ allowed: false, minutesLeft }`. `clearRateLimit(undefined)` no-ops; with IP calls sql. (`AUTH_ERROR_SERVICE_UNAVAILABLE` mapping is covered in `lib/__tests__/submitLogin.test.ts`.)
-  - **Why**: Security-sensitive and behaviorally complex.
+  - **Why**: Security-sensitive and behaviourally complex.
 
 ---
 
@@ -103,20 +103,20 @@ Use **React Testing Library** (with a `jsdom` environment).
 - **Delete buttons** – `components/notes/DeleteNoteButton.tsx`, `components/projects/DeleteProjectButton.tsx`
   - **Done:** `components/notes/DeleteNoteButton.test.tsx`, `components/projects/DeleteProjectButton.test.tsx` — initial click shows the “Sure?” confirm UI; confirm click issues `fetch(DELETE)` to `/api/pages/:id` or `/api/projects/:id` and, depending on props, either calls `router.refresh()` or `router.push(redirectTo)`; cancel click hides the confirm UI and restores the original `Delete` button.
   - **What to extend**: Add explicit assertions for loading/disabled state on the confirm button during the request and, if you refactor, cover any shared `ConfirmDeleteButton` abstraction.
-  - **Why**: Risky actions that must behave exactly; tests now guard both the confirm/cancel UX and the correct routing behavior.
+  - **Why**: Risky actions that must behave exactly; tests now guard both the confirm/cancel UX and the correct routing behaviour.
 
 - **Create buttons** – `components/notes/CreateNoteButton.tsx`, `components/projects/CreateProjectButton.tsx`
   - **Done:** `components/notes/CreateNoteButton.test.tsx`, `components/projects/CreateProjectButton.test.tsx` — clicking the button sends a `POST` to `/api/pages` or `/api/projects` with `{ title: "Untitled …", slug: slugify(title) + "-" + Date.now() }` (both `slugify` and `Date.now` are mocked for determinism); on success, tests assert navigation to `/admin/editor/:id` (notes) or `/admin/projects/:id` (projects); when the request fails (`res.ok === false`), tests verify no navigation occurs.
-  - **What to extend**: If you surface an explicit error UI on failure, assert that it appears; when you introduce a shared `useCreateEntity` or `CreateEntityButton`, keep these behaviors covered while pointing the tests at the new abstraction.
-  - **Why**: Important admin workflows and a good place for tests once you centralize create logic; current tests protect API contracts, slug generation, and navigation behavior.
+  - **What to extend**: If you surface an explicit error UI on failure, assert that it appears; when you introduce a shared `useCreateEntity` or `CreateEntityButton`, keep these behaviours covered while pointing the tests at the new abstraction.
+  - **Why**: Important admin workflows and a good place for tests once you centralize create logic; current tests protect API contracts, slug generation, and navigation behaviour.
 
-- **Slug fields** – `components/editor/EditorSlugField.tsx`, `components/projects/ProjectSlugField.tsx`
-  - **Done:** `components/editor/EditorSlugField.test.tsx` — typing into the slug input lowercases, replaces disallowed chars with hyphens, and collapses multiple hyphens; "↺ from title" button calls `onRegenerateFromTitle`; published hint (break existing URLs) shown only when `published` is true. `components/projects/ProjectSlugField.test.tsx` — same input sanitization; "↺ from title" calls `onChange(slugify(titleForRegenerate))` (slugify mocked); regenerate result respects length limit (≤80 from slugify); published hint when `published` is true.
+- **Slug fields** – Shared UI: `components/shared/SlugField.tsx`; thin wrappers: `EditorSlugField.tsx`, `ProjectSlugField.tsx`. Sanitisation: `lib/slugify.ts` (`sanitiseSlugForInput`).
+  - **Done:** `lib/__tests__/slugify.test.ts` — `sanitiseSlugForInput` lowercases, replaces disallowed chars with hyphens, collapses hyphens. `EditorSlugField.test.tsx` — slug input sanitisation, "↺ from title" calls `onRegenerateFromTitle`, published hint. `ProjectSlugField.test.tsx` — same sanitisation (uses real `sanitiseSlugForInput`, mocked `slugify`); "↺ from title" calls `onChange(slugify(titleForRegenerate))` or `onRegenerateFromTitle`; length limit (≤80); published hint.
   - **Why**: Bridge between user input and `validateSlug`/`slugify`; fragile formatting rules.
 
 - **Save-status meta bars** – `components/editor/EditorMetaBar.tsx`, `components/projects/ProjectEditMetaBar.tsx` and hooks mentioned in doc (`useEditorPage`, `useProjectEdit`)
   - **Done:** `components/editor/EditorMetaBar.test.tsx` — when `saveStatus` is idle the status label is hidden; when saving/saved/error the correct label and colour are shown; Publish/Published button calls `onTogglePublished`; back link to `/admin/notes`. `components/projects/ProjectEditMetaBar.test.tsx` — same for project (statusColour, back to `/admin/projects`). `hooks/useEditorPage.test.ts` — initial state; statusColor/statusLabel map to SaveStatus; debounced title/slug change triggers PATCH after 1s and sets saved/error; togglePublished PATCHes immediately and updates or reverts published. `hooks/useProjectEdit.test.ts` — same pattern for project (fields, handleChange debounce, togglePublished).
-  - **Why**: Debounced interactions are prone to race conditions; tests help solidify behavior and support refactoring toward a shared `useAdminSave` or similar.
+  - **Why**: Debounced interactions are prone to race conditions; tests help solidify behaviour and support refactoring toward a shared `useAdminSave` or similar.
 
 - **Public display components** – e.g. `components/public/projects/ProjectCard.tsx`
   - **What to test**: Renders title and description correctly; renders tech stack tags when present; hides tag container when empty; conditionally renders GitHub and Live links only when URLs exist, with correct `href`, `target`, `rel`, `aria-label`; renders Details link with correct `href` (`/projects/${slug}`).
@@ -152,7 +152,7 @@ Using Playwright after basic tooling is in place.
 
 - **Destructive operations**
   - **What to test**: Deleting a note/project: confirm dialog appears; cancel leaves content unchanged; confirm removes item from admin list and public pages.
-  - **Why**: Guards against regressions in delete behavior or route paths.
+  - **Why**: Guards against regressions in delete behaviour or route paths.
   - **Done:** `e2e/destructive.spec.ts` — "Sure?" confirm; cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
 
 **Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped. After the suite finishes, `globalTeardown` runs and deletes any `e2e_only` rows created during the run, guarded by `E2E_TEST=1`/`CI` so it only affects test environments.
@@ -219,9 +219,9 @@ You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
 
 ## 6. Regression Tests Around Refactors in `refactoring-review.md`
 
-Your refactoring doc already identifies shared abstractions; you can use tests to **lock in behavior before refactoring**:
+Your refactoring doc already identifies shared abstractions; you can use tests to **lock in behaviour before refactoring**:
 
-- **Before refactor, add tests for current behavior** of: delete buttons, create buttons, meta bars, back links, empty states, section layouts, page containers, and link-pill styling.
+- **Before refactor, add tests for current behaviour** of: delete buttons, create buttons, meta bars, back links, empty states, section layouts, page containers, and link-pill styling.
 - **Then refactor**, keeping tests green.
 - This ensures the new `FormField`, `SlugField`, `EditMetaBar`, `BackLink`, `EmptyState`, `SectionWithGrid`, and design tokens behave identically from the user’s perspective.
 

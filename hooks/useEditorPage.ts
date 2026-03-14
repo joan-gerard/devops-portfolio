@@ -2,31 +2,10 @@
 
 import { useRef, useState } from "react";
 import type { Page } from "@/types/pages";
+import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
+import type { SaveStatus } from "@/lib/adminSave";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error" | "slugSaving" | "slugSaved";
-
-/**
- * Debounce delay (ms) before persisting title/slug changes to the API.
- */
-const DEBOUNCE_MS = 1000;
-
-const STATUS_COLOR: Record<SaveStatus, string> = {
-  idle: "var(--text-muted)",
-  saving: "var(--yellow)",
-  saved: "var(--accent)",
-  error: "var(--red)",
-  slugSaving: "var(--yellow)",
-  slugSaved: "var(--accent)",
-};
-
-const STATUS_LABEL: Record<SaveStatus, string> = {
-  idle: "",
-  saving: "Saving…",
-  saved: "Saved",
-  error: "Save failed",
-  slugSaving: "Saving slug…",
-  slugSaved: "Title slug saved",
-};
+export type { SaveStatus } from "@/lib/adminSave";
 
 /**
  * Hook for editing a single page (note) in the editor: local state, debounced

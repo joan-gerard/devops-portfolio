@@ -3,7 +3,7 @@
 /**
  * Note/page editor (admin). Composes:
  * - useEditorPage: title/slug state, debounced PATCH, publish toggle
- * - EditorMetaBar: back link, status, publish, delete
+ * - EditMetaBar: back link, status, publish, delete
  * - EditorTitleInput: large title field
  * - EditorFormField / EditorSlugField: labeled slug with regenerate
  * - editorStyles: shared label/input/button styles
@@ -13,8 +13,9 @@ import { useEditorPage } from "@/hooks/useEditorPage";
 import { slugify } from "@/lib/slugify";
 import type { Page } from "@/types/pages";
 import { TagInput } from "../TagInput";
+import { EditMetaBar } from "@/components/shared/EditMetaBar";
+import DeleteNoteButton from "../notes/DeleteNoteButton";
 import { EditorFormField } from "./EditorFormField";
-import { EditorMetaBar } from "./EditorMetaBar";
 import { EditorSlugField } from "./EditorSlugField";
 import { EditorTitleInput } from "./EditorTitleInput";
 
@@ -35,13 +36,15 @@ export function EditorPageClient({ note }: { note: Page }) {
 
   return (
     <div style={{ maxWidth: "860px", margin: "0 auto" }}>
-      <EditorMetaBar
+      <EditMetaBar
+        backHref="/admin/notes"
+        backLabel="← Notes"
         saveStatus={saveStatus}
-        noteId={note.id}
         statusColor={statusColor}
         statusLabel={statusLabel}
         published={published}
         onTogglePublished={togglePublished}
+        deleteAction={<DeleteNoteButton id={note.id} redirectTo="/admin/notes" />}
       />
 
       <EditorTitleInput value={title} onChange={handleTitleChange} />
