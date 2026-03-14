@@ -112,8 +112,9 @@ describe("page queries", () => {
 
       expect(result).toBeNull();
       expect(warnSpy).toHaveBeenCalledWith(
-        "[getNoteBySlug] DB unavailable during prerender build — returning null.",
-        expect.stringContaining("about")
+        expect.stringContaining(
+          "[getNoteBySlug] DB unavailable during prerender build — returning null. Slug: about. Reason:"
+        )
       );
       warnSpy.mockRestore();
       process.env.IS_PRERENDER_BUILD = prev;
@@ -163,8 +164,9 @@ describe("page queries", () => {
 
       expect(result).toEqual([]);
       expect(warnSpy).toHaveBeenCalledWith(
-        "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list.",
-        expect.any(String)
+        expect.stringContaining(
+          "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list. Reason:"
+        )
       );
       warnSpy.mockRestore();
       process.env.IS_PRERENDER_BUILD = prev;

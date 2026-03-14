@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ExternalLink } from "@/components/public/ExternalLink";
 import {
   cardProjectStyle,
   linkBaseStyle,
@@ -66,28 +67,24 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
       <div style={linkRowStyle}>
         {project.github_url && (
-          <a
+          <ExternalLink
             href={project.github_url}
+            variant="plain"
+            tone="muted"
             aria-label={`GitHub repository for ${project.title}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ ...linkBaseStyle }}
-            className="u-text-muted-text-hover"
           >
             GitHub →
-          </a>
+          </ExternalLink>
         )}
         {project.live_url && (
-          <a
+          <ExternalLink
             href={project.live_url}
+            variant="plain"
+            tone="accent"
             aria-label={`Live demo for ${project.title}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ ...linkBaseStyle }}
-            className="u-text-accent-text-hover"
           >
             Live →
-          </a>
+          </ExternalLink>
         )}
         <Link
           href={`/projects/${project.slug}`}

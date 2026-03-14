@@ -117,6 +117,17 @@ export const linkBaseStyle: CSSProperties = {
   textDecoration: "none",
 };
 
+/** Pill-style external link (bordered, rounded). Used with tone to set border/hover. */
+export const linkPillStyle: CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "12px",
+  textDecoration: "none",
+  border: "1px solid var(--border)",
+  borderRadius: "4px",
+  padding: "8px 16px",
+  transition: "border-color 0.15s, color 0.15s",
+};
+
 // —— Empty state —————————————————————————————————————————————————────────——
 /** Muted text for empty messages (HomeSection, EmptyState). */
 export const emptyMessageStyle: CSSProperties = {

@@ -1,4 +1,8 @@
-import { isConnectionError, isConnectionErrorOrAggregate } from "../db-errors";
+import {
+  isConnectionError,
+  isConnectionErrorOrAggregate,
+  withPrerenderFallback,
+} from "../db-errors";
 
 describe("isConnectionError", () => {
   it("returns true for ECONNREFUSED", () => {
@@ -40,5 +44,46 @@ describe("isConnectionErrorOrAggregate", () => {
     expect(isConnectionErrorOrAggregate(null)).toBe(false);
     expect(isConnectionErrorOrAggregate("oops")).toBe(false);
     expect(isConnectionErrorOrAggregate({})).toBe(false);
+  });
+});
+
+describe("withPrerenderFallback", () => {
+  it("returns query result when queryFn resolves", async () => {
+    const result = await withPrerenderFallback(() => Promise.resolve(42), 0, "[test] fallback");
+    expect(result).toBe(42);
+  });
+
+  it("returns fallback and warns when prerender build and connection error", async () => {
+    const prev = process.env.IS_PRERENDER_BUILD;
+    process.env.IS_PRERENDER_BUILD = "true";
+    const err = new Error("Connection refused") as Error & { code?: string };
+    err.code = "ECONNREFUSED";
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await withPrerenderFallback(
+      () => Promise.reject(err),
+      null,
+      "[test] DB unavailable — returning null."
+    );
+
+    expect(result).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[test] DB unavailable — returning null. Reason:")
+    );
+    warnSpy.mockRestore();
+    process.env.IS_PRERENDER_BUILD = prev;
+  });
+
+  it("rethrows when not prerender build", async () => {
+    const prev = process.env.IS_PRERENDER_BUILD;
+    process.env.IS_PRERENDER_BUILD = "false";
+    const err = new Error("Connection refused") as Error & { code?: string };
+    err.code = "ECONNREFUSED";
+
+    await expect(withPrerenderFallback(() => Promise.reject(err), null, "[test]")).rejects.toThrow(
+      "Connection refused"
+    );
+
+    process.env.IS_PRERENDER_BUILD = prev;
   });
 });
