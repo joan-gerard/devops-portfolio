@@ -5,6 +5,7 @@ import DOMPurify from "dompurify";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { BackLink } from "@/components/shared/BackLink";
+import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { useMemo } from "react";
 
 const tagStyle: React.CSSProperties = {
@@ -16,6 +17,12 @@ const tagStyle: React.CSSProperties = {
   borderRadius: "4px",
   padding: "2px 8px",
   textTransform: "lowercase",
+};
+
+const metadataDateStyle: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "10px",
+  color: "var(--text-muted)",
 };
 
 export type NoteDetailProps = {
@@ -40,74 +47,25 @@ export function NoteDetail({ note }: NoteDetailProps) {
     return generateHTML(content as Parameters<typeof generateHTML>[0], getSharedExtensions());
   }, [note.content]);
 
+  const metadata = (
+    <>
+      {note.tags.map((t) => (
+        <span key={t} style={tagStyle}>
+          {t}
+        </span>
+      ))}
+      <span style={{ ...metadataDateStyle, marginLeft: note.tags.length > 0 ? "4px" : 0 }}>
+        {updatedAt}
+      </span>
+    </>
+  );
+
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 24px 80px" }}>
       <BackLink href="/notes">← All notes</BackLink>
-      <NoteDetailHeader title={note.title} tags={note.tags} updatedAt={updatedAt} />
+      <DetailPageHeader label="Note" title={note.title} metadata={metadata} />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }} />
       <NoteDetailContent content={note.content} html={output} />
-    </div>
-  );
-}
-
-type NoteDetailHeaderProps = {
-  title: string;
-  tags: string[];
-  updatedAt: string;
-};
-
-function NoteDetailHeader({ title, tags, updatedAt }: NoteDetailHeaderProps) {
-  return (
-    <div style={{ marginBottom: "32px" }}>
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "10px",
-          color: "var(--accent)",
-          textTransform: "uppercase",
-          letterSpacing: "0.15em",
-          marginBottom: "12px",
-        }}
-      >
-        Note
-      </p>
-      <h1
-        style={{
-          fontFamily: "var(--font-syne)",
-          fontSize: "32px",
-          fontWeight: "800",
-          color: "var(--text)",
-          marginBottom: "12px",
-          letterSpacing: "-0.02em",
-          lineHeight: 1.15,
-        }}
-      >
-        {title}
-      </h1>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "8px",
-        }}
-      >
-        {tags.map((t) => (
-          <span key={t} style={tagStyle}>
-            {t}
-          </span>
-        ))}
-        <span
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "10px",
-            color: "var(--text-muted)",
-            marginLeft: tags.length > 0 ? "4px" : "0",
-          }}
-        >
-          {updatedAt}
-        </span>
-      </div>
     </div>
   );
 }

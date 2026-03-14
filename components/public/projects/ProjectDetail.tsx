@@ -2,9 +2,9 @@
 
 import type { PublicProject } from "@/types/projects";
 import { BackLink } from "@/components/shared/BackLink";
+import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import {
   ProjectDescriptionSection,
-  ProjectDetailHeader,
   ProjectLinksSection,
   ProjectTechStackSection,
 } from "./project-page";
@@ -21,6 +21,12 @@ const sectionDividerStyle = {
   margin: "0 0 32px",
 };
 
+const metadataDateStyle: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "11px",
+  color: "var(--text-muted)",
+};
+
 type ProjectDetailProps = {
   project: PublicProject;
 };
@@ -33,10 +39,12 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
     timeZone: "UTC",
   });
 
+  const metadata = <p style={metadataDateStyle}>Last updated {updatedAt}</p>;
+
   return (
     <div style={containerStyle}>
       <BackLink href="/projects">← All projects</BackLink>
-      <ProjectDetailHeader title={project.title} updatedAt={updatedAt} />
+      <DetailPageHeader label="Project" title={project.title} metadata={metadata} />
       <hr style={sectionDividerStyle} />
       <ProjectDescriptionSection description={project.description} />
       <ProjectTechStackSection techStack={project.tech_stack} />

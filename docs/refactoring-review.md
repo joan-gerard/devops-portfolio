@@ -78,11 +78,13 @@ This document captures refactoring opportunities across the app to increase reus
 
 ---
 
-## 9. Detail Page Headers
+## 9. Detail Page Headers ✅ Done
 
 **Current:** **NoteDetailHeader** (inside `components/notes/NoteDetail.tsx`) and **ProjectDetailHeader** (`components/public/projects/project-page/ProjectDetailHeader.tsx`) use the same layout: small uppercase label (“Note” / “Project”), large title, then metadata (tags + date vs date only). Inline styles are duplicated (e.g. label and title styles match `projectStyles.pageLabel` / `pageHeading` but are redefined in each file).
 
 **Suggestion:** A **DetailPageHeader** component with props like `label`, `title`, and `metadata?: ReactNode`, and shared styles for label, title, and metadata container. Note detail passes tags + date; project detail passes only date. This keeps one place for typography and spacing.
+
+**Done:** Added **DetailPageHeader** in `components/public/DetailPageHeader.tsx` with shared style constants (`detailPageHeaderLabelStyle`, `detailPageHeaderTitleStyle`, `detailPageHeaderMetadataStyle`) and props `label`, `title`, `metadata?`. **NoteDetail** and **ProjectDetail** use it; **ProjectDetailHeader** removed. Note passes tags + date as metadata; project passes "Last updated" paragraph.
 
 ---
 
@@ -162,7 +164,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Meta bars          | Editor + Project                                               | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
 | Back links         | 3 places (EditMetaBar, ProjectDetail, NoteDetail)              | ✅ Shared `BackLink` used directly; wrappers removed                                 |
 | Page headers       | Notes inline, Projects styles                                  | ✅ `PageHeader` used directly in notes/projects pages; wrappers removed              |
-| Detail headers     | Note + Project                                                 | `DetailPageHeader`                                                                   |
+| Detail headers     | Note + Project                                                 | ✅ `DetailPageHeader` + shared styles; ProjectDetailHeader removed                   |
 | Empty states       | Notes + Projects + About                                       | `EmptyState` + shared styles                                                         |
 | Home sections      | 4 sections (RecentNotes, FeaturedProjects, TechStack, Roadmap) | `SectionWithGrid` / `HomeSection`                                                    |
 | Design tokens      | sectionStyles + projectStyles                                  | Unified public page tokens                                                           |
@@ -175,6 +177,6 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–8: implemented (see status in each section). Sections 9–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
+**Last reviewed:** March 2026 — paths and component locations verified. Sections 1–9: implemented (see status in each section). Sections 10–16: reviewed; **Current** and **Suggestion** updated with accurate file paths and implementation details (Notes/Projects/About empty states, sectionStyles vs projectStyles, page container locations, useEditorPage/useProjectEdit spelling, prerender query helpers, link pill locations).
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
