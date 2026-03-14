@@ -54,6 +54,8 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Suggestion:** A single **EditMetaBar** (or **AdminEditMetaBar**) with props such as: `backHref`, `backLabel`, `saveStatus`, `statusColor`, `statusLabel`, `published`, `onTogglePublished`, and `deleteAction: ReactNode` (so each page passes its own delete button). This removes duplication and the colour spelling inconsistency.
 
+**Status:** ✅ Implemented. Shared **EditMetaBar** in `components/shared/EditMetaBar.tsx` with props `backHref`, `backLabel`, `saveStatus`, `statusColor`, `statusLabel`, `published`, `onTogglePublished`, `deleteAction` (ReactNode), and optional `marginBottom` (default `"16px"`). Uses consistent `statusColor` spelling. **EditorPageClient** and **ProjectEditClient** use **EditMetaBar** directly, passing their delete button (DeleteNoteButton / DeleteProjectButton) as `deleteAction`. EditorMetaBar and ProjectEditMetaBar removed. Tests in `components/shared/EditMetaBar.test.tsx`.
+
 ---
 
 ## 7. Back Link Styling
@@ -146,29 +148,29 @@ Use it in all three so the prerender behaviour and logging live in one place.
 
 ## Summary Table
 
-| Area               | Current duplication              | Reuse approach                                                       |
-| ------------------ | -------------------------------- | -------------------------------------------------------------------- |
-| Form field         | Editor + Project                 | ✅ `AdminFormField` + shared `formStyles` (label)                    |
-| Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField          |
-| Admin form styles  | editorStyles + projectEditStyles | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed |
-| Delete buttons     | Note + Project                   | ✅ `ConfirmDeleteButton` + thin wrappers                             |
-| Create buttons     | Note + Project                   | ✅ `CreateEntityButton` used directly in admin pages                 |
-| Meta bars          | Editor + Project                 | Single `EditMetaBar` with `deleteAction`                             |
-| Back links         | 4 places                         | Shared `BackLink`                                                    |
-| Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                        |
-| Detail headers     | Note + Project                   | `DetailPageHeader`                                                   |
-| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                         |
-| Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                                    |
-| Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                           |
-| Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                              |
-| Save status        | 2 hooks                          | Shared types/constants (+ optional hook)                             |
-| Prerender fallback | 3 query functions                | `withPrerenderFallback`                                              |
-| Link pills         | 3+ places                        | `LinkPill` / `ExternalLink`                                          |
+| Area               | Current duplication              | Reuse approach                                                                       |
+| ------------------ | -------------------------------- | ------------------------------------------------------------------------------------ |
+| Form field         | Editor + Project                 | ✅ `AdminFormField` + shared `formStyles` (label)                                    |
+| Slug field         | 2 components + 2× sanitise       | ✅ `sanitiseSlugForInput` in lib/slugify + shared SlugField                          |
+| Admin form styles  | editorStyles + projectEditStyles | ✅ Single `formStyles.ts` (width: "100%"); projectEditStyles removed                 |
+| Delete buttons     | Note + Project                   | ✅ `ConfirmDeleteButton` + thin wrappers                                             |
+| Create buttons     | Note + Project                   | ✅ `CreateEntityButton` used directly in admin pages                                 |
+| Meta bars          | Editor + Project                 | ✅ `EditMetaBar` with `deleteAction`; used in EditorPageClient and ProjectEditClient |
+| Back links         | 4 places                         | Shared `BackLink`                                                                    |
+| Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                                        |
+| Detail headers     | Note + Project                   | `DetailPageHeader`                                                                   |
+| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                                         |
+| Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                                                    |
+| Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                                           |
+| Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                                              |
+| Save status        | 2 hooks                          | Shared types/constants (+ optional hook)                                             |
+| Prerender fallback | 3 query functions                | `withPrerenderFallback`                                                              |
+| Link pills         | 3+ places                        | `LinkPill` / `ExternalLink`                                                          |
 
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
 
-**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers. Section 5: shared `CreateEntityButton` in `components/shared/CreateEntityButton.tsx`; used directly in admin notes and projects pages; tests in `CreateEntityButton.test.tsx`.
+**Last reviewed:** March 2026 — paths and component locations verified. Section 1: shared admin formStyles (label). Section 2: `sanitiseSlugForInput` + shared SlugField. Section 3: all admin form styles in `formStyles.ts` (width: "100%"); projectEditStyles removed; editorStyles only `titleInputStyle`. Section 4: shared `ConfirmDeleteButton` in `components/shared/ConfirmDeleteButton.tsx`; DeleteNoteButton and DeleteProjectButton are thin wrappers. Section 5: shared `CreateEntityButton` in `components/shared/CreateEntityButton.tsx`; used directly in admin notes and projects pages; tests in `CreateEntityButton.test.tsx`. Section 6: shared `EditMetaBar` in `components/shared/EditMetaBar.tsx`; EditorPageClient and ProjectEditClient use it with `deleteAction`; tests in `EditMetaBar.test.tsx`.
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
