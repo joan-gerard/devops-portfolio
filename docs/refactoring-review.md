@@ -57,7 +57,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 7. Back Link Styling
 
-**Current:** Back links appear in `EditorMetaBar` / `ProjectEditMetaBar` (inline `backLinkStyle`), `BackToProjectsLink` (class `notes-back-link` + `u-text-muted-accent-hover`), and `NoteDetail`’s `NoteBackLink` (class `notes-back-link`).
+**Current:** Back links appear in `EditorMetaBar` / `ProjectEditMetaBar` (inline `backLinkStyle`), `BackToProjectsLink` (`components/public/projects/project-page/BackToProjectsLink.tsx`; class `notes-back-link` + `u-text-muted-accent-hover`), and `NoteDetail`’s `NoteBackLink` (class `notes-back-link`).
 
 **Suggestion:** A shared **BackLink** component that takes `href` and `children`, and uses one style (either a shared class or a small shared style object). Use it in meta bars, `BackToProjectsLink`, and `NoteDetail` so back links look and behave the same everywhere.
 
@@ -73,7 +73,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 9. Detail Page Headers
 
-**Current:** `NoteDetailHeader` (inside `NoteDetail.tsx`) and `ProjectDetailHeader` use the same layout: small uppercase label (“Note” / “Project”), large title, then metadata (tags + date vs date only). Inline styles are repeated.
+**Current:** `NoteDetailHeader` (inside `NoteDetail.tsx`) and `ProjectDetailHeader` (`components/public/projects/project-page/ProjectDetailHeader.tsx`) use the same layout: small uppercase label (“Note” / “Project”), large title, then metadata (tags + date vs date only). Inline styles are repeated.
 
 **Suggestion:** A **DetailPageHeader** component with props like `label`, `title`, and `metadata?: ReactNode`, and shared styles for label, title, and metadata container. Note detail passes tags + date; project detail passes only date. This keeps one place for typography and spacing.
 
@@ -81,15 +81,15 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 10. Empty States
 
-**Current:** `NotesEmptyState` and the empty branch in `ProjectsGrid` both use: centered block, padding (e.g. 64px vertical), mono 13px muted text. Projects uses `emptyState` and `emptyStateText` from `projectStyles`; Notes uses inline styles.
+**Current:** `NotesEmptyState` and the empty branch in `ProjectsGrid` both use: centered block, padding (e.g. 64px vertical), mono 13px muted text. Projects uses `emptyState` and `emptyStateText` from `projectStyles`; Notes uses inline styles. The About page has an internal **AboutEmptyState** in `AboutPageContent.tsx` (centered block, mono muted text) that follows the same pattern.
 
-**Suggestion:** A single **EmptyState** component that takes `message` (and optionally `className`/style), and shared styles (e.g. in a shared “public page” styles file). Use it on both Notes and Projects so copy and layout stay consistent and you don’t duplicate the layout object.
+**Suggestion:** A single **EmptyState** component that takes `message` (and optionally `className`/style or `children` for richer content like About’s instructions), and shared styles (e.g. in a shared “public page” styles file). Use it on Notes, Projects, and About so copy and layout stay consistent and you don’t duplicate the layout object.
 
 ---
 
 ## 11. Homepage Section Layout
 
-**Current:** `RecentNotesSection` and `FeaturedProjectsSection` share the same structure: section wrapper, label, heading, then either an empty message or a grid, then a “View all” link. Only content and copy differ.
+**Current:** `RecentNotesSection` and `FeaturedProjectsSection` share the same structure: section wrapper, label, heading, then either an empty message or a grid, then a “View all” link. Only content and copy differ. **TechStackSection** and **RoadmapSection** also use the same section tokens (`sectionLabel`, `sectionHeading`, and `viewAllLink` where applicable) from `sectionStyles`, so a shared section wrapper would benefit all four home sections for consistency.
 
 **Suggestion:** A **SectionWithGrid** (or **HomeSection**) component with props like `label`, `heading`, `emptyMessage`, `viewAllHref`, `viewAllLabel`, and `children`. Each section renders its grid/content as children. That keeps layout and “view all” behaviour in one place.
 
@@ -99,7 +99,7 @@ You can also consider reusing **ProjectCard** (or a shared card) for the homepag
 
 ## 12. Design Tokens Across Public Pages
 
-**Current:** `sectionStyles.ts` (home) and `projectStyles.ts` (projects) both define label (small uppercase mono), heading (Syne, bold), tag (mono, muted, pill), and card-like styles.
+**Current:** `sectionStyles.ts` (home) and `projectStyles.ts` (projects) both define label (small uppercase mono), heading (Syne, bold), tag (mono, muted, pill), and card-like styles. Home sections that use these include `RecentNotesSection`, `FeaturedProjectsSection`, `TechStackSection`, `RoadmapSection`, and `NoteCard` (sectionStyles); projects use `ProjectsPageHeader`, `ProjectsGrid`, `ProjectCard`, and `ProjectTechStackSection` (projectStyles).
 
 **Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, and optionally “view all” link and empty state. Home and projects (and Notes if you refactor it) import from there. That reduces duplication and keeps the public look consistent.
 
@@ -156,7 +156,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 | Back links         | 4 places                         | Shared `BackLink`                                                |
 | Page headers       | Notes inline, Projects styles    | `PageHeader` or shared tokens                                    |
 | Detail headers     | Note + Project                   | `DetailPageHeader`                                               |
-| Empty states       | Notes + Projects                 | `EmptyState` + shared styles                                     |
+| Empty states       | Notes + Projects + About         | `EmptyState` + shared styles                                     |
 | Home sections      | 2 sections                       | `SectionWithGrid` / `HomeSection`                                |
 | Design tokens      | sectionStyles + projectStyles    | Unified public page tokens                                       |
 | Page container     | 6+ places                        | `pageContainerStyle` or `PageContainer`                          |
@@ -167,5 +167,7 @@ Use it in all three so the prerender behaviour and logging live in one place.
 ---
 
 _Generated from a full app review focused on reusable components and logic. Update this document as refactors are completed or priorities change._
+
+**Last reviewed:** 14th March 2025 — paths and component locations verified; added ProjectDetailHeader path (`project-page/`), About empty state (Section 10), TechStackSection/RoadmapSection and design-token consumers (Sections 11–12). No refactors above have been implemented since the original review except Section 1 (AdminFormField).
 
 **Related:** See [Testing Plan](testing-plan.md) for testing opportunities and regression-test strategy around these refactors.
