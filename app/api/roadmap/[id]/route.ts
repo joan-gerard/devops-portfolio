@@ -39,6 +39,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     position_y?: number;
   };
 
+  const allowedStatus = new Set(["not_started", "in_progress", "completed"]);
+  if (status !== undefined && !allowedStatus.has(status)) {
+    return NextResponse.json(
+      { error: "Invalid status. Allowed: not_started, in_progress, completed" },
+      { status: 400 }
+    );
+  }
+  if (position_x !== undefined && typeof position_x !== "number") {
+    return NextResponse.json({ error: "position_x must be a number" }, { status: 400 });
+  }
+  if (position_y !== undefined && typeof position_y !== "number") {
+    return NextResponse.json({ error: "position_y must be a number" }, { status: 400 });
+  }
+
   try {
     const rows = await sql`
       UPDATE roadmap_items
