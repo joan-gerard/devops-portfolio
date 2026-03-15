@@ -10,10 +10,12 @@ import {
   ReactFlow,
   type Edge,
   type Node,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { RoadmapNode } from "./RoadmapNode";
+import { RoadmapSidePanel } from "./RoadmapSidePanel";
 
 const nodeTypes = { roadmapNode: RoadmapNode };
 
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export function RoadmapCanvas({ items, edges }: Props) {
+  const [selectedItem, setSelectedItem] = useState<RoadmapItemWithSlug | null>(null);
   const nodes = useMemo(
     () =>
       items.map((item) => ({
@@ -31,8 +34,9 @@ export function RoadmapCanvas({ items, edges }: Props) {
         position: { x: item.position_x, y: item.position_y },
         data: item,
         draggable: false, // public view is read-only
+        selected: selectedItem?.id === item.id,
       })) as unknown as Node[],
-    [items]
+    [items, selectedItem]
   );
 
   const flowEdges: Edge[] = useMemo(
@@ -47,41 +51,56 @@ export function RoadmapCanvas({ items, edges }: Props) {
     [edges]
   );
 
+  const handleNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      const item = items.find((i) => i.id === node.id) ?? null;
+      // Clicking the already-selected node closes the panel
+      setSelectedItem((prev) => (prev?.id === item?.id ? null : item));
+    },
+    [items]
+  );
+
+  const handleClose = useCallback(() => setSelectedItem(null), []);
+
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={flowEdges}
-      nodeTypes={nodeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
-      nodesDraggable={false}
-      nodesConnectable={false}
-      elementsSelectable={false}
-      proOptions={{ hideAttribution: false }}
-      style={{ background: "var(--bg)" }}
-    >
-      <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border)" />
-      <Controls
-        showInteractive={false}
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: 6,
-        }}
-      />
-      <MiniMap
-        nodeColor={(node) => {
-          const status = (node.data as unknown as RoadmapItemWithSlug).status;
-          if (status === "completed") return "var(--accent)";
-          if (status === "in_progress") return "var(--accent-2)";
-          return "var(--border)";
-        }}
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-        }}
-        maskColor="rgba(0,0,0,0.4)"
-      />
-    </ReactFlow>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={flowEdges}
+        nodeTypes={nodeTypes}
+        onNodeClick={handleNodeClick}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        proOptions={{ hideAttribution: false }}
+        style={{ background: "var(--bg)" }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border)" />
+        <Controls
+          showInteractive={false}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+          }}
+        />
+        <MiniMap
+          nodeColor={(node) => {
+            const status = (node.data as unknown as RoadmapItemWithSlug).status;
+            if (status === "completed") return "var(--accent)";
+            if (status === "in_progress") return "var(--accent-2)";
+            return "var(--border)";
+          }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+          }}
+          maskColor="rgba(0,0,0,0.4)"
+        />
+      </ReactFlow>
+      <RoadmapSidePanel item={selectedItem} onClose={handleClose} />
+    </div>
   );
 }
