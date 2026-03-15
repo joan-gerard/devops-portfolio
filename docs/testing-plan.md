@@ -57,8 +57,8 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
   - **What to test**: `isAllowedProjectUrlScheme`: accepts `http:` and `https:` URLs; rejects empty, whitespace, non-string, and URLs over max length (2048); rejects disallowed schemes (`javascript:`, `data:`, `file:`); rejects invalid URL strings; trims before parsing. `normalizeProjectUrl`: null/undefined/blank → null; non-blank string trimmed; non-string → null.
   - **Why**: Prevents XSS when project links (e.g. github_url, live_url) are rendered as `href`; security-sensitive.
 
-- **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`).
-  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, the three query functions return `null`/`[]` and log a warning; otherwise they rethrow. Also verify that when `IS_PRERENDER_BUILD === "true"` but the error is not a connection/aggregate error, the original error is still rethrown. This logic is subtle and directly impacts build reliability; tests can drive the suggested `withPrerenderFallback` refactor from your doc.
+- **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`, `getHomepageData`, `getRoadmapData`).
+  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, those query functions return `null`/`[]`/empty data and log a warning; otherwise they rethrow. Also verify that when `IS_PRERENDER_BUILD === "true"` but the error is not a connection/aggregate error, the original error is still rethrown. This logic is subtle and directly impacts build reliability.
 
 - **Login submission logic** – `lib/submitLogin.ts`
   - **What to test**: When `signIn` returns `{ error: AUTH_ERROR_SERVICE_UNAVAILABLE }`, you map to the friendly “Sign-in is temporarily unavailable…” message; when it returns other `error` values you `decodeURIComponent` them; when no error you return `{ ok: true }`; when `signIn` throws you log and return `{ ok: false, error: DEFAULT_ERROR_MESSAGE }`. Mock `next-auth/react`’s `signIn` in unit tests.
@@ -71,7 +71,7 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
 
 - **Home page constants and selection logic** – `lib/constants/home.ts`, `lib/queries/home.ts`
   - **What to test**: Any logic that selects “featured projects” or “recent notes” (once you confirm contents); ensure correct filtering/sorting and max counts.
-  - **Done:** `lib/__tests__/home.test.ts` — constants (TECH_STACK, ROADMAP_PHASES); `getHomepageData()` returns notes and projects from mocked `sql`, and the test asserts the actual SQL passed to the mock: notes query includes `WHERE published = true`, `slug != 'about'`, and `LIMIT 3`; projects query includes `WHERE published = true` and `LIMIT 3`.
+  - **Done:** `lib/__tests__/home.test.ts` — constants (TECH_STACK, ROADMAP_PHASES); `getHomepageData()` returns notes and projects from mocked `sql` (and now uses `withPrerenderFallback` for CI build resilience), and the test asserts the actual SQL passed to the mock: notes query includes `WHERE published = true`, `slug != 'about'`, and `LIMIT 3`; projects query includes `WHERE published = true` and `LIMIT 3`.
 
 ---
 
@@ -84,6 +84,9 @@ You can test these with either **integration tests** against a test DB or **high
 
 - **Project queries** – `lib/queries/project.ts`
   - **Done:** `lib/queries/__tests__/project.test.ts` — `getAllProjects`, `getAllPublishedProjects` (with prerender fallback), `getProjectById`, `getProjectBySlug` return expected shapes or `null`; connection-error + prerender returns `[]` for `getAllPublishedProjects`, while non-connection errors are rethrown even during prerender builds.
+
+- **Roadmap queries** – `lib/queries/roadmap.ts`
+  - **Done:** `getRoadmapData` uses `withPrerenderFallback` with fallback `{ items: [], edges: [] }` so the roadmap page prerenders in CI without a DB.
 
 - **Auth and login-attempt tracking** – `lib/queries/loginAttempts.ts`, `lib/auth.ts`
   - **Done:** `lib/queries/__tests__/loginAttempts.test.ts` — `checkRateLimit(undefined)` returns `{ allowed: true }` without calling sql; with IP: no record → insert and allow; expired window → reset and allow; within window under limit → increment and allow; at/over limit → `{ allowed: false, minutesLeft }`. `clearRateLimit(undefined)` no-ops; with IP calls sql. (`AUTH_ERROR_SERVICE_UNAVAILABLE` mapping is covered in `lib/__tests__/submitLogin.test.ts`.)

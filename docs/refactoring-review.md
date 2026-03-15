@@ -142,7 +142,7 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 ## 15. Prerender Fallback in Queries
 
-**Current:** **getNoteBySlug** and **getAllPublishedNotes** (`lib/queries/page.ts`) and **getAllPublishedProjects** (`lib/queries/project.ts`) use the same pattern: try/catch, check `process.env.IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)`, `console.warn` with context, return a fallback (null or empty array). The logic is duplicated in three places.
+**Current:** **getNoteBySlug** and **getAllPublishedNotes** (`lib/queries/page.ts`), **getAllPublishedProjects** (`lib/queries/project.ts`), **getHomepageData** (`lib/queries/home.ts`), and **getRoadmapData** (`lib/queries/roadmap.ts`) use the same pattern via **withPrerenderFallback**: when `IS_PRERENDER_BUILD === "true"` and a connection/aggregate error occurs, return a fallback (null or empty data) and log; otherwise rethrow.
 
 **Suggestion:** A helper, e.g. in `lib/db-errors.ts` or `lib/queries/prerender.ts`:
 
@@ -152,7 +152,7 @@ withPrerenderFallback<T>(queryFn: () => Promise<T>, fallback: T, logContext: str
 
 Use it in all three so the prerender behaviour and logging live in one place.
 
-**Status:** ✅ Implemented. **withPrerenderFallback** added in `lib/db-errors.ts`; **getNoteBySlug**, **getAllPublishedNotes**, and **getAllPublishedProjects** use it. Prerender behaviour and logging are centralized; tests in `lib/__tests__/db-errors.test.ts` and existing query tests updated for the single-argument warn format.
+**Status:** ✅ Implemented. **withPrerenderFallback** added in `lib/db-errors.ts`; **getNoteBySlug**, **getAllPublishedNotes**, **getAllPublishedProjects**, **getHomepageData**, and **getRoadmapData** use it. Prerender behaviour and logging are centralized; tests in `lib/__tests__/db-errors.test.ts` and existing query tests cover the behaviour.
 
 ---
 
