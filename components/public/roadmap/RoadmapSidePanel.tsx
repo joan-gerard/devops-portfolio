@@ -89,53 +89,51 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Status + type row — group nodes show type only */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 8,
-                  }}
-                >
-                  {!isGroup && (
-                    <>
-                      <span
-                        style={{
-                          width: 7,
-                          height: 7,
-                          borderRadius: "50%",
-                          background: STATUS_COLOR[item.status] ?? "var(--text-muted)",
-                          flexShrink: 0,
-                          display: "inline-block",
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 10,
-                          color: STATUS_COLOR[item.status] ?? "var(--text-muted)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.1em",
-                        }}
-                      >
-                        {STATUS_LABEL[item.status] ?? item.status}
-                      </span>
-                      <span style={{ color: "var(--border)", fontSize: 10 }}>·</span>
-                    </>
-                  )}
-                  <span
+                {/* Status + type row — hidden for group nodes on public view */}
+                {!isGroup && (
+                  <div
                     style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10,
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 8,
                     }}
                   >
-                    {item.type}
-                  </span>
-                </div>
+                    <span
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        background: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                        flexShrink: 0,
+                        display: "inline-block",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 10,
+                        color: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {STATUS_LABEL[item.status] ?? item.status}
+                    </span>
+                    <span style={{ color: "var(--border)", fontSize: 10 }}>·</span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 10,
+                        color: "var(--text-muted)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {item.type}
+                    </span>
+                  </div>
+                )}
 
                 {/* Title */}
                 <h2

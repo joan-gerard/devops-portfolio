@@ -59,8 +59,7 @@ export function RoadmapNode({ data }: NodeProps) {
           border: `1px solid ${isGroup ? "var(--border)" : styles.border}`,
           borderRadius: 8,
           padding: "12px 16px",
-          minWidth: 160,
-          maxWidth: 220,
+          width: 200,
           cursor: isClickable ? "pointer" : "default",
           position: "relative",
           transition: "border-color 0.2s, box-shadow 0.2s",
@@ -129,19 +128,21 @@ export function RoadmapNode({ data }: NodeProps) {
           {item.title}
         </div>
 
-        {/* Type badge */}
-        <div
-          style={{
-            marginTop: 8,
-            fontFamily: "var(--font-mono)",
-            fontSize: 9,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-          }}
-        >
-          {item.type}
-        </div>
+        {/* Type badge — hidden for group nodes on public view */}
+        {!isGroup && (
+          <div
+            style={{
+              marginTop: 8,
+              fontFamily: "var(--font-mono)",
+              fontSize: 9,
+              color: "var(--text-muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {item.type}
+          </div>
+        )}
       </div>
     </>
   );
