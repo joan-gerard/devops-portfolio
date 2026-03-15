@@ -15,8 +15,10 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
 
   return (
     <>
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-
+      <Handle type="target" position={Position.Top} id="top" style={{ opacity: 0.3 }} />
+      <Handle type="target" position={Position.Left} id="left" style={{ opacity: 0.3 }} />
+      <Handle type="source" position={Position.Bottom} id="bottom" style={{ opacity: 0.3 }} />
+      <Handle type="source" position={Position.Right} id="right" style={{ opacity: 0.3 }} />
       <div
         style={{
           background: "var(--surface)",
@@ -110,8 +112,6 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
           )}
         </div>
       </div>
-
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </>
   );
 }

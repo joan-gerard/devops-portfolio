@@ -5,6 +5,7 @@ import type { RoadmapEdge } from "@/types/roadmap";
 import {
   Background,
   BackgroundVariant,
+  ConnectionMode,
   Controls,
   type Edge,
   type Node,
@@ -19,7 +20,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AdminRoadmapNode } from "./AdminRoadmapNode";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
 
@@ -45,7 +46,10 @@ function toFlowEdge(edge: RoadmapEdge): Edge {
     id: edge.id,
     source: edge.source_id,
     target: edge.target_id,
+    sourceHandle: edge.source_handle,
+    targetHandle: edge.target_handle,
     style: { stroke: "var(--border)", strokeWidth: 1.5 },
+    interactionWidth: 20,
     animated: false,
   };
 }
@@ -63,6 +67,18 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     initialItems.map((i) => toFlowNode(i, null))
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges.map(toFlowEdge));
+
+  const styledEdges = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        style: {
+          stroke: edge.selected ? "var(--accent)" : "var(--border)",
+          strokeWidth: edge.selected ? 2 : 1.5,
+        },
+      })),
+    [edges]
+  );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -85,13 +101,18 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
   const handleConnect: OnConnect = useCallback(
     async (connection) => {
-      const { source, target } = connection;
+      const { source, target, sourceHandle, targetHandle } = connection;
       if (!source || !target) return;
 
       const res = await fetch("/api/roadmap/edges", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source_id: source, target_id: target }),
+        body: JSON.stringify({
+          source_id: source,
+          target_id: target,
+          source_handle: sourceHandle,
+          target_handle: targetHandle,
+        }),
       });
 
       if (!res.ok) {
@@ -203,7 +224,8 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
+        connectionMode={ConnectionMode.Loose}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

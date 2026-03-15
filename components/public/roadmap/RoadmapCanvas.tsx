@@ -41,13 +41,18 @@ export function RoadmapCanvas({ items, edges }: Props) {
 
   const flowEdges: Edge[] = useMemo(
     () =>
-      edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source_id,
-        target: edge.target_id,
-        style: { stroke: "var(--border)", strokeWidth: 1.5 },
-        animated: false,
-      })),
+      edges.map((edge) => {
+        const flowEdge: Edge = {
+          id: edge.id,
+          source: edge.source_id,
+          target: edge.target_id,
+          style: { stroke: "var(--border)", strokeWidth: 1.5 },
+          animated: false,
+        };
+        if (edge.source_handle != null) flowEdge.sourceHandle = edge.source_handle;
+        if (edge.target_handle != null) flowEdge.targetHandle = edge.target_handle;
+        return flowEdge;
+      }),
     [edges]
   );
 

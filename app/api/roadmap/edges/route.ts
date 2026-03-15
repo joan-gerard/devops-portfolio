@@ -26,9 +26,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
-  const { source_id, target_id } = body as {
+  const { source_id, target_id, source_handle, target_handle } = body as {
     source_id?: string;
     target_id?: string;
+    source_handle?: string;
+    target_handle?: string;
   };
 
   if (!source_id || !target_id) {
@@ -37,9 +39,9 @@ export async function POST(request: Request) {
 
   try {
     const rows = await sql`
-      INSERT INTO roadmap_edges (source_id, target_id)
-      VALUES (${source_id}, ${target_id})
-      RETURNING id, source_id, target_id, created_at
+      INSERT INTO roadmap_edges (source_id, target_id, source_handle, target_handle)
+      VALUES (${source_id}, ${target_id}, ${source_handle ?? null}, ${target_handle ?? null})
+      RETURNING id, source_id, target_id, source_handle, target_handle, created_at
     `;
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error: unknown) {

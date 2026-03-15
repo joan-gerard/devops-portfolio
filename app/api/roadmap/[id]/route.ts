@@ -70,8 +70,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         position_y     = COALESCE(${position_y ?? null}, position_y),
         linked_page_id = COALESCE(${linked_page_id ?? null}, linked_page_id),
         completed_at   = CASE
-          WHEN ${status ?? null} = 'completed' THEN NOW()
-          WHEN ${status ?? null} IS NOT NULL   THEN NULL
+          WHEN (${status ?? null})::text = 'completed' THEN NOW()
+          WHEN (${status ?? null})::text IS NOT NULL   THEN NULL
           ELSE completed_at
         END,
         updated_at = NOW()

@@ -42,7 +42,11 @@ export function RoadmapNode({ data }: NodeProps) {
 
   return (
     <>
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      {/* Handle IDs must match AdminRoadmapNode so edges from the editor connect. */}
+      <Handle type="target" position={Position.Top} id="top" style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Left} id="left" style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} id="bottom" style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Right} id="right" style={{ opacity: 0 }} />
 
       <div
         onClick={handleClick}
@@ -130,8 +134,6 @@ export function RoadmapNode({ data }: NodeProps) {
           {item.type}
         </div>
       </div>
-
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </>
   );
 }

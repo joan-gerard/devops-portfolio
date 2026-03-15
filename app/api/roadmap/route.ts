@@ -25,7 +25,7 @@ export async function GET() {
         ORDER BY created_at ASC
       `,
       sql<RoadmapEdge[]>`
-        SELECT id, source_id, target_id, created_at
+        SELECT id, source_id, target_id, source_handle, target_handle, created_at
         FROM roadmap_edges
         ORDER BY created_at ASC
       `,

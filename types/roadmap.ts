@@ -19,6 +19,8 @@ export interface RoadmapEdge {
   id: string;
   source_id: string;
   target_id: string;
+  source_handle: string | null;
+  target_handle: string | null;
   created_at: string;
 }
 
