@@ -35,11 +35,13 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
   }, [item, onClose]);
 
   const isVisible = item !== null;
-  const linkedHref = item?.linked_page_slug
-    ? item.type === "project"
-      ? `/projects/${item.linked_page_slug}`
-      : `/notes/${item.linked_page_slug}`
-    : null;
+  const isGroup = item?.type === "group";
+  const linkedHref =
+    !isGroup && item?.linked_page_slug
+      ? item.type === "project"
+        ? `/projects/${item.linked_page_slug}`
+        : `/notes/${item.linked_page_slug}`
+      : null;
 
   return (
     <>
@@ -87,7 +89,7 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Status + type row */}
+                {/* Status + type row — group nodes show type only */}
                 <div
                   style={{
                     display: "flex",
@@ -96,28 +98,32 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                     marginBottom: 8,
                   }}
                 >
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: STATUS_COLOR[item.status] ?? "var(--text-muted)",
-                      flexShrink: 0,
-                      display: "inline-block",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 10,
-                      color: STATUS_COLOR[item.status] ?? "var(--text-muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    {STATUS_LABEL[item.status] ?? item.status}
-                  </span>
-                  <span style={{ color: "var(--border)", fontSize: 10 }}>·</span>
+                  {!isGroup && (
+                    <>
+                      <span
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: "50%",
+                          background: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                          flexShrink: 0,
+                          display: "inline-block",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          color: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                        }}
+                      >
+                        {STATUS_LABEL[item.status] ?? item.status}
+                      </span>
+                      <span style={{ color: "var(--border)", fontSize: 10 }}>·</span>
+                    </>
+                  )}
                   <span
                     style={{
                       fontFamily: "var(--font-mono)",
@@ -213,8 +219,8 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                 </p>
               )}
 
-              {/* Completed date */}
-              {item.completed_at && (
+              {/* Completed date — only for learning/project */}
+              {!isGroup && item.completed_at && (
                 <div
                   style={{
                     fontFamily: "var(--font-mono)",
@@ -233,8 +239,22 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                 </div>
               )}
 
-              {/* Link to note / project */}
-              {linkedHref ? (
+              {/* Link to note / project — group nodes have no link */}
+              {isGroup ? (
+                <div
+                  style={{
+                    marginTop: "auto",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--text-muted)",
+                    fontStyle: "italic",
+                    paddingTop: 12,
+                    borderTop: "1px solid var(--border)",
+                  }}
+                >
+                  Group node — use to organise the roadmap.
+                </div>
+              ) : linkedHref ? (
                 <button
                   onClick={() => router.push(linkedHref)}
                   style={{

@@ -192,13 +192,14 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
   const [isAdding, setIsAdding] = useState(false);
 
-  async function handleAddNode() {
+  async function handleAddNode(nodeType: "learning" | "project" | "group" = "learning") {
     setIsAdding(true);
     const res = await fetch("/api/roadmap", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: "New Node",
+        title: nodeType === "group" ? "New group" : "New Node",
+        type: nodeType,
         position_x: 80 + Math.random() * 280,
         position_y: 80 + Math.random() * 280,
       }),
@@ -251,31 +252,83 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
         {/* Toolbar */}
         <Panel position="top-left">
-          <button
-            onClick={handleAddNode}
-            disabled={isAdding}
-            style={{
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              borderRadius: 6,
-              color: "var(--text)",
-              cursor: isAdding ? "not-allowed" : "pointer",
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              padding: "8px 14px",
-              opacity: isAdding ? 0.6 : 1,
-              transition: "border-color 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              if (!isAdding)
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
-            }}
-          >
-            {isAdding ? "Adding…" : "+ Add node"}
-          </button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={() => handleAddNode("learning")}
+              disabled={isAdding}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: isAdding ? "not-allowed" : "pointer",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                padding: "8px 14px",
+                opacity: isAdding ? 0.6 : 1,
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isAdding)
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              }}
+            >
+              {isAdding ? "Adding…" : "+ Learning"}
+            </button>
+            <button
+              onClick={() => handleAddNode("project")}
+              disabled={isAdding}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: isAdding ? "not-allowed" : "pointer",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                padding: "8px 14px",
+                opacity: isAdding ? 0.6 : 1,
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isAdding)
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              }}
+            >
+              {isAdding ? "Adding…" : "+ Project"}
+            </button>
+            <button
+              onClick={() => handleAddNode("group")}
+              disabled={isAdding}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: isAdding ? "not-allowed" : "pointer",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                padding: "8px 14px",
+                opacity: isAdding ? 0.6 : 1,
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isAdding)
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              }}
+            >
+              {isAdding ? "Adding…" : "+ Group"}
+            </button>
+          </div>
         </Panel>
       </ReactFlow>
 

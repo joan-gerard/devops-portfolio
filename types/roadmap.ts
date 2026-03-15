@@ -1,4 +1,4 @@
-export type RoadmapItemType = "learning" | "project";
+export type RoadmapItemType = "learning" | "project" | "group";
 export type RoadmapItemStatus = "not_started" | "in_progress" | "completed";
 
 export interface RoadmapItem {

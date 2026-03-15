@@ -31,11 +31,15 @@ const STATUS_STYLES: Record<
 export function RoadmapNode({ data }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
   const router = useRouter();
+  const isGroup = item.type === "group";
   const styles = STATUS_STYLES[item.status] ?? STATUS_STYLES.not_started;
-  const isClickable = item.status === "completed" && item.linked_page_slug;
+  const isClickable = !isGroup && item.status === "completed" && !!item.linked_page_slug;
 
   function handleClick() {
-    if (isClickable) {
+    if (!isClickable || !item.linked_page_slug) return;
+    if (item.type === "project") {
+      router.push(`/projects/${item.linked_page_slug}`);
+    } else {
       router.push(`/notes/${item.linked_page_slug}`);
     }
   }
@@ -51,8 +55,8 @@ export function RoadmapNode({ data }: NodeProps) {
       <div
         onClick={handleClick}
         style={{
-          background: "var(--surface)",
-          border: `1px solid ${styles.border}`,
+          background: isGroup ? "var(--surface-2)" : "var(--surface)",
+          border: `1px solid ${isGroup ? "var(--border)" : styles.border}`,
           borderRadius: 8,
           padding: "12px 16px",
           minWidth: 160,
@@ -60,9 +64,10 @@ export function RoadmapNode({ data }: NodeProps) {
           cursor: isClickable ? "pointer" : "default",
           position: "relative",
           transition: "border-color 0.2s, box-shadow 0.2s",
-          boxShadow: styles.pulse
-            ? `0 0 0 2px var(--accent-2), 0 0 12px 2px var(--accent-2-dim)`
-            : "none",
+          boxShadow:
+            !isGroup && styles.pulse
+              ? `0 0 0 2px var(--accent-2), 0 0 12px 2px var(--accent-2-dim)`
+              : "none",
         }}
         onMouseEnter={(e) => {
           if (isClickable) {
@@ -70,42 +75,46 @@ export function RoadmapNode({ data }: NodeProps) {
           }
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = styles.border;
+          (e.currentTarget as HTMLDivElement).style.borderColor = isGroup
+            ? "var(--border)"
+            : styles.border;
         }}
       >
-        {/* Status dot */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            marginBottom: 6,
-          }}
-        >
+        {/* Status row — only for learning/project */}
+        {!isGroup && (
           <div
             style={{
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: styles.dot,
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 9,
-              color: styles.dot,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 6,
             }}
           >
-            {item.status.replace("_", " ")}
-          </span>
-          {item.status === "completed" && (
-            <span style={{ marginLeft: "auto", color: "var(--accent)", fontSize: 11 }}>✓</span>
-          )}
-        </div>
+            <div
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: styles.dot,
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 9,
+                color: styles.dot,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              {item.status.replace("_", " ")}
+            </span>
+            {item.status === "completed" && (
+              <span style={{ marginLeft: "auto", color: "var(--accent)", fontSize: 11 }}>✓</span>
+            )}
+          </div>
+        )}
 
         {/* Title */}
         <div
@@ -113,7 +122,7 @@ export function RoadmapNode({ data }: NodeProps) {
             fontFamily: "var(--font-mono)",
             fontSize: 12,
             fontWeight: 600,
-            color: styles.labelColor,
+            color: isGroup ? "var(--text)" : styles.labelColor,
             lineHeight: 1.4,
           }}
         >

@@ -93,7 +93,9 @@ export function RoadmapCanvas({ items, edges }: Props) {
         />
         <MiniMap
           nodeColor={(node) => {
-            const status = (node.data as unknown as RoadmapItemWithSlug).status;
+            const item = node.data as unknown as RoadmapItemWithSlug;
+            if (item.type === "group") return "var(--text-muted)";
+            const status = item.status;
             if (status === "completed") return "var(--accent)";
             if (status === "in_progress") return "var(--accent-2)";
             return "var(--border)";

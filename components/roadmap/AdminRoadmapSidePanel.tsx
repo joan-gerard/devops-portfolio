@@ -13,6 +13,7 @@ const STATUS_OPTIONS: { value: RoadmapItemStatus; label: string; color: string }
 const TYPE_OPTIONS: { value: RoadmapItemType; label: string }[] = [
   { value: "learning", label: "Learning" },
   { value: "project", label: "Project" },
+  { value: "group", label: "Group" },
 ];
 
 interface Props {
@@ -291,97 +292,103 @@ export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Pro
                 </div>
               </div>
 
-              {/* Status */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10,
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  Status
-                </span>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {STATUS_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        if (opt.value !== item.status) patch({ status: opt.value });
-                      }}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        background: item.status === opt.value ? "var(--surface-2)" : "none",
-                        border: `1px solid ${item.status === opt.value ? opt.color : "var(--border)"}`,
-                        borderRadius: 4,
-                        color: item.status === opt.value ? opt.color : "var(--text-muted)",
-                        cursor: "pointer",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        padding: "8px 12px",
-                        textAlign: "left",
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 7,
-                          height: 7,
-                          borderRadius: "50%",
-                          background: item.status === opt.value ? opt.color : "var(--border)",
-                          flexShrink: 0,
+              {/* Status — only for learning/project; group nodes are organisational only */}
+              {item.type !== "group" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Status
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          if (opt.value !== item.status) patch({ status: opt.value });
                         }}
-                      />
-                      {opt.label}
-                    </button>
-                  ))}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          background: item.status === opt.value ? "var(--surface-2)" : "none",
+                          border: `1px solid ${item.status === opt.value ? opt.color : "var(--border)"}`,
+                          borderRadius: 4,
+                          color: item.status === opt.value ? opt.color : "var(--text-muted)",
+                          cursor: "pointer",
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: "50%",
+                            background: item.status === opt.value ? opt.color : "var(--border)",
+                            flexShrink: 0,
+                          }}
+                        />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Linked page ID */}
-              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 10,
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  Linked page UUID
-                  {item.linked_page_slug && (
-                    <span style={{ color: "var(--accent)", marginLeft: 6, textTransform: "none" }}>
-                      → /notes/{item.linked_page_slug}
-                    </span>
-                  )}
-                </span>
-                <input
-                  value={linkedPageId}
-                  onChange={(e) => setLinkedPageId(e.target.value)}
-                  onBlur={() => {
-                    const val = linkedPageId.trim() || null;
-                    if (val !== item.linked_page_id) patch({ linked_page_id: val });
-                  }}
-                  placeholder="paste page UUID"
-                  style={{
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                    color: "var(--text)",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    padding: "8px 10px",
-                    outline: "none",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </label>
+              {/* Linked page ID — only for learning/project */}
+              {item.type !== "group" && (
+                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Linked page UUID
+                    {item.linked_page_slug && (
+                      <span
+                        style={{ color: "var(--accent)", marginLeft: 6, textTransform: "none" }}
+                      >
+                        → /notes/{item.linked_page_slug}
+                      </span>
+                    )}
+                  </span>
+                  <input
+                    value={linkedPageId}
+                    onChange={(e) => setLinkedPageId(e.target.value)}
+                    onBlur={() => {
+                      const val = linkedPageId.trim() || null;
+                      if (val !== item.linked_page_id) patch({ linked_page_id: val });
+                    }}
+                    placeholder="paste page UUID"
+                    style={{
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      color: "var(--text)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      padding: "8px 10px",
+                      outline: "none",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </label>
+              )}
 
               {/* Completed at */}
               {item.completed_at && (

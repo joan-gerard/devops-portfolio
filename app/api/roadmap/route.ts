@@ -73,13 +73,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
   }
 
+  const allowedTypes = ["learning", "project", "group"];
+  const nodeType = (type ?? "learning") as string;
+  if (!allowedTypes.includes(nodeType)) {
+    return NextResponse.json(
+      { error: `Invalid type. Allowed: ${allowedTypes.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
   try {
     const rows = await sql`
       INSERT INTO roadmap_items (title, description, type, status, position_x, position_y)
       VALUES (
         ${title.trim()},
         ${description ?? null},
-        ${type ?? "learning"},
+        ${nodeType},
         ${status ?? "not_started"},
         ${position_x ?? 0},
         ${position_y ?? 0}

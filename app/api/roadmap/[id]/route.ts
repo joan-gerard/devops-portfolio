@@ -50,6 +50,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       { status: 400 }
     );
   }
+
+  const allowedTypes = ["learning", "project", "group"];
+  if (type !== undefined && !allowedTypes.includes(type)) {
+    return NextResponse.json(
+      { error: `Invalid type. Allowed: ${allowedTypes.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
   if (position_x !== undefined && typeof position_x !== "number") {
     return NextResponse.json({ error: "position_x must be a number" }, { status: 400 });
   }
