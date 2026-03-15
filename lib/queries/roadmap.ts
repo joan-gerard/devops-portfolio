@@ -1,0 +1,39 @@
+import sql from "@/lib/db";
+import type { RoadmapEdge, RoadmapItem } from "@/types/roadmap";
+
+export interface RoadmapItemWithSlug extends RoadmapItem {
+  linked_page_slug: string | null;
+}
+
+export interface RoadmapData {
+  items: RoadmapItemWithSlug[];
+  edges: RoadmapEdge[];
+}
+
+/**
+ * Fetches all roadmap items and edges for the public canvas.
+ * LEFT JOINs pages to resolve linked_page_id → slug so the client
+ * can build /notes/[slug] links without a second query.
+ */
+export async function getRoadmapData(): Promise<RoadmapData> {
+  const [items, edges] = await Promise.all([
+    sql<RoadmapItemWithSlug[]>`
+      SELECT
+        r.id, r.title, r.description, r.type, r.status,
+        r.position_x, r.position_y,
+        r.linked_page_id, r.completed_at,
+        r.created_at, r.updated_at,
+        p.slug AS linked_page_slug
+      FROM roadmap_items r
+      LEFT JOIN pages p ON p.id = r.linked_page_id
+      ORDER BY r.created_at ASC
+    `,
+    sql<RoadmapEdge[]>`
+      SELECT id, source_id, target_id, created_at
+      FROM roadmap_edges
+      ORDER BY created_at ASC
+    `,
+  ]);
+
+  return { items, edges };
+}
