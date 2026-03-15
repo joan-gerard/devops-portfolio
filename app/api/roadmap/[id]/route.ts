@@ -33,10 +33,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
-  const { status, position_x, position_y } = body as {
+  const { status, position_x, position_y, title, description, type, linked_page_id } = body as {
     status?: string;
     position_x?: number;
     position_y?: number;
+    title?: string;
+    description?: string;
+    type?: string;
+    linked_page_id?: string;
   };
 
   const allowedStatus = new Set(["not_started", "in_progress", "completed"]);
@@ -55,24 +59,34 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   try {
     const rows = await sql`
+    WITH updated AS (
       UPDATE roadmap_items
       SET
-        status     = COALESCE(${status ?? null}, status),
-        position_x = COALESCE(${position_x ?? null}, position_x),
-        position_y = COALESCE(${position_y ?? null}, position_y),
-        completed_at = CASE
-          WHEN ${status ?? null} = 'completed'  THEN NOW()
-          WHEN ${status ?? null} IS NOT NULL     THEN NULL
+        title          = COALESCE(${title ?? null}, title),
+        description    = COALESCE(${description ?? null}, description),
+        type           = COALESCE(${type ?? null}, type),
+        status         = COALESCE(${status ?? null}, status),
+        position_x     = COALESCE(${position_x ?? null}, position_x),
+        position_y     = COALESCE(${position_y ?? null}, position_y),
+        linked_page_id = COALESCE(${linked_page_id ?? null}, linked_page_id),
+        completed_at   = CASE
+          WHEN ${status ?? null} = 'completed' THEN NOW()
+          WHEN ${status ?? null} IS NOT NULL   THEN NULL
           ELSE completed_at
         END,
         updated_at = NOW()
       WHERE id = ${id}
-      RETURNING
-        id, title, description, type, status,
-        position_x, position_y,
-        linked_page_id, completed_at,
-        created_at, updated_at
-    `;
+      RETURNING *
+    )
+    SELECT
+      u.id, u.title, u.description, u.type, u.status,
+      u.position_x, u.position_y,
+      u.linked_page_id, u.completed_at,
+      u.created_at, u.updated_at,
+      p.slug AS linked_page_slug
+    FROM updated u
+    LEFT JOIN pages p ON p.id = u.linked_page_id
+  `;
 
     if (rows.length === 0) {
       return NextResponse.json({ error: "Roadmap item not found" }, { status: 404 });
@@ -84,6 +98,38 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       logLabel: "PATCH /api/roadmap/[id]",
       notFoundMessage: "Roadmap item not found",
       serverErrorMessage: "Failed to update roadmap item",
+    });
+  }
+}
+
+/**
+ * DELETE /api/roadmap/[id]
+ * Protected. Deletes a roadmap node. Edges cascade via FK constraint.
+ */
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const rows = await sql`
+      DELETE FROM roadmap_items WHERE id = ${id} RETURNING id
+    `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: "Roadmap item not found" }, { status: 404 });
+    }
+
+    return new Response(null, { status: 204 });
+  } catch (error: unknown) {
+    return handleDbError(error, {
+      logLabel: "DELETE /api/roadmap/[id]",
+      notFoundMessage: "Roadmap item not found",
+      conflictMessage: "Failed to delete roadmap item",
+      serverErrorMessage: "Failed to delete roadmap item",
     });
   }
 }
