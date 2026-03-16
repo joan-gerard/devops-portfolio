@@ -9,7 +9,7 @@ interface Props {
 
 export function PublicRoadmapLayout({ items, edges }: Props) {
   return (
-    <main style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <main style={{ background: "var(--bg)" }}>
       <div
         style={{
           maxWidth: 1200,
@@ -33,14 +33,14 @@ export function PublicRoadmapLayout({ items, edges }: Props) {
             fontFamily: "var(--font-mono)",
             fontSize: 13,
             color: "var(--text-muted)",
-            marginBottom: 32,
+            marginBottom: 16,
           }}
         >
           Topics and projects — drag to explore, click a node to open its note.
         </p>
       </div>
 
-      <div style={{ height: "calc(100vh - 180px)", width: "100%" }}>
+      <div style={{ height: "calc(100vh - 320px)", width: "100%" }}>
         <RoadmapCanvas items={items} edges={edges} />
       </div>
     </main>

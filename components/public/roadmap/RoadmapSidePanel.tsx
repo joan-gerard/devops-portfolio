@@ -237,22 +237,8 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                 </div>
               )}
 
-              {/* Link to note / project — group nodes have no link */}
-              {isGroup ? (
-                <div
-                  style={{
-                    marginTop: "auto",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    color: "var(--text-muted)",
-                    fontStyle: "italic",
-                    paddingTop: 12,
-                    borderTop: "1px solid var(--border)",
-                  }}
-                >
-                  Group node — use to organise the roadmap.
-                </div>
-              ) : linkedHref ? (
+              {/* Link to note / project — group nodes have no link or helper text */}
+              {isGroup ? null : linkedHref ? (
                 <button
                   onClick={() => router.push(linkedHref)}
                   style={{
