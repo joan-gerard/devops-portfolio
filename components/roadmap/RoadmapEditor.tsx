@@ -89,7 +89,33 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
   const handlePaneClick = useCallback(() => setSelectedId(null), []);
 
+  /**
+   * "Magnetic" alignment while dragging:
+   * - When a node's center is within a small threshold of another node's center on X or Y,
+   *   snap its position to match that coordinate. This helps keep columns/rows visually aligned.
+   */
+  const handleNodeDrag: OnNodeDrag = useCallback(
+    (_event: unknown, node: Node) => {
+      const threshold = 16;
+
+      setNodes((prev) => {
+        const others = prev.filter((n) => n.id !== node.id);
+        let { x, y } = node.position;
+
+        for (const other of others) {
+          if (Math.abs(other.position.x - x) <= threshold) x = other.position.x;
+          if (Math.abs(other.position.y - y) <= threshold) y = other.position.y;
+        }
+
+        return prev.map((n) => (n.id === node.id ? { ...n, position: { x, y } } : n)) as Node[];
+      });
+    },
+    [setNodes]
+  );
+
   const handleNodeDragStop: OnNodeDrag = useCallback((_event: unknown, node: Node) => {
+    // Persist the (potentially snapped) position. We rely on the latest node.position
+    // passed from React Flow, which reflects any snapping done in handleNodeDrag.
     fetch(`/api/roadmap/${node.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -222,6 +248,66 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     setSelectedId(newItem.id);
   }
 
+  // ── Manual alignment (via toolbar buttons) ─────────────────────────────────
+
+  function alignSelectedVertically() {
+    setNodes((prev) => {
+      const selected = prev.filter((n) => n.selected);
+      if (selected.length < 2) return prev;
+
+      // Align to the first selected node's x for predictable behavior
+      const targetX = selected[0]?.position.x ?? 0;
+
+      const updated = prev.map((n) =>
+        n.selected ? { ...n, position: { ...n.position, x: targetX } } : n
+      ) as Node[];
+
+      // Persist new positions for aligned nodes
+      updated.forEach((n) => {
+        if (!n.selected) return;
+        fetch(`/api/roadmap/${n.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            position_x: n.position.x,
+            position_y: n.position.y,
+          }),
+        }).catch((err) => console.error("[RoadmapEditor] Failed to save aligned position", err));
+      });
+
+      return updated;
+    });
+  }
+
+  function alignSelectedHorizontally() {
+    setNodes((prev) => {
+      const selected = prev.filter((n) => n.selected);
+      if (selected.length < 2) return prev;
+
+      // Align to the first selected node's y for predictable behavior
+      const targetY = selected[0]?.position.y ?? 0;
+
+      const updated = prev.map((n) =>
+        n.selected ? { ...n, position: { ...n.position, y: targetY } } : n
+      ) as Node[];
+
+      // Persist new positions for aligned nodes
+      updated.forEach((n) => {
+        if (!n.selected) return;
+        fetch(`/api/roadmap/${n.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            position_x: n.position.x,
+            position_y: n.position.y,
+          }),
+        }).catch((err) => console.error("[RoadmapEditor] Failed to save aligned position", err));
+      });
+
+      return updated;
+    });
+  }
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <ReactFlow
@@ -233,6 +319,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
+        onNodeDrag={handleNodeDrag}
         onNodeDragStop={handleNodeDragStop}
         onConnect={handleConnect}
         onEdgesDelete={handleEdgesDelete}
@@ -328,6 +415,52 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
               }}
             >
               {isAdding ? "Adding…" : "+ Group"}
+            </button>
+            <button
+              type="button"
+              onClick={alignSelectedVertically}
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: "pointer",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                padding: "8px 10px",
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              }}
+            >
+              Align X
+            </button>
+            <button
+              type="button"
+              onClick={alignSelectedHorizontally}
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text)",
+                cursor: "pointer",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                padding: "8px 10px",
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
+              }}
+            >
+              Align Y
             </button>
           </div>
         </Panel>

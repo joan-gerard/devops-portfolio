@@ -66,7 +66,7 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
   const statusStyles = STATUS_STYLES[item.status];
   const typeStyles = TYPE_STYLES[item.type];
   const borderColor = selected
-    ? "var(--accent)"
+    ? "var(--text)"
     : isGroup
       ? "rgba(148, 163, 184, 0.5)"
       : statusStyles.border;
@@ -80,20 +80,20 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
       <div
         style={{
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
-          border: `1.5px solid ${borderColor}`,
+          border: `0.8px solid ${borderColor}`,
           borderRadius: 10,
           padding: "10px 14px",
           width: 220,
           cursor: "grab",
           transition: "border-color 0.15s, box-shadow 0.15s",
           boxShadow: selected
-            ? `0 0 0 1px var(--accent)`
+            ? "0 0 0 1px var(--text), 0 0 14px 2px rgba(248,250,252,0.16)"
             : !isGroup
               ? `0 0 0 1px ${statusStyles.border}`
               : "none",
         }}
       >
-        {/* Top row: type + status icon (+ link indicator) — hidden for group nodes */}
+        {/* Top row: type left, status icon (+ link) right — hidden for group nodes */}
         {!isGroup && (
           <div
             style={{
@@ -104,23 +104,36 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
               marginBottom: 6,
             }}
           >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "2px 8px",
-                  borderRadius: 999,
-                  background: typeStyles.badgeBg,
-                  color: typeStyles.badgeColor,
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.14em",
-                }}
-              >
-                {typeStyles.label}
-              </div>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: typeStyles.badgeBg,
+                color: typeStyles.badgeColor,
+                fontFamily: "var(--font-mono)",
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.14em",
+              }}
+            >
+              {typeStyles.label}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {item.linked_page_slug && (
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 9,
+                    color: "var(--accent)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  linked ↗
+                </span>
+              )}
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
@@ -132,19 +145,6 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
                 {STATUS_ICON[item.status]}
               </span>
             </div>
-
-            {item.linked_page_slug && (
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  color: "var(--accent)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                linked ↗
-              </span>
-            )}
           </div>
         )}
 

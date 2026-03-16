@@ -73,12 +73,13 @@ const TYPE_STYLES: Record<
   },
 };
 
-export function RoadmapNode({ data }: NodeProps) {
+export function RoadmapNode({ data, selected }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
   const router = useRouter();
   const isGroup = item.type === "group";
   const statusStyles = STATUS_STYLES[item.status];
   const typeStyles = TYPE_STYLES[item.type];
+  const isSelected = selected ?? false;
   const isClickable = !isGroup && item.status === "completed" && !!item.linked_page_slug;
 
   function handleClick() {
@@ -102,29 +103,35 @@ export function RoadmapNode({ data }: NodeProps) {
         onClick={handleClick}
         style={{
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
-          border: `1.5px solid ${isGroup ? "rgba(148, 163, 184, 0.5)" : statusStyles.border}`,
+          border: `0.8px solid ${
+            isGroup ? "rgba(148, 163, 184, 0.5)" : isSelected ? "var(--text)" : statusStyles.border
+          }`,
           borderRadius: 10,
-          padding: "12px 16px",
+          padding: "10px 14px",
           width: 220,
           cursor: isClickable ? "pointer" : "default",
           position: "relative",
           transition: "border-color 0.2s, box-shadow 0.2s, transform 0.1s",
           boxShadow:
-            !isGroup && statusStyles.pulse
-              ? `0 0 0 1px ${statusStyles.border}, 0 0 18px 3px var(--accent-2-dim)`
-              : !isGroup
-                ? `0 0 0 1px ${statusStyles.border}`
-                : "none",
+            isSelected && !isGroup
+              ? "0 0 0 1px var(--text), 0 0 14px 2px rgba(248,250,252,0.16)"
+              : !isGroup && statusStyles.pulse
+                ? `0 0 0 1px ${statusStyles.border}, 0 0 18px 3px var(--accent-2-dim)`
+                : !isGroup
+                  ? `0 0 0 1px ${statusStyles.border}`
+                  : "none",
         }}
         onMouseEnter={(e) => {
-          if (isClickable) {
+          if (isClickable && !isSelected) {
             (e.currentTarget as HTMLDivElement).style.borderColor = "var(--accent)";
           }
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.borderColor = isGroup
             ? "rgba(148, 163, 184, 0.5)"
-            : statusStyles.border;
+            : isSelected
+              ? "var(--text)"
+              : statusStyles.border;
         }}
       >
         {/* Type then status pills — only for non-group nodes */}
