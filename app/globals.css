@@ -339,3 +339,13 @@ body {
 .react-flow__controls button:hover {
   background-color: var(--surface) !important;
 }
+
+/* React Flow attribution pill (bottom-right) – match controls styling */
+
+.react-flow__attribution a {
+  background-color: var(--surface-2) !important;
+  color: var(--text-muted) !important;
+  padding: 2px 8px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+}

@@ -1,11 +1,13 @@
 "use client";
 
+import { ViewportZoomDisplay } from "@/components/roadmap/ViewportZoomDisplay";
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
 import {
   Background,
   BackgroundVariant,
   Controls,
+  Panel,
   ReactFlow,
   type Edge,
   type Node,
@@ -91,7 +93,11 @@ export function RoadmapCanvas({ items, edges }: Props) {
             border: "1px solid var(--border)",
             borderRadius: 6,
           }}
+          fitViewOptions={{ padding: 0 }}
         />
+        <Panel position="top-right">
+          <ViewportZoomDisplay />
+        </Panel>
       </ReactFlow>
       <RoadmapSidePanel item={selectedItem} onClose={handleClose} />
     </div>

@@ -23,6 +23,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useMemo, useState } from "react";
 import { AdminRoadmapNode } from "./AdminRoadmapNode";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
+import { ViewportZoomDisplay } from "./ViewportZoomDisplay";
 
 const nodeTypes = { adminRoadmapNode: AdminRoadmapNode };
 
@@ -336,7 +337,11 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
             border: "1px solid var(--border)",
             borderRadius: 6,
           }}
+          fitViewOptions={{ padding: 0.2 }}
         />
+        <Panel position="top-right">
+          <ViewportZoomDisplay />
+        </Panel>
 
         {/* Toolbar */}
         <Panel position="top-left">
