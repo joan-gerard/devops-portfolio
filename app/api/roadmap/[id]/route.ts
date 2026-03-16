@@ -40,7 +40,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     title?: string;
     description?: string;
     type?: string;
-    linked_page_id?: string;
+    linked_page_id?: string | null;
   };
 
   const allowedStatus = new Set(["not_started", "in_progress", "completed"]);
@@ -66,6 +66,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "position_y must be a number" }, { status: 400 });
   }
 
+  const hasLinkedPageIdField = Object.prototype.hasOwnProperty.call(
+    body as Record<string, unknown>,
+    "linked_page_id"
+  );
+
   try {
     const rows = await sql`
     WITH updated AS (
@@ -77,7 +82,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         status         = COALESCE(${status ?? null}, status),
         position_x     = COALESCE(${position_x ?? null}, position_x),
         position_y     = COALESCE(${position_y ?? null}, position_y),
-        linked_page_id = COALESCE(${linked_page_id ?? null}, linked_page_id),
+        linked_page_id = CASE
+          WHEN ${hasLinkedPageIdField} THEN ${linked_page_id ?? null}
+          ELSE linked_page_id
+        END,
         completed_at   = CASE
           WHEN (${status ?? null})::text = 'completed' THEN NOW()
           WHEN (${status ?? null})::text IS NOT NULL   THEN NULL
@@ -88,13 +96,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       RETURNING *
     )
     SELECT
-      u.id, u.title, u.description, u.type, u.status,
-      u.position_x, u.position_y,
-      u.linked_page_id, u.completed_at,
-      u.created_at, u.updated_at,
-      p.slug AS linked_page_slug
+      u.id,
+      u.title,
+      u.description,
+      u.type,
+      u.status,
+      u.position_x,
+      u.position_y,
+      u.linked_page_id,
+      u.completed_at,
+      u.created_at,
+      u.updated_at,
+      COALESCE(p.slug, pr.slug) AS linked_page_slug
     FROM updated u
     LEFT JOIN pages p ON p.id = u.linked_page_id
+    LEFT JOIN projects pr ON pr.id = u.linked_page_id
   `;
 
     if (rows.length === 0) {
