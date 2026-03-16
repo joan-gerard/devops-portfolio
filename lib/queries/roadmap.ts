@@ -28,13 +28,21 @@ export async function getRoadmapData(): Promise<RoadmapData> {
       const [items, edges] = await Promise.all([
         sql<RoadmapItemWithSlug[]>`
           SELECT
-            r.id, r.title, r.description, r.type, r.status,
-            r.position_x, r.position_y,
-            r.linked_page_id, r.completed_at,
-            r.created_at, r.updated_at,
-            p.slug AS linked_page_slug
+            r.id,
+            r.title,
+            r.description,
+            r.type,
+            r.status,
+            r.position_x,
+            r.position_y,
+            r.linked_page_id,
+            r.completed_at,
+            r.created_at,
+            r.updated_at,
+            COALESCE(p.slug, pr.slug) AS linked_page_slug
           FROM roadmap_items r
           LEFT JOIN pages p ON p.id = r.linked_page_id
+          LEFT JOIN projects pr ON pr.id = r.linked_page_id
           ORDER BY r.created_at ASC
         `,
         sql<RoadmapEdge[]>`
@@ -43,6 +51,7 @@ export async function getRoadmapData(): Promise<RoadmapData> {
           ORDER BY created_at ASC
         `,
       ]);
+
       return { items, edges };
     },
     emptyRoadmapData,
