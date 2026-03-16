@@ -6,7 +6,6 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  MiniMap,
   ReactFlow,
   type Edge,
   type Node,
@@ -91,21 +90,6 @@ export function RoadmapCanvas({ items, edges }: Props) {
             border: "1px solid var(--border)",
             borderRadius: 6,
           }}
-        />
-        <MiniMap
-          nodeColor={(node) => {
-            const item = node.data as unknown as RoadmapItemWithSlug;
-            if (item.type === "group") return "var(--text-muted)";
-            const status = item.status;
-            if (status === "completed") return "var(--accent)";
-            if (status === "in_progress") return "var(--accent-2)";
-            return "var(--border)";
-          }}
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-          }}
-          maskColor="rgba(0,0,0,0.4)"
         />
       </ReactFlow>
       <RoadmapSidePanel item={selectedItem} onClose={handleClose} />
