@@ -59,6 +59,7 @@ export function RoadmapCanvas({ items, edges }: Props) {
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
       const item = items.find((i) => i.id === node.id) ?? null;
+
       // Clicking the already-selected node closes the panel
       setSelectedItem((prev) => (prev?.id === item?.id ? null : item));
     },

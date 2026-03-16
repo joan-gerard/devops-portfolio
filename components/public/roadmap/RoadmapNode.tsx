@@ -80,15 +80,11 @@ export function RoadmapNode({ data, selected }: NodeProps) {
   const statusStyles = STATUS_STYLES[item.status];
   const typeStyles = TYPE_STYLES[item.type];
   const isSelected = selected ?? false;
-  const isClickable = !isGroup && item.status === "completed" && !!item.linked_page_slug;
+  const isClickable = !isGroup && !!item.linked_page_slug;
 
   function handleClick() {
-    if (!isClickable || !item.linked_page_slug) return;
-    if (item.type === "project") {
-      router.push(`/projects/${item.linked_page_slug}`);
-    } else {
-      router.push(`/notes/${item.linked_page_slug}`);
-    }
+    // Public roadmap node clicks only toggle selection via React Flow;
+    // navigation is handled from the side panel button.
   }
 
   return (
