@@ -1,30 +1,75 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
+import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { useRouter } from "next/navigation";
 
 const STATUS_STYLES: Record<
-  string,
-  { border: string; labelColor: string; dot: string; pulse: boolean }
+  RoadmapItemStatus,
+  {
+    border: string;
+    labelColor: string;
+    iconColor: string;
+    dot: string;
+    pillBg: string;
+    pulse: boolean;
+  }
 > = {
   not_started: {
     border: "var(--border)",
     labelColor: "var(--text-muted)",
+    iconColor: "var(--text)",
     dot: "var(--text-muted)",
+    pillBg: "rgba(148, 163, 184, 0.12)",
     pulse: false,
   },
   in_progress: {
     border: "var(--accent-2)",
     labelColor: "var(--text)",
+    iconColor: "var(--accent-2)",
     dot: "var(--accent-2)",
+    pillBg: "var(--accent-2-dim)",
     pulse: true,
   },
   completed: {
     border: "var(--accent)",
     labelColor: "var(--accent)",
+    iconColor: "var(--accent)",
     dot: "var(--accent)",
+    pillBg: "var(--accent-dim)",
     pulse: false,
+  },
+};
+
+const STATUS_ICON: Record<RoadmapItemStatus, string> = {
+  not_started: "○",
+  in_progress: "◐",
+  completed: "✓",
+};
+
+const TYPE_STYLES: Record<
+  RoadmapItemType,
+  {
+    label: string;
+    badgeBg: string;
+    badgeColor: string;
+  }
+> = {
+  learning: {
+    label: "Learning",
+    badgeBg: "rgba(56, 189, 248, 0.16)",
+    badgeColor: "#38bdf8",
+  },
+  project: {
+    label: "Project",
+    badgeBg: "rgba(0, 229, 160, 0.12)",
+    badgeColor: "var(--accent)",
+  },
+  group: {
+    label: "Group",
+    badgeBg: "rgba(148, 163, 184, 0.16)",
+    badgeColor: "var(--text-muted)",
   },
 };
 
@@ -32,7 +77,8 @@ export function RoadmapNode({ data }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
   const router = useRouter();
   const isGroup = item.type === "group";
-  const styles = STATUS_STYLES[item.status] ?? STATUS_STYLES.not_started;
+  const statusStyles = STATUS_STYLES[item.status];
+  const typeStyles = TYPE_STYLES[item.type];
   const isClickable = !isGroup && item.status === "completed" && !!item.linked_page_slug;
 
   function handleClick() {
@@ -56,17 +102,19 @@ export function RoadmapNode({ data }: NodeProps) {
         onClick={handleClick}
         style={{
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
-          border: `1px solid ${isGroup ? "var(--border)" : styles.border}`,
-          borderRadius: 8,
+          border: `1.5px solid ${isGroup ? "rgba(148, 163, 184, 0.5)" : statusStyles.border}`,
+          borderRadius: 10,
           padding: "12px 16px",
-          width: 200,
+          width: 220,
           cursor: isClickable ? "pointer" : "default",
           position: "relative",
-          transition: "border-color 0.2s, box-shadow 0.2s",
+          transition: "border-color 0.2s, box-shadow 0.2s, transform 0.1s",
           boxShadow:
-            !isGroup && styles.pulse
-              ? `0 0 0 2px var(--accent-2), 0 0 12px 2px var(--accent-2-dim)`
-              : "none",
+            !isGroup && statusStyles.pulse
+              ? `0 0 0 1px ${statusStyles.border}, 0 0 18px 3px var(--accent-2-dim)`
+              : !isGroup
+                ? `0 0 0 1px ${statusStyles.border}`
+                : "none",
         }}
         onMouseEnter={(e) => {
           if (isClickable) {
@@ -75,43 +123,50 @@ export function RoadmapNode({ data }: NodeProps) {
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.borderColor = isGroup
-            ? "var(--border)"
-            : styles.border;
+            ? "rgba(148, 163, 184, 0.5)"
+            : statusStyles.border;
         }}
       >
-        {/* Status row — only for learning/project */}
+        {/* Type then status pills — only for non-group nodes */}
         {!isGroup && (
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 6,
-              marginBottom: 6,
+              justifyContent: "space-between",
+              gap: 8,
+              marginBottom: 8,
             }}
           >
+            {/* Type badge */}
             <div
               style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: styles.dot,
-                flexShrink: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: typeStyles.badgeBg,
+                color: typeStyles.badgeColor,
+                fontFamily: "var(--font-mono)",
+                fontSize: 9,
+                textTransform: "uppercase",
+                letterSpacing: "0.14em",
+                whiteSpace: "nowrap",
               }}
-            />
+            >
+              {typeStyles.label}
+            </div>
+
+            {/* Status icon only */}
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 9,
-                color: styles.dot,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                fontSize: 14,
+                color: statusStyles.iconColor,
               }}
             >
-              {item.status.replace("_", " ")}
+              {STATUS_ICON[item.status]}
             </span>
-            {item.status === "completed" && (
-              <span style={{ marginLeft: "auto", color: "var(--accent)", fontSize: 11 }}>✓</span>
-            )}
           </div>
         )}
 
@@ -121,28 +176,12 @@ export function RoadmapNode({ data }: NodeProps) {
             fontFamily: "var(--font-mono)",
             fontSize: 12,
             fontWeight: 600,
-            color: isGroup ? "var(--text)" : styles.labelColor,
-            lineHeight: 1.4,
+            color: isGroup ? "var(--text)" : statusStyles.labelColor,
+            lineHeight: 1.5,
           }}
         >
           {item.title}
         </div>
-
-        {/* Type badge — hidden for group nodes on public view */}
-        {!isGroup && (
-          <div
-            style={{
-              marginTop: 8,
-              fontFamily: "var(--font-mono)",
-              fontSize: 9,
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {item.type}
-          </div>
-        )}
       </div>
     </>
   );

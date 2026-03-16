@@ -51,6 +51,7 @@ function toFlowEdge(edge: RoadmapEdge): Edge {
     style: { stroke: "var(--border)", strokeWidth: 1.5 },
     interactionWidth: 20,
     animated: false,
+    type: "smoothstep",
   };
 }
 
