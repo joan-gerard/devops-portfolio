@@ -1,6 +1,5 @@
 import type { Edge as FlowEdge, Node as FlowNode } from "@xyflow/react";
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapEdge } from "@/types/roadmap";
+import type { RoadmapItemWithSlug, RoadmapEdge } from "@/types/roadmap";
 
 export function toPublicFlowNodes(
   items: RoadmapItemWithSlug[],

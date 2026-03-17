@@ -1,5 +1,4 @@
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapEdge } from "@/types/roadmap";
+import type { RoadmapEdge, RoadmapItemWithSlug } from "@/types/roadmap";
 import { render, screen } from "@/test/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { PublicRoadmapLayout } from "./PublicRoadmapLayout";

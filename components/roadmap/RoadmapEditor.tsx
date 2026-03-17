@@ -1,7 +1,6 @@
 "use client";
 
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapEdge } from "@/types/roadmap";
+import type { RoadmapEdge, RoadmapItemWithSlug } from "@/types/roadmap";
 import {
   ROADMAP_ADMIN_FLOW_PROPS,
   ROADMAP_BACKGROUND_COLOR,

@@ -1,4 +1,4 @@
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
+import type { RoadmapItemWithSlug } from "@/types/roadmap";
 import { render, screen, fireEvent, waitFor } from "@/test/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";

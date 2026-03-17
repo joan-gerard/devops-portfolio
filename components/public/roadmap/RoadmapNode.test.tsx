@@ -1,5 +1,4 @@
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import type { RoadmapItemStatus, RoadmapItemType, RoadmapItemWithSlug } from "@/types/roadmap";
 import { render, screen } from "@/test/test-utils";
 import React from "react";
 import { vi } from "vitest";
