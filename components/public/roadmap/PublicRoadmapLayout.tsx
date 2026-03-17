@@ -1,5 +1,4 @@
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapEdge } from "@/types/roadmap";
+import type { RoadmapEdge, RoadmapItemWithSlug } from "@/types/roadmap";
 import {
   ROADMAP_PAGE_CONTAINER_STYLE,
   ROADMAP_PAGE_HEADING_STYLE,
