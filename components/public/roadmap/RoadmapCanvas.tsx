@@ -1,6 +1,6 @@
 "use client";
 
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
+import type { RoadmapItemWithSlug } from "@/types/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
 import { toFlowEdges, toPublicFlowNodes } from "@/components/roadmap/roadmapFlowMapper";
 import {
@@ -136,7 +136,7 @@ export function RoadmapCanvas({ items, edges }: Props) {
       const item = items.find((i) => i.id === node.id) ?? null;
 
       // Clicking the already-selected node closes the panel
-      setSelectedItem((prev) => (prev?.id === item?.id ? null : item));
+      setSelectedItem((prev: RoadmapItemWithSlug | null) => (prev?.id === item?.id ? null : item));
     },
     [items]
   );
@@ -146,7 +146,12 @@ export function RoadmapCanvas({ items, edges }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ position: "relative", width: "100%", height: "100%", background: "red !important" }}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        background: "var(--bg)",
+      }}
     >
       <ReactFlow
         nodes={nodes}

@@ -1,17 +1,8 @@
 import sql from "@/lib/db";
 import { withPrerenderFallback } from "@/lib/db-errors";
-import type { RoadmapEdge, RoadmapItem } from "@/types/roadmap";
+import type { RoadmapDataWithSlug, RoadmapEdge, RoadmapItemWithSlug } from "@/types/roadmap";
 
-export interface RoadmapItemWithSlug extends RoadmapItem {
-  linked_page_slug: string | null;
-}
-
-export interface RoadmapData {
-  items: RoadmapItemWithSlug[];
-  edges: RoadmapEdge[];
-}
-
-const emptyRoadmapData: RoadmapData = { items: [], edges: [] };
+const emptyRoadmapData: RoadmapDataWithSlug = { items: [], edges: [] };
 
 const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
@@ -24,8 +15,8 @@ const isE2ETestRuntime = process.env.E2E_TEST === "1";
  * is unavailable (connection or aggregate error), returns empty items and
  * edges so the build succeeds; at runtime the error is rethrown.
  */
-export async function getRoadmapData(): Promise<RoadmapData> {
-  return withPrerenderFallback<RoadmapData>(
+export async function getRoadmapData(): Promise<RoadmapDataWithSlug> {
+  return withPrerenderFallback<RoadmapDataWithSlug>(
     async () => {
       const [items, edges] = await Promise.all([
         sql<RoadmapItemWithSlug[]>`

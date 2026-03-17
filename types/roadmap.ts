@@ -26,8 +26,19 @@ export interface RoadmapEdge {
   created_at: string;
 }
 
-/** Shape returned by GET /api/roadmap */
+/** Base shape returned by GET /api/roadmap (API-level, without slugs) */
 export interface RoadmapData {
   items: RoadmapItem[];
+  edges: RoadmapEdge[];
+}
+
+/** Roadmap item including resolved linked page slug for UI/query layer */
+export interface RoadmapItemWithSlug extends RoadmapItem {
+  linked_page_slug: string | null;
+}
+
+/** Shape returned by roadmap query helpers that include slugs */
+export interface RoadmapDataWithSlug {
+  items: RoadmapItemWithSlug[];
   edges: RoadmapEdge[];
 }

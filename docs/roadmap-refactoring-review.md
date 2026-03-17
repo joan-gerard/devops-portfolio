@@ -215,28 +215,42 @@ This keeps roadmap date formatting in a single place and makes future locale/for
 
 ## 11. Roadmap Types: Unify `RoadmapData` Shape
 
-**Current:**  
-`types/roadmap.ts` defines `RoadmapData` (`items: RoadmapItem[]; edges: RoadmapEdge[]`), while `lib/queries/roadmap.ts` defines its own `RoadmapData` with `items: RoadmapItemWithSlug[]`.
+**Status:** Completed (March 2026)
 
-**Suggestion:**  
-Either:
+**Current (before refactor):**  
+`types/roadmap.ts` defined `RoadmapData` as `{ items: RoadmapItem[]; edges: RoadmapEdge[] }`, while `lib/queries/roadmap.ts` declared its own `RoadmapData` type with `items: RoadmapItemWithSlug[]`. The shared name with different meanings made it easy to confuse API-level and query-level shapes.
 
-- Export `RoadmapItemWithSlug` and `RoadmapDataWithSlug` from `types/roadmap.ts` and use them in `lib/queries/roadmap.ts`, or
-- Keep `RoadmapItem` / `RoadmapEdge` in `types` only, and have the query file import them and define `RoadmapItemWithSlug` there without redefining `RoadmapData` with a different meaning.
+**Change:**  
+Roadmap types are now clearly separated and centralized:
 
-This clarifies type naming across API and queries and avoids two slightly-different `RoadmapData` interfaces.
+- `types/roadmap.ts` exports:
+  - `RoadmapData` — API-level shape (`items: RoadmapItem[]; edges: RoadmapEdge[]`).
+  - `RoadmapItemWithSlug` — extends `RoadmapItem` with `linked_page_slug: string | null`.
+  - `RoadmapDataWithSlug` — query/UI shape (`items: RoadmapItemWithSlug[]; edges: RoadmapEdge[]`).
+- `lib/queries/roadmap.ts` imports `RoadmapItemWithSlug` and `RoadmapDataWithSlug` instead of redefining its own `RoadmapData`, and `getRoadmapData()` now returns `RoadmapDataWithSlug`.
+
+This makes it explicit when slugs are present on roadmap items, avoids duplicate `RoadmapData` definitions, and keeps API vs query-layer types clearly named.
 
 ---
 
 ## 12. Remove Debug Artefacts and Hard-Coded Overrides
 
-**Current:**  
-`RoadmapCanvas` sets the container background to `"red !important"`, which appears to be a debugging leftover:
+**Status:** Completed (March 2026)
+
+**Current (before refactor):**  
+`RoadmapCanvas` set the outer container background to `"red !important"`, which was a debugging leftover:
 
 - `style={{ position: "relative", width: "100%", height: "100%", background: "red !important" }}`.
 
-**Suggestion:**  
-Remove the hard-coded red background and rely on `var(--bg)` / `var(--surface-2)` or a roadmap-specific style from the new `roadmapStyles` mentioned above.
+This conflicted with the normal theme/background tokens used elsewhere.
+
+**Change:**  
+The roadmap canvas container now uses theme tokens instead of a hard-coded debug color:
+
+- The container style is now `background: "var(--bg)"`, matching the rest of the public layout.
+- `ReactFlow` itself continues to use its own `style={{ background: "var(--bg)" }}` and the shared roadmap background configuration from `roadmapFlowConfig`.
+
+This removes the debug artefact and keeps roadmap visuals consistent with the global design system.
 
 ---
 
