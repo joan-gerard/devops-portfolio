@@ -11,6 +11,8 @@ Plain SQL migration files, run in order against Neon.
 | 005_roadmap.sql              | Roadmap graph — roadmap_items, roadmap_edges, enums       |
 | 006_roadmap_edge_handles.sql | Add source_handle, target_handle to roadmap_edges         |
 | 007_roadmap_group_type.sql   | Add roadmap node type `group` for organisation            |
+| 008_roadmap_group_completed.sql | Add `is_group_completed` flag to roadmap_items         |
+| 009_roadmap_e2e_only.sql     | Add `e2e_only` flag to roadmap_items for test isolation   |
 
 ## Running a migration
 
