@@ -13,9 +13,12 @@ export default async function globalTeardown() {
   try {
     await sql`DELETE FROM pages WHERE e2e_only = true`;
     await sql`DELETE FROM projects WHERE e2e_only = true`;
+    await sql`DELETE FROM roadmap_items WHERE e2e_only = true`;
     // If you add more E2E-only tables later, clean them here as well.
     // eslint-disable-next-line no-console
-    console.log("[global-teardown] E2E cleanup completed: deleted e2e_only pages and projects.");
+    console.log(
+      "[global-teardown] E2E cleanup completed: deleted e2e_only pages, projects, and roadmap items."
+    );
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("[global-teardown] Error during E2E cleanup:", error);

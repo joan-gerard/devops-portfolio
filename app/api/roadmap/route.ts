@@ -14,17 +14,46 @@ import { authOptions } from "../auth/[...nextauth]/route";
  */
 export async function GET() {
   try {
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
+
     const [items, edges] = await Promise.all([
-      sql<RoadmapItem[]>`
-        SELECT
-          id, title, description, type, status,
-          position_x, position_y,
-          is_group_completed,
-          linked_page_id, completed_at,
-          created_at, updated_at
-        FROM roadmap_items
-        ORDER BY created_at ASC
-      `,
+      isE2ETestRuntime
+        ? sql<RoadmapItem[]>`
+            SELECT
+              id,
+              title,
+              description,
+              type,
+              status,
+              position_x,
+              position_y,
+              is_group_completed,
+              linked_page_id,
+              completed_at,
+              created_at,
+              updated_at,
+              e2e_only
+            FROM roadmap_items
+            ORDER BY created_at ASC
+          `
+        : sql<RoadmapItem[]>`
+            SELECT
+              id,
+              title,
+              description,
+              type,
+              status,
+              position_x,
+              position_y,
+              is_group_completed,
+              linked_page_id,
+              completed_at,
+              created_at,
+              updated_at
+            FROM roadmap_items
+            WHERE e2e_only = false
+            ORDER BY created_at ASC
+          `,
       sql<RoadmapEdge[]>`
         SELECT id, source_id, target_id, source_handle, target_handle, created_at
         FROM roadmap_edges
@@ -84,22 +113,25 @@ export async function POST(request: Request) {
   }
 
   try {
+    const isE2ETestRuntime = process.env.E2E_TEST === "1";
     const rows = await sql`
-      INSERT INTO roadmap_items (title, description, type, status, position_x, position_y)
+      INSERT INTO roadmap_items (title, description, type, status, position_x, position_y, e2e_only)
       VALUES (
         ${title.trim()},
         ${description ?? null},
         ${nodeType},
         ${status ?? "not_started"},
         ${position_x ?? 0},
-        ${position_y ?? 0}
+        ${position_y ?? 0},
+        ${isE2ETestRuntime}
       )
       RETURNING
         id, title, description, type, status,
         position_x, position_y,
         is_group_completed,
         linked_page_id, completed_at,
-        created_at, updated_at
+        created_at, updated_at,
+        e2e_only
     `;
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error: unknown) {

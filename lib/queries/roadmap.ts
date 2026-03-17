@@ -13,6 +13,8 @@ export interface RoadmapData {
 
 const emptyRoadmapData: RoadmapData = { items: [], edges: [] };
 
+const isE2ETestRuntime = process.env.E2E_TEST === "1";
+
 /**
  * Fetches all roadmap items and edges for the public canvas.
  * LEFT JOINs pages to resolve linked_page_id → slug so the client
@@ -40,10 +42,12 @@ export async function getRoadmapData(): Promise<RoadmapData> {
             r.completed_at,
             r.created_at,
             r.updated_at,
+            r.e2e_only,
             COALESCE(p.slug, pr.slug) AS linked_page_slug
           FROM roadmap_items r
           LEFT JOIN pages p ON p.id = r.linked_page_id
           LEFT JOIN projects pr ON pr.id = r.linked_page_id
+          ${isE2ETestRuntime ? sql`` : sql`WHERE r.e2e_only = false`}
           ORDER BY r.created_at ASC
         `,
         sql<RoadmapEdge[]>`

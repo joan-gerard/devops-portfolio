@@ -14,6 +14,7 @@ export interface RoadmapItem {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  e2e_only?: boolean;
 }
 
 export interface RoadmapEdge {
