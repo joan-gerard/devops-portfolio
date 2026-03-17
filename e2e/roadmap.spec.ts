@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { hasE2ECredentials, loginAsE2EUser } from "./fixtures/auth";
-
-type CreatedRoadmapItem = { id: string; title: string };
+import { createRoadmapItem, deleteRoadmapItem, patchRoadmapItem } from "./fixtures/roadmap";
 
 async function createE2ENote(page: import("@playwright/test").Page) {
   const slug = `e2e-roadmap-note-${Date.now()}`;
@@ -21,38 +20,6 @@ async function createE2ENote(page: import("@playwright/test").Page) {
   return { id: note.id, slug: note.slug, title };
 }
 
-async function createRoadmapItem(
-  page: import("@playwright/test").Page,
-  data: { title: string; type?: "learning" | "project" | "group"; status?: string }
-): Promise<CreatedRoadmapItem> {
-  const res = await page.request.post("/api/roadmap", {
-    data: {
-      title: data.title,
-      type: data.type ?? "learning",
-      status: data.status ?? "not_started",
-      position_x: 80,
-      position_y: 80,
-    },
-  });
-  expect(res.ok()).toBeTruthy();
-  const item = (await res.json()) as { id: string; title: string };
-  return { id: item.id, title: item.title };
-}
-
-async function patchRoadmapItem(
-  page: import("@playwright/test").Page,
-  id: string,
-  fields: Record<string, unknown>
-) {
-  const res = await page.request.patch(`/api/roadmap/${id}`, { data: fields });
-  expect(res.ok()).toBeTruthy();
-  return res.json();
-}
-
-async function deleteRoadmapItem(page: import("@playwright/test").Page, id: string) {
-  await page.request.delete(`/api/roadmap/${id}`);
-}
-
 test.describe("Roadmap (public)", () => {
   test("open /roadmap, canvas loads, node toggles side panel, and linked node navigates", async ({
     page,
@@ -69,7 +36,11 @@ test.describe("Roadmap (public)", () => {
     const note = await createE2ENote(page);
 
     const nodeTitle = `E2E Roadmap Linked Node ${Date.now()}`;
-    const item = await createRoadmapItem(page, { title: nodeTitle, type: "learning" });
+    const item = await createRoadmapItem(page, {
+      title: nodeTitle,
+      type: "learning",
+      position: { x: 80, y: 80 },
+    });
     createdIds.push(item.id);
 
     await patchRoadmapItem(page, item.id, { linked_page_id: note.id });

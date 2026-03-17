@@ -1,48 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { hasE2ECredentials, loginAsE2EUser } from "./fixtures/auth";
-
-async function getRoadmapCenter(page: import("@playwright/test").Page): Promise<{
-  x: number;
-  y: number;
-}> {
-  const res = await page.request.get("/api/roadmap");
-  if (!res.ok()) return { x: 120, y: 120 };
-  const data = (await res.json()) as {
-    items: { position_x: number; position_y: number }[];
-  };
-  if (!data.items.length) return { x: 120, y: 120 };
-
-  const xs = data.items.map((i) => i.position_x);
-  const ys = data.items.map((i) => i.position_y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-
-  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-}
-
-async function createRoadmapItem(
-  page: import("@playwright/test").Page,
-  data: { title: string; type: "learning" | "project" | "group" }
-) {
-  const center = await getRoadmapCenter(page);
-  const res = await page.request.post("/api/roadmap", {
-    data: {
-      title: data.title,
-      type: data.type,
-      status: "not_started",
-      position_x: center.x + (data.type === "group" ? 40 : -40),
-      position_y: center.y + (data.type === "group" ? 40 : -40),
-    },
-  });
-  expect(res.ok()).toBeTruthy();
-  return (await res.json()) as { id: string; title: string; type: string };
-}
-
-async function deleteRoadmapItem(page: import("@playwright/test").Page, id: string) {
-  await page.request.delete(`/api/roadmap/${id}`);
-}
+import { createRoadmapItem, deleteRoadmapItem, getRoadmapCenter } from "./fixtures/roadmap";
 
 test.describe("Roadmap (admin)", () => {
   test.beforeEach(async ({ page }) => {
@@ -58,9 +16,26 @@ test.describe("Roadmap (admin)", () => {
     const nodeTitle = `E2E Roadmap Admin Node ${Date.now()}`;
     const groupTitle = `E2E Roadmap Admin Group ${Date.now()}`;
 
-    const item = await createRoadmapItem(page, { title: nodeTitle, type: "learning" });
+    const center = await getRoadmapCenter(page);
+
+    const item = await createRoadmapItem(page, {
+      title: nodeTitle,
+      type: "learning",
+      position: {
+        x: center.x - 40,
+        y: center.y - 40,
+      },
+    });
     createdIds.push(item.id);
-    const group = await createRoadmapItem(page, { title: groupTitle, type: "group" });
+
+    const group = await createRoadmapItem(page, {
+      title: groupTitle,
+      type: "group",
+      position: {
+        x: center.x + 40,
+        y: center.y + 40,
+      },
+    });
     createdIds.push(group.id);
 
     await page.goto("/roadmap/edit");

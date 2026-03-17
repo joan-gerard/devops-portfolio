@@ -177,18 +177,20 @@ Each validator returns either a normalized, typed payload or a `NextResponse` wi
 
 ## 9. Roadmap E2E Helper Consolidation
 
-**Current:**  
-`e2e/roadmap-admin.spec.ts` and `e2e/roadmap.spec.ts` each define helper functions like `createRoadmapItem`, `deleteRoadmapItem`, and variants for patching/setting up roadmap nodes. Similar patterns (POST `/api/roadmap`, PATCH `/api/roadmap/[id]`, DELETE) are repeated with minor parameter differences.
+**Status:** Completed (March 2026)
 
-**Suggestion:**  
-Factor common helpers into `e2e/fixtures/roadmap.ts`:
+**Current (before refactor):**  
+`e2e/roadmap-admin.spec.ts` and `e2e/roadmap.spec.ts` each defined their own roadmap helpers like `createRoadmapItem`, `patchRoadmapItem`, and `deleteRoadmapItem`, plus an inline `getRoadmapCenter` in the admin spec. These all wrapped the same `/api/roadmap` POST/PATCH/DELETE calls with slightly different parameter shapes and defaults.
 
-- `createRoadmapItem(page, { title, type, status, position })`
-- `patchRoadmapItem(page, id, fields)`
-- `deleteRoadmapItem(page, id)`
-- Optional helpers for computing a canvas center for tests.
+**Change:**  
+Common helpers have been factored into `e2e/fixtures/roadmap.ts`:
 
-Import these in both E2E suites to reduce duplication and make improvements (like better test data isolation) in one place.
+- `getRoadmapCenter(page)` computes a stable canvas center based on existing roadmap item positions (with a sensible default when empty).
+- `createRoadmapItem(page, { title, type, status, position })` creates a roadmap item with optional type/status and an overridable position (defaulting to `(80, 80)`).
+- `patchRoadmapItem(page, id, fields)` performs a PATCH to `/api/roadmap/[id]` and asserts success.
+- `deleteRoadmapItem(page, id)` deletes a roadmap item via the API.
+
+Both `roadmap-admin.spec.ts` and `roadmap.spec.ts` now import these helpers instead of defining their own, reducing duplication and keeping roadmap E2E setup/teardown behavior centralized.
 
 ---
 
