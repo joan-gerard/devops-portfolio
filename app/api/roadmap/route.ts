@@ -1,6 +1,6 @@
 import { handleDbError } from "@/lib/api/postgres-errors";
+import { getRoadmapData } from "@/lib/queries/roadmap";
 import sql from "@/lib/db";
-import { RoadmapEdge, RoadmapItem } from "@/types/roadmap";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
@@ -14,54 +14,8 @@ import { authOptions } from "../auth/[...nextauth]/route";
  */
 export async function GET() {
   try {
-    const isE2ETestRuntime = process.env.E2E_TEST === "1";
-
-    const [items, edges] = await Promise.all([
-      isE2ETestRuntime
-        ? sql<RoadmapItem[]>`
-            SELECT
-              id,
-              title,
-              description,
-              type,
-              status,
-              position_x,
-              position_y,
-              is_group_completed,
-              linked_page_id,
-              completed_at,
-              created_at,
-              updated_at,
-              e2e_only
-            FROM roadmap_items
-            ORDER BY created_at ASC
-          `
-        : sql<RoadmapItem[]>`
-            SELECT
-              id,
-              title,
-              description,
-              type,
-              status,
-              position_x,
-              position_y,
-              is_group_completed,
-              linked_page_id,
-              completed_at,
-              created_at,
-              updated_at
-            FROM roadmap_items
-            WHERE e2e_only = false
-            ORDER BY created_at ASC
-          `,
-      sql<RoadmapEdge[]>`
-        SELECT id, source_id, target_id, source_handle, target_handle, created_at
-        FROM roadmap_edges
-        ORDER BY created_at ASC
-      `,
-    ]);
-
-    return NextResponse.json({ items, edges });
+    const data = await getRoadmapData();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("GET /api/roadmap error:", error);
     return NextResponse.json({ error: "Failed to fetch roadmap" }, { status: 500 });
