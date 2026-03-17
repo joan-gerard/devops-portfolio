@@ -11,42 +11,50 @@ export function useRoadmapSaveStatus(options?: UseRoadmapSaveStatusOptions) {
   const [saveStatus, setSaveStatus] = useState<RoadmapSaveStatus>("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const beginSaving = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setSaveStatus("saving");
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
+
+  const beginSaving = useCallback(() => {
+    clearTimer();
+    setSaveStatus("saving");
+  }, [clearTimer]);
 
   const finishSaving = useCallback(
     (ok: boolean) => {
       if (!ok) {
+        clearTimer();
         setSaveStatus("error");
         return;
       }
 
       setSaveStatus("saved");
-      if (timerRef.current) clearTimeout(timerRef.current);
+      clearTimer();
       timerRef.current = setTimeout(() => {
         setSaveStatus("idle");
       }, autoResetMs);
     },
-    [autoResetMs]
+    [autoResetMs, clearTimer]
   );
 
   const setIdle = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    clearTimer();
     setSaveStatus("idle");
-  }, []);
+  }, [clearTimer]);
 
   const setError = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    clearTimer();
     setSaveStatus("error");
-  }, []);
+  }, [clearTimer]);
 
   useEffect(
     () => () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      clearTimer();
     },
-    []
+    [clearTimer]
   );
 
   return { saveStatus, beginSaving, finishSaving, setIdle, setError };
