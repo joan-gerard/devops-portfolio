@@ -137,6 +137,12 @@ Use **React Testing Library** (with a `jsdom` environment).
 
 Using Playwright after basic tooling is in place.
 
+- **Roadmap (public + admin)**
+  - **What to test**:
+    - **Public `/roadmap`**: canvas mounts; clicking a node opens the side panel; clicking the same node again closes it; when a node has a linked slug, the side panel shows a “View note/project” action and navigation works.
+    - **Admin `/roadmap/edit`**: login required; clicking a node opens the edit side panel; editing title shows “Saved” and persists after refresh; toggling group completion persists after refresh.
+  - **Why**: The roadmap is interaction-heavy (React Flow canvas + side panels + API writes). A small number of focused E2E tests catches regressions in React Flow integration, auth, API routes, and DB persistence that unit/component tests can’t fully cover.
+
 - **Public read-only flows**
   - **What to test**: Visit home page and see recent notes and featured projects sections; clicking a project card goes to the project detail page. Visit `/notes`: list of notes appears; clicking a note shows detail; tag filter changes visible notes. 404 / error states behave as intended.
   - **Why**: Core user-facing functionality and good smoke checks for deployments.
