@@ -90,21 +90,26 @@ Mapping has been centralized into `components/roadmap/roadmapFlowMapper.ts`, whi
 
 ## 5. Shared Roadmap React Flow Configuration and Theming
 
-**Current:**  
+**Status:** Completed (March 2026)
+
+**Current (before refactor):**  
 Both public (`RoadmapCanvas`) and admin (`RoadmapEditor`) flows:
 
-- Use `Background` with the same dot settings and colors.
-- Configure read-only vs editable interactions, but share a lot of base style and theming.
+- Used `Background` with the same dot settings and colors.
+- Configured read-only vs editable interactions, but shared a lot of base style and theming inline.
 
-React Flow theming is partly handled in `app/globals.css` via `.react-flow` and `--xy-controls-*` variables, plus a hard override for `.react-flow__controls button`.
+React Flow theming was partly handled in `app/globals.css` via `.react-flow` and `--xy-controls-*` variables, plus a hard override for `.react-flow__controls button`.
 
-**Suggestion:**  
-Extract a small `RoadmapFlowConfig` module that:
+**Change:**  
+A small `RoadmapFlowConfig` module (`components/roadmap/roadmapFlowConfig.ts`) now centralizes shared React Flow configuration:
 
-- Holds constants for background gap/size/color, default edge style, controls styling, and any `proOptions`.
-- Optionally exports helper props for public vs admin flows (e.g. `publicFlowProps`, `adminFlowProps`).
+- Constants for background gap/size/color and variant: `ROADMAP_BACKGROUND_GAP`, `ROADMAP_BACKGROUND_SIZE`, `ROADMAP_BACKGROUND_COLOR`, `ROADMAP_BACKGROUND_VARIANT`.
+- `ROADMAP_PRO_OPTIONS` for shared `proOptions` (e.g. attribution behavior).
+- Helper props for public vs admin flows:
+  - `ROADMAP_PUBLIC_FLOW_PROPS` (fixed zoom, vertical pan scroll, read-only).
+  - `ROADMAP_ADMIN_FLOW_PROPS` (connection mode, delete key codes).
 
-Use these helpers inside `RoadmapCanvas` and `RoadmapEditor` so changes to controls, attribution, or edges are centralized.
+`RoadmapCanvas` and `RoadmapEditor` now consume these helpers and constants when rendering `ReactFlow` and `Background`, so changes to controls, attribution, or edge theming are made in one place while CSS-driven theming in `app/globals.css` remains the single source for visual tokens.
 
 ---
 

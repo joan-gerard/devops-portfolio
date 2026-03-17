@@ -4,6 +4,14 @@ import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
 import { toFlowEdges, toPublicFlowNodes } from "@/components/roadmap/roadmapFlowMapper";
 import {
+  ROADMAP_BACKGROUND_COLOR,
+  ROADMAP_BACKGROUND_GAP,
+  ROADMAP_BACKGROUND_SIZE,
+  ROADMAP_BACKGROUND_VARIANT,
+  ROADMAP_PRO_OPTIONS,
+  ROADMAP_PUBLIC_FLOW_PROPS,
+} from "@/components/roadmap/roadmapFlowConfig";
+import {
   Background,
   BackgroundVariant,
   PanOnScrollMode,
@@ -148,22 +156,20 @@ export function RoadmapCanvas({ items, edges }: Props) {
         onInit={handleInit}
         viewport={viewport}
         onViewportChange={handleViewportChange}
-        minZoom={PUBLIC_ROADMAP_ZOOM}
-        maxZoom={PUBLIC_ROADMAP_ZOOM}
-        panOnDrag={false}
-        panOnScroll
         panOnScrollMode={PanOnScrollMode.Vertical}
-        zoomOnScroll={false}
-        zoomOnDoubleClick={false}
-        zoomOnPinch={false}
-        zoomActivationKeyCode={null}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-        proOptions={{ hideAttribution: false }}
+        proOptions={ROADMAP_PRO_OPTIONS}
         style={{ background: "var(--bg)" }}
+        {...ROADMAP_PUBLIC_FLOW_PROPS}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border)" />
+        <Background
+          variant={ROADMAP_BACKGROUND_VARIANT}
+          gap={ROADMAP_BACKGROUND_GAP}
+          size={ROADMAP_BACKGROUND_SIZE}
+          color={ROADMAP_BACKGROUND_COLOR}
+        />
       </ReactFlow>
       <RoadmapSidePanel item={selectedItem} onClose={handleClose} />
     </div>

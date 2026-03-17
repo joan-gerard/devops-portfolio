@@ -2,6 +2,14 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
+import {
+  ROADMAP_ADMIN_FLOW_PROPS,
+  ROADMAP_BACKGROUND_COLOR,
+  ROADMAP_BACKGROUND_GAP,
+  ROADMAP_BACKGROUND_SIZE,
+  ROADMAP_BACKGROUND_VARIANT,
+  ROADMAP_PRO_OPTIONS,
+} from "@/components/roadmap/roadmapFlowConfig";
 import { toAdminFlowNodes, toFlowEdges } from "@/components/roadmap/roadmapFlowMapper";
 import {
   Background,
@@ -464,9 +472,15 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         fitView
         fitViewOptions={{ padding: 0.2 }}
         deleteKeyCode={["Delete", "Backspace"]}
+        proOptions={ROADMAP_PRO_OPTIONS}
         style={{ background: "var(--bg)" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border)" />
+        <Background
+          variant={ROADMAP_BACKGROUND_VARIANT}
+          gap={ROADMAP_BACKGROUND_GAP}
+          size={ROADMAP_BACKGROUND_SIZE}
+          color={ROADMAP_BACKGROUND_COLOR}
+        />
         <Controls
           style={{
             background: "var(--surface)",
