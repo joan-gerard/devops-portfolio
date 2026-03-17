@@ -34,12 +34,16 @@ export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Pro
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [linkedPageId, setLinkedPageId] = useState(item?.linked_page_id ?? "");
+  const [isGroupCompleted, setIsGroupCompleted] = useState<boolean>(
+    item?.is_group_completed ?? false
+  );
 
   // Sync fields when the selected item changes
   useEffect(() => {
     setTitle(item?.title ?? "");
     setDescription(item?.description ?? "");
     setLinkedPageId(item?.linked_page_id ?? "");
+    setIsGroupCompleted(item?.is_group_completed ?? false);
     setConfirmDelete(false);
     setSaveStatus("idle");
   }, [item?.id]);
@@ -342,6 +346,62 @@ export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Pro
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Group completion toggle — only for group nodes */}
+              {item.type === "group" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Group completion
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !isGroupCompleted;
+                      setIsGroupCompleted(next);
+                      patch({ is_group_completed: next });
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      background: isGroupCompleted ? "var(--accent-dim)" : "var(--surface-2)",
+                      border: `1px solid ${isGroupCompleted ? "var(--accent)" : "var(--border)"}`,
+                      borderRadius: 4,
+                      color: isGroupCompleted ? "var(--accent)" : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      padding: "8px 10px",
+                      textAlign: "left",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span>
+                      {isGroupCompleted ? "Marked as completed" : "Mark group as completed"}
+                    </span>
+                    <span>{isGroupCompleted ? "✓" : "○"}</span>
+                  </button>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    This does not change individual item statuses; it only affects how the group box
+                    is styled.
+                  </span>
                 </div>
               )}
 

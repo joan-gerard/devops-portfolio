@@ -19,6 +19,7 @@ export async function GET() {
         SELECT
           id, title, description, type, status,
           position_x, position_y,
+          is_group_completed,
           linked_page_id, completed_at,
           created_at, updated_at
         FROM roadmap_items
@@ -96,6 +97,7 @@ export async function POST(request: Request) {
       RETURNING
         id, title, description, type, status,
         position_x, position_y,
+        is_group_completed,
         linked_page_id, completed_at,
         created_at, updated_at
     `;

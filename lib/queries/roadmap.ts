@@ -35,6 +35,7 @@ export async function getRoadmapData(): Promise<RoadmapData> {
             r.status,
             r.position_x,
             r.position_y,
+            r.is_group_completed,
             r.linked_page_id,
             r.completed_at,
             r.created_at,

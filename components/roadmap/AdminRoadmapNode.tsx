@@ -68,7 +68,9 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
   const borderColor = selected
     ? "var(--text)"
     : isGroup
-      ? "rgba(148, 163, 184, 0.5)"
+      ? item.is_group_completed
+        ? "var(--accent)"
+        : "rgba(148, 163, 184, 0.5)"
       : statusStyles.border;
 
   return (

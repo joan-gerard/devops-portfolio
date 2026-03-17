@@ -100,7 +100,13 @@ export function RoadmapNode({ data, selected }: NodeProps) {
         style={{
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
           border: `0.8px solid ${
-            isGroup ? "rgba(148, 163, 184, 0.5)" : isSelected ? "var(--text)" : statusStyles.border
+            isGroup
+              ? item.is_group_completed
+                ? "var(--accent)"
+                : "rgba(148, 163, 184, 0.5)"
+              : isSelected
+                ? "var(--text)"
+                : statusStyles.border
           }`,
           borderRadius: 10,
           padding: "10px 14px",
@@ -124,7 +130,9 @@ export function RoadmapNode({ data, selected }: NodeProps) {
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.borderColor = isGroup
-            ? "rgba(148, 163, 184, 0.5)"
+            ? item.is_group_completed
+              ? "var(--accent)"
+              : "rgba(148, 163, 184, 0.5)"
             : isSelected
               ? "var(--text)"
               : statusStyles.border;

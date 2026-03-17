@@ -10,6 +10,7 @@ export interface RoadmapItem {
   position_x: number;
   position_y: number;
   linked_page_id: string | null;
+  is_group_completed: boolean;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

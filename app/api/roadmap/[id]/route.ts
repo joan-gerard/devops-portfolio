@@ -33,7 +33,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
-  const { status, position_x, position_y, title, description, type, linked_page_id } = body as {
+  const {
+    status,
+    position_x,
+    position_y,
+    title,
+    description,
+    type,
+    linked_page_id,
+    is_group_completed,
+  } = body as {
     status?: string;
     position_x?: number;
     position_y?: number;
@@ -41,6 +50,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     description?: string;
     type?: string;
     linked_page_id?: string | null;
+    is_group_completed?: boolean;
   };
 
   const allowedStatus = new Set(["not_started", "in_progress", "completed"]);
@@ -71,6 +81,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     "linked_page_id"
   );
 
+  const hasIsGroupCompletedField = Object.prototype.hasOwnProperty.call(
+    body as Record<string, unknown>,
+    "is_group_completed"
+  );
+
   try {
     const rows = await sql`
     WITH updated AS (
@@ -85,6 +100,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         linked_page_id = CASE
           WHEN ${hasLinkedPageIdField} THEN ${linked_page_id ?? null}
           ELSE linked_page_id
+        END,
+        is_group_completed = CASE
+          WHEN ${hasIsGroupCompletedField} THEN COALESCE(${is_group_completed ?? null}, FALSE)
+          ELSE is_group_completed
         END,
         completed_at   = CASE
           WHEN (${status ?? null})::text = 'completed' THEN NOW()
@@ -103,6 +122,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       u.status,
       u.position_x,
       u.position_y,
+      u.is_group_completed,
       u.linked_page_id,
       u.completed_at,
       u.created_at,
