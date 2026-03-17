@@ -9,7 +9,7 @@ interface Props {
 
 export function PublicRoadmapLayout({ items, edges }: Props) {
   return (
-    <main style={{ background: "var(--bg)" }}>
+    <main style={{ background: "var(--bg)" }} id="roadmap-main-container">
       <div
         style={{
           maxWidth: 1200,
@@ -40,7 +40,7 @@ export function PublicRoadmapLayout({ items, edges }: Props) {
         </p>
       </div>
 
-      <div style={{ height: "calc(100vh - 320px)", width: "100%" }}>
+      <div style={{ height: "calc(100vh - 300px)", width: "100%" }} id="roadmap-canvas-container">
         <RoadmapCanvas items={items} edges={edges} />
       </div>
     </main>

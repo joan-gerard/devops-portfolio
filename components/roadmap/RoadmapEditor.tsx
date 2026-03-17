@@ -43,6 +43,10 @@ function toFlowNode(item: RoadmapItemWithSlug, selectedId: string | null): Node 
 }
 
 function toFlowEdge(edge: RoadmapEdge): Edge {
+  const isSideToSide =
+    (edge.source_handle === "left" || edge.source_handle === "right") &&
+    (edge.target_handle === "left" || edge.target_handle === "right");
+
   return {
     id: edge.id,
     source: edge.source_id,
@@ -52,7 +56,7 @@ function toFlowEdge(edge: RoadmapEdge): Edge {
     style: { stroke: "var(--border)", strokeWidth: 1.5 },
     interactionWidth: 20,
     animated: false,
-    type: "smoothstep",
+    type: isSideToSide ? "straight" : "smoothstep",
   };
 }
 
@@ -285,12 +289,109 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
       const selected = prev.filter((n) => n.selected);
       if (selected.length < 2) return prev;
 
-      // Align to the first selected node's y for predictable behavior
-      const targetY = selected[0]?.position.y ?? 0;
+      // #region agent log
+      fetch("http://127.0.0.1:7413/ingest/1c93bca7-703d-4344-87d3-40172983169d", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0d36cf",
+        },
+        body: JSON.stringify({
+          sessionId: "0d36cf",
+          runId: "pre-fix-1",
+          hypothesisId: "H1",
+          location: "RoadmapEditor.tsx:alignSelectedHorizontally",
+          message: "Align Y entry",
+          data: {
+            selectedIds: selected.map((n) => n.id),
+            selectedHeights: selected.map((n) => n.height ?? null),
+            selectedPositions: selected.map((n) => n.position),
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
 
-      const updated = prev.map((n) =>
-        n.selected ? { ...n, position: { ...n.position, y: targetY } } : n
-      ) as Node[];
+      // Prefer aligning by visual center (y + height / 2) using DOM measurements,
+      // since React Flow node.height is not populated in our state (confirmed by logs).
+      const domHeights: Record<string, number | null> = {};
+      selected.forEach((n) => {
+        const el = document.querySelector(`[data-id="${n.id}"]`) as HTMLElement | null;
+        domHeights[n.id] = el ? el.getBoundingClientRect().height : null;
+      });
+
+      // #region agent log
+      fetch("http://127.0.0.1:7413/ingest/1c93bca7-703d-4344-87d3-40172983169d", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0d36cf",
+        },
+        body: JSON.stringify({
+          sessionId: "0d36cf",
+          runId: "dom-heights-1",
+          hypothesisId: "H3",
+          location: "RoadmapEditor.tsx:alignSelectedHorizontally",
+          message: "Align Y DOM heights",
+          data: { domHeights },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
+
+      const referenceWithHeight = selected.find((n) => domHeights[n.id] != null) ?? selected[0];
+      const referenceHeight = domHeights[referenceWithHeight.id] ?? 0;
+      const targetCenterY = referenceWithHeight.position.y + referenceHeight / 2;
+
+      const updated = prev.map((n) => {
+        if (!n.selected) return n;
+
+        const height = domHeights[n.id] ?? null;
+
+        // If we truly don't have a height for this node or for the reference node,
+        // fall back to aligning by top position.
+        const useTopAlignment = domHeights[referenceWithHeight.id] == null || height == null;
+
+        // #region agent log
+        fetch("http://127.0.0.1:7413/ingest/1c93bca7-703d-4344-87d3-40172983169d", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "0d36cf",
+          },
+          body: JSON.stringify({
+            sessionId: "0d36cf",
+            runId: "pre-fix-1",
+            hypothesisId: "H2",
+            location: "RoadmapEditor.tsx:alignSelectedHorizontally.map",
+            message: "Align Y per-node decision",
+            data: {
+              nodeId: n.id,
+              nodeHeight: height,
+              nodePosition: n.position,
+              referenceId: referenceWithHeight.id,
+              referenceHeight: domHeights[referenceWithHeight.id] ?? null,
+              referencePosition: referenceWithHeight.position,
+              useTopAlignment,
+              targetCenterY,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion agent log
+
+        if (useTopAlignment || height == null) {
+          return { ...n, position: { ...n.position, y: referenceWithHeight.position.y } };
+        }
+
+        const currentCenterY = n.position.y + height / 2;
+        const deltaY = targetCenterY - currentCenterY;
+
+        return {
+          ...n,
+          position: { ...n.position, y: n.position.y + deltaY },
+        };
+      }) as Node[];
 
       // Persist new positions for aligned nodes
       updated.forEach((n) => {
