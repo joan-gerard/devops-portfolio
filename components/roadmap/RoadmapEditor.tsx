@@ -20,7 +20,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { AdminRoadmapNode } from "./AdminRoadmapNode";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
 import { ViewportZoomDisplay } from "./ViewportZoomDisplay";
@@ -31,6 +31,8 @@ interface Props {
   initialItems: RoadmapItemWithSlug[];
   initialEdges: RoadmapEdge[];
 }
+
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 function toFlowNode(item: RoadmapItemWithSlug, selectedId: string | null): Node {
   return {
@@ -86,6 +88,24 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     [edges]
   );
 
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const beginSaving = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setSaveStatus("saving");
+  }, []);
+
+  const finishSaving = useCallback((ok: boolean) => {
+    if (!ok) {
+      setSaveStatus("error");
+      return;
+    }
+    setSaveStatus("saved");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+  }, []);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleNodeClick: NodeMouseHandler = useCallback((_event, node) => {
@@ -118,73 +138,119 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     [setNodes]
   );
 
-  const handleNodeDragStop: OnNodeDrag = useCallback((_event: unknown, node: Node) => {
-    // Persist the (potentially snapped) position. We rely on the latest node.position
-    // passed from React Flow, which reflects any snapping done in handleNodeDrag.
-    fetch(`/api/roadmap/${node.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        position_x: node.position.x,
-        position_y: node.position.y,
-      }),
-    }).catch((err) => console.error("[RoadmapEditor] Failed to save position", err));
-  }, []);
+  const handleNodeDragStop: OnNodeDrag = useCallback(
+    async (_event: unknown, node: Node) => {
+      beginSaving();
+      try {
+        const res = await fetch(`/api/roadmap/${node.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            position_x: node.position.x,
+            position_y: node.position.y,
+          }),
+        });
+        if (!res.ok) {
+          console.error("[RoadmapEditor] Failed to save position");
+          finishSaving(false);
+          return;
+        }
+        finishSaving(true);
+      } catch (err) {
+        console.error("[RoadmapEditor] Failed to save position", err);
+        finishSaving(false);
+      }
+    },
+    [beginSaving, finishSaving]
+  );
 
   const handleConnect: OnConnect = useCallback(
     async (connection) => {
       const { source, target, sourceHandle, targetHandle } = connection;
       if (!source || !target) return;
 
-      const res = await fetch("/api/roadmap/edges", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_id: source,
-          target_id: target,
-          source_handle: sourceHandle,
-          target_handle: targetHandle,
-        }),
-      });
+      beginSaving();
+      try {
+        const res = await fetch("/api/roadmap/edges", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_id: source,
+            target_id: target,
+            source_handle: sourceHandle,
+            target_handle: targetHandle,
+          }),
+        });
 
-      if (!res.ok) {
-        console.error("[RoadmapEditor] Failed to create edge");
-        return;
+        if (!res.ok) {
+          console.error("[RoadmapEditor] Failed to create edge");
+          finishSaving(false);
+          return;
+        }
+
+        const newEdge: RoadmapEdge = await res.json();
+        setEdges((prev) => [...prev, toFlowEdge(newEdge)]);
+        finishSaving(true);
+      } catch (err) {
+        console.error("[RoadmapEditor] Failed to create edge", err);
+        finishSaving(false);
       }
-
-      const newEdge: RoadmapEdge = await res.json();
-      setEdges((prev) => [...prev, toFlowEdge(newEdge)]);
     },
-    [setEdges]
+    [beginSaving, finishSaving, setEdges]
   );
 
-  const handleEdgesDelete: OnEdgesDelete = useCallback(async (deletedEdges) => {
-    await Promise.all(
-      deletedEdges.map((edge) =>
-        fetch(`/api/roadmap/edges/${edge.id}`, { method: "DELETE" }).catch((err) =>
-          console.error("[RoadmapEditor] Failed to delete edge", err)
-        )
-      )
-    );
-  }, []);
+  const handleEdgesDelete: OnEdgesDelete = useCallback(
+    async (deletedEdges) => {
+      if (!deletedEdges.length) return;
+      beginSaving();
+      try {
+        const results = await Promise.all(
+          deletedEdges.map((edge) =>
+            fetch(`/api/roadmap/edges/${edge.id}`, { method: "DELETE" }).catch((err) => {
+              console.error("[RoadmapEditor] Failed to delete edge", err);
+              return null;
+            })
+          )
+        );
+        const ok = results.every((res) => res !== null && res.ok);
+        finishSaving(ok);
+      } catch (err) {
+        console.error("[RoadmapEditor] Failed to delete edges", err);
+        finishSaving(false);
+      }
+    },
+    [beginSaving, finishSaving]
+  );
 
   const handleNodesDelete: OnNodesDelete = useCallback(
     async (deletedNodes) => {
-      await Promise.all(
-        deletedNodes.map((node) =>
-          fetch(`/api/roadmap/${node.id}`, { method: "DELETE" }).catch((err) =>
-            console.error("[RoadmapEditor] Failed to delete node", err)
+      if (!deletedNodes.length) return;
+      beginSaving();
+      try {
+        const results = await Promise.all(
+          deletedNodes.map((node) =>
+            fetch(`/api/roadmap/${node.id}`, { method: "DELETE" }).catch((err) => {
+              console.error("[RoadmapEditor] Failed to delete node", err);
+              return null;
+            })
           )
-        )
-      );
-      setItemsById((prev) => {
-        const next = { ...prev };
-        deletedNodes.forEach((n) => delete next[n.id]);
-        return next;
-      });
-      if (deletedNodes.some((n) => n.id === selectedId)) setSelectedId(null);
+        );
+        const ok = results.every((res) => res !== null && res.ok);
+        if (ok) {
+          setItemsById((prev) => {
+            const next = { ...prev };
+            deletedNodes.forEach((n) => delete next[n.id]);
+            return next;
+          });
+          if (deletedNodes.some((n) => n.id === selectedId)) setSelectedId(null);
+        }
+        finishSaving(ok);
+      } catch (err) {
+        console.error("[RoadmapEditor] Failed to delete nodes", err);
+        finishSaving(false);
+      }
     },
-    [selectedId]
+    [beginSaving, finishSaving, selectedId]
   );
 
   // ── Item update (from side panel PATCH) ──────────────────────────────────
@@ -206,18 +272,28 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
   const handleDeleteNode = useCallback(
     async (id: string) => {
-      const res = await fetch(`/api/roadmap/${id}`, { method: "DELETE" });
-      if (!res.ok) return;
-      setNodes((nds) => nds.filter((n) => n.id !== id));
-      setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-      setItemsById((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      setSelectedId(null);
+      beginSaving();
+      try {
+        const res = await fetch(`/api/roadmap/${id}`, { method: "DELETE" });
+        if (!res.ok) {
+          finishSaving(false);
+          return;
+        }
+        setNodes((nds) => nds.filter((n) => n.id !== id));
+        setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
+        setItemsById((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setSelectedId(null);
+        finishSaving(true);
+      } catch (err) {
+        console.error("[RoadmapEditor] Failed to delete node from side panel", err);
+        finishSaving(false);
+      }
     },
-    [setNodes, setEdges]
+    [beginSaving, finishSaving, setNodes, setEdges]
   );
 
   // ── Add node ──────────────────────────────────────────────────────────────
@@ -226,6 +302,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
   async function handleAddNode(nodeType: "learning" | "project" | "group" = "learning") {
     setIsAdding(true);
+    beginSaving();
     const res = await fetch("/api/roadmap", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -240,6 +317,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
 
     if (!res.ok) {
       console.error("[RoadmapEditor] Failed to create node");
+      finishSaving(false);
       return;
     }
 
@@ -251,6 +329,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     setItemsById((prev) => ({ ...prev, [newItem.id]: newItem }));
     setNodes((prev) => [...prev, toFlowNode(newItem, newItem.id)]);
     setSelectedId(newItem.id);
+    finishSaving(true);
   }
 
   // ── Manual alignment (via toolbar buttons) ─────────────────────────────────
@@ -444,6 +523,34 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
           <ViewportZoomDisplay />
         </Panel>
 
+        {saveStatus !== "idle" && (
+          <Panel position="top-center">
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 999,
+                padding: "4px 10px",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                color:
+                  saveStatus === "saved"
+                    ? "var(--accent)"
+                    : saveStatus === "error"
+                      ? "var(--red, #ff4444)"
+                      : "var(--text-muted)",
+                boxShadow: "0 10px 30px rgba(15,23,42,0.55)",
+              }}
+            >
+              {saveStatus === "saving"
+                ? "Saving…"
+                : saveStatus === "saved"
+                  ? "Saved"
+                  : "Save failed"}
+            </div>
+          </Panel>
+        )}
+
         {/* Toolbar */}
         <Panel position="top-left">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -577,6 +684,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         onClose={() => setSelectedId(null)}
         onUpdate={handleItemUpdate}
         onDelete={handleDeleteNode}
+        onSaveStatusChange={setSaveStatus}
       />
     </div>
   );

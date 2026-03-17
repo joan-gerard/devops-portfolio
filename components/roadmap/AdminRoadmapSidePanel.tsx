@@ -21,11 +21,18 @@ interface Props {
   onClose: () => void;
   onUpdate: (updated: RoadmapItemWithSlug) => void;
   onDelete: (id: string) => Promise<void>;
+  onSaveStatusChange?: (status: SaveStatus) => void;
 }
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
-export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Props) {
+export function AdminRoadmapSidePanel({
+  item,
+  onClose,
+  onUpdate,
+  onDelete,
+  onSaveStatusChange,
+}: Props) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,6 +70,7 @@ export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Pro
   async function patch(fields: Record<string, unknown>) {
     if (!item) return;
     setSaveStatus("saving");
+    onSaveStatusChange?.("saving");
     try {
       const res = await fetch(`/api/roadmap/${item.id}`, {
         method: "PATCH",
@@ -74,9 +82,14 @@ export function AdminRoadmapSidePanel({ item, onClose, onUpdate, onDelete }: Pro
       onUpdate(updated);
       setSaveStatus("saved");
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+      onSaveStatusChange?.("saved");
+      saveTimerRef.current = setTimeout(() => {
+        setSaveStatus("idle");
+        onSaveStatusChange?.("idle");
+      }, 2000);
     } catch {
       setSaveStatus("error");
+      onSaveStatusChange?.("error");
     }
   }
 
