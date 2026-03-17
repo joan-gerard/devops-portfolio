@@ -11,7 +11,7 @@ export async function parseJsonObject(request: Request): Promise<JsonObject | Ne
     return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
   }
 
-  if (typeof body !== "object" || body === null) {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
