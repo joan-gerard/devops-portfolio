@@ -67,22 +67,24 @@ A roadmap-specific `useRoadmapSaveStatus` hook (`hooks/useRoadmapSaveStatus.ts`)
 
 ## 4. Roadmap Node and Edge Mapping Utilities
 
-**Current:**  
-`RoadmapCanvas` and `RoadmapEditor` each hand-roll their own mapping from `RoadmapItemWithSlug` / `RoadmapEdge` to React Flow `Node` / `Edge`:
+**Status:** Completed (March 2026)
 
-- `RoadmapCanvas` constructs nodes inline and casts them with `as unknown as Node[]`.
-- `RoadmapEditor` uses `toFlowNode` and `toFlowEdge`, defined locally in that file.
+**Current (before refactor):**  
+`RoadmapCanvas` and `RoadmapEditor` each hand-rolled their own mapping from `RoadmapItemWithSlug` / `RoadmapEdge` to React Flow `Node` / `Edge`:
 
-Edge style constants (stroke color, width, type) and the “side to side uses straight line vs smoothstep” rule live inside `toFlowEdge`.
+- `RoadmapCanvas` constructed nodes inline and cast them with `as unknown as Node[]`.
+- `RoadmapEditor` used local `toFlowNode` and `toFlowEdge` helpers.
 
-**Suggestion:**  
-Move mapping into a shared helper module (e.g. `components/roadmap/roadmapFlowMapper.ts`):
+Edge style constants (stroke color, width, type) and the “side to side uses straight line vs smoothstep” rule lived inside `toFlowEdge`.
 
-- `toPublicFlowNodes(items, selectedId)`
-- `toAdminFlowNodes(items, selectedId)`
-- `toFlowEdges(edges)` (shared).
+**Change:**  
+Mapping has been centralized into `components/roadmap/roadmapFlowMapper.ts`, which exports:
 
-This reduces casting, de-duplicates edge styling and mapping logic, and centralizes any future changes to handle IDs/handles.
+- `toPublicFlowNodes(items, selectedId)` — builds public read-only nodes with `type: "roadmapNode"`, selection, and `draggable: false`.
+- `toAdminFlowNodes(items, selectedId)` — builds admin nodes with `type: "adminRoadmapNode"` and correctly typed `data`.
+- `toFlowEdges(edges)` — builds edges with shared styling, interaction width, and the side-to-side `"straight"` vs `"smoothstep"` rule, including optional handle IDs.
+
+`RoadmapCanvas` now uses `toPublicFlowNodes` / `toFlowEdges`, and `RoadmapEditor` uses `toAdminFlowNodes` / `toFlowEdges` (including when adding or creating edges), reducing casting, de-duplicating edge styling, and centralizing any future changes to handle IDs/handles.
 
 ---
 

@@ -2,6 +2,7 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
+import { toFlowEdges, toPublicFlowNodes } from "@/components/roadmap/roadmapFlowMapper";
 import {
   Background,
   BackgroundVariant,
@@ -116,35 +117,11 @@ export function RoadmapCanvas({ items, edges }: Props) {
   }, []);
 
   const nodes = useMemo(
-    () =>
-      items.map((item) => ({
-        id: item.id,
-        type: "roadmapNode",
-        position: { x: item.position_x, y: item.position_y },
-        data: item,
-        draggable: false, // public view is read-only
-        selected: selectedItem?.id === item.id,
-      })) as unknown as Node[],
-    [items, selectedItem]
+    () => toPublicFlowNodes(items, selectedItem?.id ?? null) as Node[],
+    [items, selectedItem?.id]
   );
 
-  const flowEdges: Edge[] = useMemo(
-    () =>
-      edges.map((edge) => {
-        const flowEdge: Edge = {
-          id: edge.id,
-          source: edge.source_id,
-          target: edge.target_id,
-          style: { stroke: "var(--border)", strokeWidth: 1.5 },
-          animated: false,
-          type: "smoothstep",
-        };
-        if (edge.source_handle != null) flowEdge.sourceHandle = edge.source_handle;
-        if (edge.target_handle != null) flowEdge.targetHandle = edge.target_handle;
-        return flowEdge;
-      }),
-    [edges]
-  );
+  const flowEdges: Edge[] = useMemo(() => toFlowEdges(edges) as Edge[], [edges]);
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {

@@ -2,6 +2,7 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
+import { toAdminFlowNodes, toFlowEdges } from "@/components/roadmap/roadmapFlowMapper";
 import {
   Background,
   BackgroundVariant,
@@ -33,34 +34,6 @@ interface Props {
   initialEdges: RoadmapEdge[];
 }
 
-function toFlowNode(item: RoadmapItemWithSlug, selectedId: string | null): Node {
-  return {
-    id: item.id,
-    type: "adminRoadmapNode",
-    position: { x: item.position_x, y: item.position_y },
-    data: item as unknown as Record<string, unknown>,
-    selected: item.id === selectedId,
-  };
-}
-
-function toFlowEdge(edge: RoadmapEdge): Edge {
-  const isSideToSide =
-    (edge.source_handle === "left" || edge.source_handle === "right") &&
-    (edge.target_handle === "left" || edge.target_handle === "right");
-
-  return {
-    id: edge.id,
-    source: edge.source_id,
-    target: edge.target_id,
-    sourceHandle: edge.source_handle,
-    targetHandle: edge.target_handle,
-    style: { stroke: "var(--border)", strokeWidth: 1.5 },
-    interactionWidth: 20,
-    animated: false,
-    type: isSideToSide ? "straight" : "smoothstep",
-  };
-}
-
 export function RoadmapEditor({ initialItems, initialEdges }: Props) {
   // itemsById is the metadata source of truth — updated on every successful PATCH
   const [itemsById, setItemsById] = useState<Record<string, RoadmapItemWithSlug>>(() =>
@@ -71,9 +44,9 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
   const selectedItem = selectedId ? (itemsById[selectedId] ?? null) : null;
 
   const [nodes, setNodes, onNodesChange] = useNodesState(
-    initialItems.map((i) => toFlowNode(i, null))
+    toAdminFlowNodes(initialItems, null) as Node[]
   );
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges.map(toFlowEdge));
+  const [edges, setEdges, onEdgesChange] = useEdgesState(toFlowEdges(initialEdges) as Edge[]);
 
   const styledEdges = useMemo(
     () =>
@@ -172,7 +145,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         }
 
         const newEdge: RoadmapEdge = await res.json();
-        setEdges((prev) => [...prev, toFlowEdge(newEdge)]);
+        setEdges((prev) => [...prev, ...(toFlowEdges([newEdge]) as Edge[])]);
         finishSaving(true);
       } catch (err) {
         console.error("[RoadmapEditor] Failed to create edge", err);
@@ -310,7 +283,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     };
 
     setItemsById((prev) => ({ ...prev, [newItem.id]: newItem }));
-    setNodes((prev) => [...prev, toFlowNode(newItem, newItem.id)]);
+    setNodes((prev) => [...prev, ...(toAdminFlowNodes([newItem], newItem.id) as Node[])]);
     setSelectedId(newItem.id);
     finishSaving(true);
   }
