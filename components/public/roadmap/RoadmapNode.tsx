@@ -1,6 +1,6 @@
 "use client";
 
-import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
+import type { RoadmapItemWithSlug } from "@/types/roadmap";
 import {
   ROADMAP_NODE_CONTAINER_STYLE,
   ROADMAP_NODE_TITLE_STYLE,
