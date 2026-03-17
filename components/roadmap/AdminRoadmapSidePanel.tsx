@@ -12,7 +12,7 @@ import {
 } from "@/components/roadmap/roadmapStyles";
 import { formatRoadmapDate } from "@/lib/roadmap-date";
 import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   item: RoadmapItemWithSlug | null;
@@ -51,7 +51,7 @@ export function AdminRoadmapSidePanel({
     setIsGroupCompleted(item?.is_group_completed ?? false);
     setConfirmDelete(false);
     setSaveStatus("idle");
-  }, [item?.id]);
+  }, [item?.id, item?.title, item?.description, item?.linked_page_id, item?.is_group_completed]);
 
   async function patch(fields: Record<string, unknown>) {
     if (!item) return;

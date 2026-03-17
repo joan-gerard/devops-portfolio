@@ -11,11 +11,9 @@ import {
   ROADMAP_TYPE_CONFIG,
 } from "@/components/roadmap/roadmapStyles";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { useRouter } from "next/navigation";
 
 export function RoadmapNode({ data, selected }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
-  const router = useRouter();
   const isGroup = item.type === "group";
   const statusStyles = ROADMAP_STATUS_NODE_STYLES[item.status];
   const typeStyles = ROADMAP_TYPE_CONFIG[item.type];

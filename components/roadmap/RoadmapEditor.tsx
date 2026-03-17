@@ -2,7 +2,6 @@
 
 import type { RoadmapEdge, RoadmapItemWithSlug } from "@/types/roadmap";
 import {
-  ROADMAP_ADMIN_FLOW_PROPS,
   ROADMAP_BACKGROUND_COLOR,
   ROADMAP_BACKGROUND_GAP,
   ROADMAP_BACKGROUND_SIZE,
@@ -12,7 +11,6 @@ import {
 import { toAdminFlowNodes, toFlowEdges } from "@/components/roadmap/roadmapFlowMapper";
 import {
   Background,
-  BackgroundVariant,
   ConnectionMode,
   Controls,
   type Edge,

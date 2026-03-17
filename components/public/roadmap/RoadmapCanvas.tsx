@@ -13,7 +13,6 @@ import {
 } from "@/components/roadmap/roadmapFlowConfig";
 import {
   Background,
-  BackgroundVariant,
   PanOnScrollMode,
   ReactFlow,
   type Edge,
