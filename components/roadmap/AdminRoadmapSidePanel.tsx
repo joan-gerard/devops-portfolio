@@ -10,6 +10,7 @@ import {
   ROADMAP_STATUS_OPTIONS,
   ROADMAP_TYPE_OPTIONS,
 } from "@/components/roadmap/roadmapStyles";
+import { formatRoadmapDate } from "@/lib/roadmap-date";
 import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { useEffect, useRef, useState } from "react";
 
@@ -432,11 +433,7 @@ export function AdminRoadmapSidePanel({
               >
                 Completed{" "}
                 <span style={{ color: "var(--accent)" }}>
-                  {new Date(item.completed_at).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatRoadmapDate(item.completed_at)}
                 </span>
               </div>
             )}

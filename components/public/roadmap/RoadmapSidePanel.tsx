@@ -13,6 +13,7 @@ import {
   ROADMAP_STATUS_LABEL,
   ROADMAP_TYPE_CONFIG,
 } from "@/components/roadmap/roadmapStyles";
+import { formatRoadmapDate } from "@/lib/roadmap-date";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -155,13 +156,7 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
               }}
             >
               Completed{" "}
-              <span style={{ color: "var(--accent)" }}>
-                {new Date(item.completed_at).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
+              <span style={{ color: "var(--accent)" }}>{formatRoadmapDate(item.completed_at)}</span>
             </div>
           )}
 

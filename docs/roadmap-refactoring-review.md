@@ -196,11 +196,20 @@ Both `roadmap-admin.spec.ts` and `roadmap.spec.ts` now import these helpers inst
 
 ## 10. Shared Public/Admin Roadmap Completed Date Formatting
 
-**Current:**  
-Both `RoadmapSidePanel` (public) and `AdminRoadmapSidePanel` format `completed_at` with `toLocaleDateString("en-GB", { day, month, year })` inline.
+**Status:** Completed (March 2026)
 
-**Suggestion:**  
-Extract a tiny `formatRoadmapDate` utility in `lib/roadmap-date.ts` (or similar) and use it in both panels. This keeps date formatting rules for roadmap items in a single place and makes it easier to change locale/format later.
+**Current (before refactor):**  
+Both `RoadmapSidePanel` (public) and `AdminRoadmapSidePanel` formatted `completed_at` inline using `new Date(completed_at).toLocaleDateString("en-GB", { day, month, year })`, duplicating the locale/formatting logic in two places.
+
+**Change:**  
+Date formatting for roadmap items is now centralized:
+
+- `lib/roadmap-date.ts` exports a small `formatRoadmapDate(input)` helper that:
+  - Accepts a `string | Date | null | undefined`.
+  - Returns a formatted `"en-GB"` date string (`"d MMM yyyy"` style) or an empty string for falsy/invalid inputs.
+- Both `components/public/roadmap/RoadmapSidePanel.tsx` and `components/roadmap/AdminRoadmapSidePanel.tsx` now import `formatRoadmapDate` and use it for their `"Completed …"` labels instead of calling `toLocaleDateString` directly.
+
+This keeps roadmap date formatting in a single place and makes future locale/format changes straightforward.
 
 ---
 
