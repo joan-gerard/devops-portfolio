@@ -1,5 +1,10 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleDbError } from "@/lib/api/postgres-errors";
+import { parseJsonObject } from "@/lib/api/json";
+import {
+  type RoadmapEdgeCreatePayload,
+  validateRoadmapEdgePayload,
+} from "@/lib/api/roadmap-validation";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -15,27 +20,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  const json = await parseJsonObject(request);
+  if (json instanceof NextResponse) {
+    return json;
   }
 
-  if (typeof body !== "object" || body === null) {
-    return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+  const payload = validateRoadmapEdgePayload(json);
+  if (payload instanceof NextResponse) {
+    return payload;
   }
 
-  const { source_id, target_id, source_handle, target_handle } = body as {
-    source_id?: string;
-    target_id?: string;
-    source_handle?: string;
-    target_handle?: string;
-  };
-
-  if (!source_id || !target_id) {
-    return NextResponse.json({ error: "source_id and target_id are required" }, { status: 400 });
-  }
+  const { source_id, target_id, source_handle, target_handle }: RoadmapEdgeCreatePayload = payload;
 
   try {
     const rows = await sql`

@@ -1,4 +1,9 @@
 import { handleDbError } from "@/lib/api/postgres-errors";
+import { parseJsonObject } from "@/lib/api/json";
+import {
+  validateRoadmapNodeCreatePayload,
+  type RoadmapNodeCreatePayload,
+} from "@/lib/api/roadmap-validation";
 import { getRoadmapData } from "@/lib/queries/roadmap";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -33,47 +38,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  const json = await parseJsonObject(request);
+  if (json instanceof NextResponse) {
+    return json;
   }
 
-  if (typeof body !== "object" || body === null) {
-    return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+  const payload = validateRoadmapNodeCreatePayload(json);
+  if (payload instanceof NextResponse) {
+    return payload;
   }
 
-  const { title, description, type, status, position_x, position_y } = body as {
-    title?: string;
-    description?: string;
-    type?: string;
-    status?: string;
-    position_x?: number;
-    position_y?: number;
-  };
-
-  if (!title?.trim()) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
-  }
-
-  const allowedTypes = ["learning", "project", "group"];
-  const nodeType = (type ?? "learning") as string;
-  if (!allowedTypes.includes(nodeType)) {
-    return NextResponse.json(
-      { error: `Invalid type. Allowed: ${allowedTypes.join(", ")}` },
-      { status: 400 }
-    );
-  }
+  const { title, description, type, status, position_x, position_y }: RoadmapNodeCreatePayload =
+    payload;
 
   try {
     const isE2ETestRuntime = process.env.E2E_TEST === "1";
     const rows = await sql`
       INSERT INTO roadmap_items (title, description, type, status, position_x, position_y, e2e_only)
       VALUES (
-        ${title.trim()},
+        ${title},
         ${description ?? null},
-        ${nodeType},
+        ${type},
         ${status ?? "not_started"},
         ${position_x ?? 0},
         ${position_y ?? 0},

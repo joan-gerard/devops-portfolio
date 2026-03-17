@@ -1,5 +1,10 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleDbError } from "@/lib/api/postgres-errors";
+import { parseJsonObject } from "@/lib/api/json";
+import {
+  type RoadmapNodePatchPayload,
+  validateRoadmapNodePatchPayload,
+} from "@/lib/api/roadmap-validation";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -22,15 +27,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  const json = await parseJsonObject(request);
+  if (json instanceof NextResponse) {
+    return json;
   }
 
-  if (typeof body !== "object" || body === null) {
-    return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+  const payload = validateRoadmapNodePatchPayload(json);
+  if (payload instanceof NextResponse) {
+    return payload;
   }
 
   const {
@@ -42,49 +46,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     type,
     linked_page_id,
     is_group_completed,
-  } = body as {
-    status?: string;
-    position_x?: number;
-    position_y?: number;
-    title?: string;
-    description?: string;
-    type?: string;
-    linked_page_id?: string | null;
-    is_group_completed?: boolean;
-  };
-
-  const allowedStatus = new Set(["not_started", "in_progress", "completed"]);
-  if (status !== undefined && !allowedStatus.has(status)) {
-    return NextResponse.json(
-      { error: "Invalid status. Allowed: not_started, in_progress, completed" },
-      { status: 400 }
-    );
-  }
-
-  const allowedTypes = ["learning", "project", "group"];
-  if (type !== undefined && !allowedTypes.includes(type)) {
-    return NextResponse.json(
-      { error: `Invalid type. Allowed: ${allowedTypes.join(", ")}` },
-      { status: 400 }
-    );
-  }
-
-  if (position_x !== undefined && typeof position_x !== "number") {
-    return NextResponse.json({ error: "position_x must be a number" }, { status: 400 });
-  }
-  if (position_y !== undefined && typeof position_y !== "number") {
-    return NextResponse.json({ error: "position_y must be a number" }, { status: 400 });
-  }
-
-  const hasLinkedPageIdField = Object.prototype.hasOwnProperty.call(
-    body as Record<string, unknown>,
-    "linked_page_id"
-  );
-
-  const hasIsGroupCompletedField = Object.prototype.hasOwnProperty.call(
-    body as Record<string, unknown>,
-    "is_group_completed"
-  );
+    hasLinkedPageIdField,
+    hasIsGroupCompletedField,
+  }: RoadmapNodePatchPayload = payload;
 
   try {
     const rows = await sql`

@@ -149,22 +149,29 @@ Have `GET /api/roadmap` delegate to `getRoadmapData()` (or a thin variant of it)
 
 ## 8. API Request Body Parsing and Validation Helpers
 
-**Current:**  
-`POST /api/roadmap`, `PATCH /api/roadmap/[id]`, and `POST /api/roadmap/edges` all implement:
+**Status:** Completed (March 2026)
 
-- `try { await request.json() } catch { 400 }`.
-- An object type guard (`typeof body !== "object" || body === null`).
-- Ad hoc checks for allowed status/type values and number fields.
+**Current (before refactor):**  
+`POST /api/roadmap`, `PATCH /api/roadmap/[id]`, and `POST /api/roadmap/edges` each:
 
-The patterns and error messages are very similar, but repeated across multiple route files.
+- Called `request.json()` in a `try/catch` and returned 400 on failure.
+- Performed an inline object type guard (`typeof body !== "object" || body === null`).
+- Implemented ad hoc checks for allowed status/type values and numeric fields directly in the route handlers.
 
-**Suggestion:**  
-Add small API utilities, e.g. in `lib/api/json.ts` or `lib/api/roadmap-validation.ts`:
+The patterns and error messages were very similar but duplicated across multiple route files.
 
-- `parseJsonObject(request): Promise<Record<string, unknown> | NextResponse>` to encapsulate error handling.
-- `validateRoadmapNodePayload(body)` and `validateRoadmapEdgePayload(body)` that return either a normalized typed object or a `NextResponse` error.
+**Change:**  
+Small API utilities now centralize this behavior:
 
-Use them in all roadmap routes to reduce duplication and ensure error responses stay aligned.
+- `lib/api/json.ts` exports `parseJsonObject(request): Promise<Record<string, unknown> | NextResponse>` which:
+  - Handles JSON parsing failures and non-object bodies.
+  - Returns consistent `400` error responses for invalid JSON and non-object payloads.
+- `lib/api/roadmap-validation.ts` exports:
+  - `validateRoadmapNodeCreatePayload(body)` for `POST /api/roadmap`.
+  - `validateRoadmapNodePatchPayload(body)` for `PATCH /api/roadmap/[id]`.
+  - `validateRoadmapEdgePayload(body)` for `POST /api/roadmap/edges`.
+
+Each validator returns either a normalized, typed payload or a `NextResponse` with aligned error messages (e.g. `title is required`, `Invalid status. Allowed: …`, `position_x must be a number`, `source_id and target_id are required`). All three roadmap routes now use these helpers, reducing duplication and keeping request body validation consistent.
 
 ---
 
