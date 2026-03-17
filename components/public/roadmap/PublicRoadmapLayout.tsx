@@ -1,5 +1,10 @@
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import type { RoadmapEdge } from "@/types/roadmap";
+import {
+  ROADMAP_PAGE_CONTAINER_STYLE,
+  ROADMAP_PAGE_HEADING_STYLE,
+  ROADMAP_PAGE_SUBHEADING_STYLE,
+} from "@/components/roadmap/roadmapStyles";
 import { RoadmapCanvas } from "./RoadmapCanvas";
 
 interface Props {
@@ -10,32 +15,9 @@ interface Props {
 export function PublicRoadmapLayout({ items, edges }: Props) {
   return (
     <main style={{ background: "var(--bg)" }} id="roadmap-main-container">
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "48px 24px 24px",
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontSize: 28,
-            fontWeight: 800,
-            color: "var(--text)",
-            marginBottom: 8,
-          }}
-        >
-          Learning Roadmap
-        </h1>
-        <p
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 13,
-            color: "var(--text-muted)",
-            marginBottom: 16,
-          }}
-        >
+      <div style={ROADMAP_PAGE_CONTAINER_STYLE}>
+        <h1 style={ROADMAP_PAGE_HEADING_STYLE}>Learning Roadmap</h1>
+        <p style={ROADMAP_PAGE_SUBHEADING_STYLE}>
           Topics and projects — drag to explore, click a node to open its note.
         </p>
       </div>

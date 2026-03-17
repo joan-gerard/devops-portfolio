@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
 
 export const ROADMAP_STATUS: RoadmapItemStatus[] = ["not_started", "in_progress", "completed"];
@@ -95,3 +96,108 @@ export const ROADMAP_TYPE_OPTIONS: { value: RoadmapItemType; label: string }[] =
   value,
   label: ROADMAP_TYPE_CONFIG[value].label,
 }));
+
+// ── Layout and typography tokens for roadmap ───────────────────────────────────
+
+export const ROADMAP_PAGE_CONTAINER_STYLE: CSSProperties = {
+  maxWidth: 1200,
+  margin: "0 auto",
+  padding: "48px 24px 24px",
+};
+
+export const ROADMAP_PAGE_HEADING_STYLE: CSSProperties = {
+  fontFamily: "var(--font-syne)",
+  fontSize: 28,
+  fontWeight: 800,
+  color: "var(--text)",
+  marginBottom: 8,
+};
+
+export const ROADMAP_PAGE_SUBHEADING_STYLE: CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 13,
+  color: "var(--text-muted)",
+  marginBottom: 16,
+};
+
+export const ROADMAP_NODE_CONTAINER_STYLE: CSSProperties = {
+  borderRadius: 10,
+  padding: "10px 14px",
+  width: 220,
+  position: "relative",
+  transition: "border-color 0.2s, box-shadow 0.2s, transform 0.1s",
+};
+
+export const ROADMAP_NODE_TYPE_ROW_STYLE: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  marginBottom: 8,
+};
+
+export const ROADMAP_NODE_TYPE_BADGE_STYLE: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontFamily: "var(--font-mono)",
+  fontSize: 9,
+  textTransform: "uppercase",
+  letterSpacing: "0.14em",
+  whiteSpace: "nowrap",
+};
+
+export const ROADMAP_NODE_TITLE_STYLE: CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  fontWeight: 600,
+  lineHeight: 1.5,
+};
+
+export const ROADMAP_PANEL_HEADER_STYLE: CSSProperties = {
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  padding: "20px 20px 16px",
+  borderBottom: "1px solid var(--border)",
+  gap: 12,
+};
+
+export const ROADMAP_PANEL_HEADER_TITLE_CONTAINER_STYLE: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+};
+
+export const ROADMAP_PANEL_TITLE_STYLE: CSSProperties = {
+  fontFamily: "var(--font-syne)",
+  fontSize: 16,
+  fontWeight: 700,
+  color: "var(--text)",
+  margin: 0,
+  lineHeight: 1.3,
+};
+
+export const ROADMAP_PANEL_BODY_STYLE: CSSProperties = {
+  padding: 20,
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+};
+
+export const ROADMAP_PANEL_DESCRIPTION_STYLE: CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  color: "var(--text-dim)",
+  lineHeight: 1.7,
+  margin: 0,
+};
+
+export const ROADMAP_PANEL_DESCRIPTION_EMPTY_STYLE: CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  color: "var(--text-muted)",
+  fontStyle: "italic",
+  margin: 0,
+};

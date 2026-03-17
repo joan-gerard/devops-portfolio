@@ -116,16 +116,18 @@ A small `RoadmapFlowConfig` module (`components/roadmap/roadmapFlowConfig.ts`) n
 ## 6. Roadmap Inline Layout and Styles → Tokens
 
 **Current:**  
-`PublicRoadmapLayout`, `RoadmapSidePanel`, `AdminRoadmapSidePanel`, and both node components have large inline style objects for typography, spacing, borders, and backgrounds. Many of these align with the existing public/admin style language (mono font, small uppercase labels, pills) but are defined ad hoc rather than via reusable tokens like `publicPageStyles`.
+`PublicRoadmapLayout`, `RoadmapSidePanel`, `AdminRoadmapSidePanel`, and both node components still have large inline style objects for typography, spacing, borders, and backgrounds. Many of these align with the existing public/admin style language (mono font, small uppercase labels, pills) but are defined ad hoc rather than via reusable layout tokens.
 
-**Suggestion:**  
-Create a dedicated `roadmapStyles.ts` with:
+`components/roadmap/roadmapStyles.ts` now exists and centralizes roadmap status/type tokens, but it does not yet cover layout/spacing/typography primitives for the page, nodes, or panels.
+
+**Suggestion (updated):**  
+Extend `roadmapStyles.ts` to also export layout and typography tokens, for example:
 
 - Shared heading/description styles for the roadmap page.
 - Shared card/node container styles (width, radius, padding).
 - Shared panel layout styles (header row, body spacing, footer).
 
-Use those tokens in the main roadmap components so roadmap stays visually consistent and applies the same design‑token approach as other public/admin pages.
+Gradually migrate inline style objects in `PublicRoadmapLayout`, `RoadmapSidePanel`, `AdminRoadmapSidePanel`, `RoadmapNode`, and `AdminRoadmapNode` to use these tokens so roadmap stays visually consistent and applies the same design‑token approach as other public/admin pages, building on the existing status/type tokens instead of introducing a parallel system.
 
 ---
 

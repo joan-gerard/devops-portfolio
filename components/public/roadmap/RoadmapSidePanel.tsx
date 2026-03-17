@@ -3,6 +3,12 @@
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import { RoadmapSidePanelShell } from "@/components/roadmap/RoadmapSidePanelShell";
 import {
+  ROADMAP_PANEL_BODY_STYLE,
+  ROADMAP_PANEL_DESCRIPTION_EMPTY_STYLE,
+  ROADMAP_PANEL_DESCRIPTION_STYLE,
+  ROADMAP_PANEL_HEADER_STYLE,
+  ROADMAP_PANEL_HEADER_TITLE_CONTAINER_STYLE,
+  ROADMAP_PANEL_TITLE_STYLE,
   ROADMAP_STATUS_COLORS,
   ROADMAP_STATUS_LABEL,
   ROADMAP_TYPE_CONFIG,
@@ -33,17 +39,8 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
       width={320}
       header={
         item && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              padding: "20px 20px 16px",
-              borderBottom: "1px solid var(--border)",
-              gap: 12,
-            }}
-          >
-            <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={ROADMAP_PANEL_HEADER_STYLE}>
+            <div style={ROADMAP_PANEL_HEADER_TITLE_CONTAINER_STYLE}>
               {/* Status + type row — hidden for group nodes on public view */}
               {!isGroup && (
                 <div
@@ -99,12 +96,7 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
               {item && (
                 <h2
                   style={{
-                    fontFamily: "var(--font-syne)",
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: "var(--text)",
-                    margin: 0,
-                    lineHeight: 1.3,
+                    ...ROADMAP_PANEL_TITLE_STYLE,
                   }}
                 >
                   {item.title}
@@ -145,40 +137,12 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
       }
     >
       {item && (
-        <div
-          style={{
-            padding: "20px",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 20,
-          }}
-        >
+        <div style={ROADMAP_PANEL_BODY_STYLE}>
           {/* Description */}
           {item.description ? (
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                color: "var(--text-dim)",
-                lineHeight: 1.7,
-                margin: 0,
-              }}
-            >
-              {item.description}
-            </p>
+            <p style={ROADMAP_PANEL_DESCRIPTION_STYLE}>{item.description}</p>
           ) : (
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                color: "var(--text-muted)",
-                fontStyle: "italic",
-                margin: 0,
-              }}
-            >
-              No description yet.
-            </p>
+            <p style={ROADMAP_PANEL_DESCRIPTION_EMPTY_STYLE}>No description yet.</p>
           )}
 
           {/* Completed date — only for learning/project */}

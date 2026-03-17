@@ -2,6 +2,10 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import {
+  ROADMAP_NODE_CONTAINER_STYLE,
+  ROADMAP_NODE_TITLE_STYLE,
+  ROADMAP_NODE_TYPE_BADGE_STYLE,
+  ROADMAP_NODE_TYPE_ROW_STYLE,
   ROADMAP_STATUS_ICON,
   ROADMAP_STATUS_NODE_STYLES,
   ROADMAP_TYPE_CONFIG,
@@ -29,11 +33,9 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
       <Handle type="source" position={Position.Right} id="right" style={{ opacity: 0.3 }} />
       <div
         style={{
+          ...ROADMAP_NODE_CONTAINER_STYLE,
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
           border: `0.8px solid ${borderColor}`,
-          borderRadius: 10,
-          padding: "10px 14px",
-          width: 220,
           cursor: "grab",
           transition: "border-color 0.15s, box-shadow 0.15s",
           boxShadow: selected
@@ -47,25 +49,15 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
         {!isGroup && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
+              ...ROADMAP_NODE_TYPE_ROW_STYLE,
               marginBottom: 6,
             }}
           >
             <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "2px 8px",
-                borderRadius: 999,
+                ...ROADMAP_NODE_TYPE_BADGE_STYLE,
                 background: typeStyles.badgeBg,
                 color: typeStyles.badgeColor,
-                fontFamily: "var(--font-mono)",
-                fontSize: 9,
-                textTransform: "uppercase",
-                letterSpacing: "0.14em",
               }}
             >
               {typeStyles.label}
@@ -101,11 +93,8 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
         {/* Title */}
         <div
           style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            fontWeight: 600,
+            ...ROADMAP_NODE_TITLE_STYLE,
             color: "var(--text)",
-            lineHeight: 1.5,
           }}
         >
           {item.title}

@@ -2,6 +2,10 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import {
+  ROADMAP_NODE_CONTAINER_STYLE,
+  ROADMAP_NODE_TITLE_STYLE,
+  ROADMAP_NODE_TYPE_BADGE_STYLE,
+  ROADMAP_NODE_TYPE_ROW_STYLE,
   ROADMAP_STATUS_ICON,
   ROADMAP_STATUS_NODE_STYLES,
   ROADMAP_TYPE_CONFIG,
@@ -34,6 +38,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
       <div
         onClick={handleClick}
         style={{
+          ...ROADMAP_NODE_CONTAINER_STYLE,
           background: isGroup ? "var(--surface-2)" : "var(--surface)",
           border: `0.8px solid ${
             isGroup
@@ -44,12 +49,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
                 ? "var(--text)"
                 : statusStyles.border
           }`,
-          borderRadius: 10,
-          padding: "10px 14px",
-          width: 220,
           cursor: isClickable ? "pointer" : "default",
-          position: "relative",
-          transition: "border-color 0.2s, box-shadow 0.2s, transform 0.1s",
           boxShadow:
             isSelected && !isGroup
               ? "0 0 0 1px var(--text), 0 0 14px 2px rgba(248,250,252,0.16)"
@@ -76,29 +76,13 @@ export function RoadmapNode({ data, selected }: NodeProps) {
       >
         {/* Type then status pills — only for non-group nodes */}
         {!isGroup && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              marginBottom: 8,
-            }}
-          >
+          <div style={ROADMAP_NODE_TYPE_ROW_STYLE}>
             {/* Type badge */}
             <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "2px 8px",
-                borderRadius: 999,
+                ...ROADMAP_NODE_TYPE_BADGE_STYLE,
                 background: typeStyles.badgeBg,
                 color: typeStyles.badgeColor,
-                fontFamily: "var(--font-mono)",
-                fontSize: 9,
-                textTransform: "uppercase",
-                letterSpacing: "0.14em",
-                whiteSpace: "nowrap",
               }}
             >
               {typeStyles.label}
@@ -120,11 +104,8 @@ export function RoadmapNode({ data, selected }: NodeProps) {
         {/* Title */}
         <div
           style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            fontWeight: 600,
+            ...ROADMAP_NODE_TITLE_STYLE,
             color: isGroup || item.status === "completed" ? "var(--text)" : statusStyles.labelColor,
-            lineHeight: 1.5,
           }}
         >
           {item.title}

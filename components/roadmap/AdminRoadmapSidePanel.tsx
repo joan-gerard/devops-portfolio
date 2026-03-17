@@ -2,7 +2,14 @@
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import { RoadmapSidePanelShell } from "@/components/roadmap/RoadmapSidePanelShell";
-import { ROADMAP_STATUS_OPTIONS, ROADMAP_TYPE_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import {
+  ROADMAP_PANEL_BODY_STYLE,
+  ROADMAP_PANEL_DESCRIPTION_STYLE,
+  ROADMAP_PANEL_HEADER_STYLE,
+  ROADMAP_PANEL_TITLE_STYLE,
+  ROADMAP_STATUS_OPTIONS,
+  ROADMAP_TYPE_OPTIONS,
+} from "@/components/roadmap/roadmapStyles";
 import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { useEffect, useRef, useState } from "react";
 
@@ -84,21 +91,20 @@ export function AdminRoadmapSidePanel({
         item && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              ...ROADMAP_PANEL_HEADER_STYLE,
               padding: "16px 16px 12px",
-              borderBottom: "1px solid var(--border)",
-              flexShrink: 0,
+              alignItems: "center",
             }}
           >
             <span
               style={{
+                ...ROADMAP_PANEL_TITLE_STYLE,
                 fontFamily: "var(--font-mono)",
                 fontSize: 10,
                 color: "var(--text-muted)",
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
+                fontWeight: 400,
               }}
             >
               Edit node
@@ -147,22 +153,22 @@ export function AdminRoadmapSidePanel({
         <>
           <div
             style={{
+              ...ROADMAP_PANEL_BODY_STYLE,
               padding: 16,
-              display: "flex",
-              flexDirection: "column",
               gap: 16,
-              flex: 1,
             }}
           >
             {/* Title */}
             <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <span
                 style={{
+                  ...ROADMAP_PANEL_TITLE_STYLE,
                   fontFamily: "var(--font-mono)",
                   fontSize: 10,
                   color: "var(--text-muted)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
+                  fontWeight: 400,
                 }}
               >
                 Title
@@ -192,11 +198,13 @@ export function AdminRoadmapSidePanel({
             <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <span
                 style={{
+                  ...ROADMAP_PANEL_TITLE_STYLE,
                   fontFamily: "var(--font-mono)",
                   fontSize: 10,
                   color: "var(--text-muted)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
+                  fontWeight: 400,
                 }}
               >
                 Description
@@ -210,14 +218,11 @@ export function AdminRoadmapSidePanel({
                 }}
                 rows={3}
                 style={{
+                  ...ROADMAP_PANEL_DESCRIPTION_STYLE,
                   background: "var(--surface-2)",
                   border: "1px solid var(--border)",
                   borderRadius: 4,
                   color: "var(--text)",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 12,
-                  padding: "8px 10px",
-                  outline: "none",
                   resize: "vertical",
                   width: "100%",
                   boxSizing: "border-box",
