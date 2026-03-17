@@ -1,84 +1,20 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import {
+  ROADMAP_STATUS_ICON,
+  ROADMAP_STATUS_NODE_STYLES,
+  ROADMAP_TYPE_CONFIG,
+} from "@/components/roadmap/roadmapStyles";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { useRouter } from "next/navigation";
-
-const STATUS_STYLES: Record<
-  RoadmapItemStatus,
-  {
-    border: string;
-    labelColor: string;
-    iconColor: string;
-    dot: string;
-    pillBg: string;
-    pulse: boolean;
-  }
-> = {
-  not_started: {
-    border: "var(--border)",
-    labelColor: "var(--text-muted)",
-    iconColor: "var(--text)",
-    dot: "var(--text-muted)",
-    pillBg: "rgba(148, 163, 184, 0.12)",
-    pulse: false,
-  },
-  in_progress: {
-    border: "var(--accent-2)",
-    labelColor: "var(--text)",
-    iconColor: "var(--accent-2)",
-    dot: "var(--accent-2)",
-    pillBg: "var(--accent-2-dim)",
-    pulse: true,
-  },
-  completed: {
-    border: "var(--accent)",
-    labelColor: "var(--accent)",
-    iconColor: "var(--accent)",
-    dot: "var(--accent)",
-    pillBg: "var(--accent-dim)",
-    pulse: false,
-  },
-};
-
-const STATUS_ICON: Record<RoadmapItemStatus, string> = {
-  not_started: "○",
-  in_progress: "◐",
-  completed: "✓",
-};
-
-const TYPE_STYLES: Record<
-  RoadmapItemType,
-  {
-    label: string;
-    badgeBg: string;
-    badgeColor: string;
-  }
-> = {
-  learning: {
-    label: "Learning",
-    badgeBg: "rgba(56, 189, 248, 0.16)",
-    badgeColor: "#0ea5e9",
-  },
-  project: {
-    label: "Project",
-    badgeBg: "rgba(129, 140, 248, 0.16)",
-    badgeColor: "#6366f1",
-  },
-  group: {
-    label: "Group",
-    badgeBg: "rgba(148, 163, 184, 0.16)",
-    badgeColor: "var(--text-muted)",
-  },
-};
 
 export function RoadmapNode({ data, selected }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
   const router = useRouter();
   const isGroup = item.type === "group";
-  const statusStyles = STATUS_STYLES[item.status];
-  const typeStyles = TYPE_STYLES[item.type];
+  const statusStyles = ROADMAP_STATUS_NODE_STYLES[item.status];
+  const typeStyles = ROADMAP_TYPE_CONFIG[item.type];
   const isSelected = selected ?? false;
   const isClickable = !isGroup && !!item.linked_page_slug;
 
@@ -176,7 +112,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
                 color: statusStyles.iconColor,
               }}
             >
-              {STATUS_ICON[item.status]}
+              {ROADMAP_STATUS_ICON[item.status]}
             </span>
           </div>
         )}

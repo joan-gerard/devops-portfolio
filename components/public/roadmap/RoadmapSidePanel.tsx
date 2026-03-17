@@ -1,20 +1,13 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
+import {
+  ROADMAP_STATUS_COLORS,
+  ROADMAP_STATUS_LABEL,
+  ROADMAP_TYPE_CONFIG,
+} from "@/components/roadmap/roadmapStyles";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
-const STATUS_LABEL: Record<string, string> = {
-  not_started: "Not started",
-  in_progress: "In progress",
-  completed: "Completed",
-};
-
-const STATUS_COLOR: Record<string, string> = {
-  not_started: "var(--text-muted)",
-  in_progress: "var(--accent-2)",
-  completed: "var(--accent)",
-};
 
 interface Props {
   item: RoadmapItemWithSlug | null;
@@ -104,7 +97,7 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                         width: 7,
                         height: 7,
                         borderRadius: "50%",
-                        background: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                        background: ROADMAP_STATUS_COLORS[item.status] ?? "var(--text-muted)",
                         flexShrink: 0,
                         display: "inline-block",
                       }}
@@ -113,12 +106,12 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                       style={{
                         fontFamily: "var(--font-mono)",
                         fontSize: 10,
-                        color: STATUS_COLOR[item.status] ?? "var(--text-muted)",
+                        color: ROADMAP_STATUS_COLORS[item.status] ?? "var(--text-muted)",
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
                       }}
                     >
-                      {STATUS_LABEL[item.status] ?? item.status}
+                      {ROADMAP_STATUS_LABEL[item.status] ?? item.status}
                     </span>
                     <span style={{ color: "var(--border)", fontSize: 10 }}>·</span>
                     <span
@@ -130,7 +123,7 @@ export function RoadmapSidePanel({ item, onClose }: Props) {
                         letterSpacing: "0.1em",
                       }}
                     >
-                      {item.type}
+                      {ROADMAP_TYPE_CONFIG[item.type].label}
                     </span>
                   </div>
                 )}

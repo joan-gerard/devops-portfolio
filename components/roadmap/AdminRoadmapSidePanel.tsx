@@ -1,20 +1,8 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import { ROADMAP_STATUS_OPTIONS, ROADMAP_TYPE_OPTIONS } from "@/components/roadmap/roadmapStyles";
 import { useEffect, useRef, useState } from "react";
-
-const STATUS_OPTIONS: { value: RoadmapItemStatus; label: string; color: string }[] = [
-  { value: "not_started", label: "Not started", color: "var(--text-muted)" },
-  { value: "in_progress", label: "In progress", color: "var(--accent-2)" },
-  { value: "completed", label: "Completed", color: "var(--accent)" },
-];
-
-const TYPE_OPTIONS: { value: RoadmapItemType; label: string }[] = [
-  { value: "learning", label: "Learning" },
-  { value: "project", label: "Project" },
-  { value: "group", label: "Group" },
-];
 
 interface Props {
   item: RoadmapItemWithSlug | null;
@@ -284,7 +272,7 @@ export function AdminRoadmapSidePanel({
                   Type
                 </span>
                 <div style={{ display: "flex", gap: 6 }}>
-                  {TYPE_OPTIONS.map((opt) => (
+                  {ROADMAP_TYPE_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => {
@@ -324,7 +312,7 @@ export function AdminRoadmapSidePanel({
                     Status
                   </span>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {STATUS_OPTIONS.map((opt) => (
+                    {ROADMAP_STATUS_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => {

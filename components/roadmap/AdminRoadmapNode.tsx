@@ -1,70 +1,18 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
-import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import {
+  ROADMAP_STATUS_ICON,
+  ROADMAP_STATUS_NODE_STYLES,
+  ROADMAP_TYPE_CONFIG,
+} from "@/components/roadmap/roadmapStyles";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-
-const STATUS_STYLES: Record<
-  RoadmapItemStatus,
-  {
-    border: string;
-    iconColor: string;
-    pillBg: string;
-  }
-> = {
-  not_started: {
-    border: "var(--border)",
-    iconColor: "var(--text)",
-    pillBg: "rgba(148, 163, 184, 0.12)",
-  },
-  in_progress: {
-    border: "var(--accent-2)",
-    iconColor: "var(--accent-2)",
-    pillBg: "var(--accent-2-dim)",
-  },
-  completed: {
-    border: "var(--accent)",
-    iconColor: "var(--accent)",
-    pillBg: "var(--accent-dim)",
-  },
-};
-
-const STATUS_ICON: Record<RoadmapItemStatus, string> = {
-  not_started: "○",
-  in_progress: "◐",
-  completed: "✓",
-};
-
-const TYPE_STYLES: Record<
-  RoadmapItemType,
-  {
-    label: string;
-    badgeBg: string;
-    badgeColor: string;
-  }
-> = {
-  learning: {
-    label: "Learning",
-    badgeBg: "rgba(56, 189, 248, 0.16)",
-    badgeColor: "#0ea5e9",
-  },
-  project: {
-    label: "Project",
-    badgeBg: "rgba(129, 140, 248, 0.16)",
-    badgeColor: "#6366f1",
-  },
-  group: {
-    label: "Group",
-    badgeBg: "rgba(148, 163, 184, 0.16)",
-    badgeColor: "var(--text-muted)",
-  },
-};
 
 export function AdminRoadmapNode({ data, selected }: NodeProps) {
   const item = data as unknown as RoadmapItemWithSlug;
   const isGroup = item.type === "group";
-  const statusStyles = STATUS_STYLES[item.status];
-  const typeStyles = TYPE_STYLES[item.type];
+  const statusStyles = ROADMAP_STATUS_NODE_STYLES[item.status];
+  const typeStyles = ROADMAP_TYPE_CONFIG[item.type];
   const borderColor = selected
     ? "var(--text)"
     : isGroup
@@ -144,7 +92,7 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
                   lineHeight: 1,
                 }}
               >
-                {STATUS_ICON[item.status]}
+                {ROADMAP_STATUS_ICON[item.status]}
               </span>
             </div>
           </div>
