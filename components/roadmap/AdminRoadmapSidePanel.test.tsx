@@ -41,6 +41,8 @@ describe("AdminRoadmapSidePanel", () => {
         onClose={() => {}}
         onUpdate={() => {}}
         onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
       />
     );
 
@@ -51,7 +53,8 @@ describe("AdminRoadmapSidePanel", () => {
     const item = buildItem();
     const updatedItem = buildItem({ title: "Updated title" });
     const onUpdate = vi.fn();
-    const onSaveStatusChange = vi.fn();
+    const onBeginSaving = vi.fn();
+    const onFinishSaving = vi.fn();
 
     mockFetch.mockResolvedValue({
       ok: true,
@@ -64,7 +67,8 @@ describe("AdminRoadmapSidePanel", () => {
         onClose={() => {}}
         onUpdate={onUpdate}
         onDelete={async () => {}}
-        onSaveStatusChange={onSaveStatusChange}
+        onBeginSaving={onBeginSaving}
+        onFinishSaving={onFinishSaving}
       />
     );
 
@@ -87,8 +91,8 @@ describe("AdminRoadmapSidePanel", () => {
       expect(onUpdate).toHaveBeenCalledWith(updatedItem);
     });
 
-    expect(onSaveStatusChange).toHaveBeenCalledWith("saving");
-    expect(onSaveStatusChange).toHaveBeenCalledWith("saved");
+    expect(onBeginSaving).toHaveBeenCalledTimes(1);
+    expect(onFinishSaving).toHaveBeenCalledWith(true);
   });
 
   it("toggles group completion for group nodes", async () => {
@@ -108,6 +112,8 @@ describe("AdminRoadmapSidePanel", () => {
         onClose={() => {}}
         onUpdate={onUpdate}
         onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
       />
     );
 
@@ -147,6 +153,8 @@ describe("AdminRoadmapSidePanel", () => {
         onClose={() => {}}
         onUpdate={onUpdate}
         onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
       />
     );
 

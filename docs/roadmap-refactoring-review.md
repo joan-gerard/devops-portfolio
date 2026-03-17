@@ -50,16 +50,18 @@ Both `RoadmapSidePanel` (public) and `AdminRoadmapSidePanel` (admin) now import 
 
 ## 3. Shared Roadmap Save Status Handling
 
-**Current:**  
-`RoadmapEditor` defines a local `SaveStatus` union (`"idle" | "saving" | "saved" | "error"`) and manages timers to revert back to idle. `AdminRoadmapSidePanel` defines its own `SaveStatus` type and internal state, then mirrors it outward via `onSaveStatusChange`. `lib/adminSave.ts` already exists with an admin save status model for editor/project pages, but roadmap uses its own mini variant.
+**Status:** Completed (March 2026)
 
-**Suggestion:**  
-Either:
+**Current (before refactor):**  
+`RoadmapEditor` defined a local `SaveStatus` union (`"idle" | "saving" | "saved" | "error"`) and managed timers to revert back to idle. `AdminRoadmapSidePanel` defined its own `SaveStatus` type and internal state, then mirrored it outward via `onSaveStatusChange`. `lib/adminSave.ts` already existed with an admin save status model for editor/project pages, but roadmap used its own mini variant.
 
-- Reuse the existing `SaveStatus` and helpers from `lib/adminSave.ts` for roadmap (if semantics align), or
-- Add a roadmap-specific `useRoadmapSaveStatus` hook that encapsulates the `"idle" | "saving" | "saved" | "error"` state machine and timer management for auto‑reset.
+**Change:**  
+A roadmap-specific `useRoadmapSaveStatus` hook (`hooks/useRoadmapSaveStatus.ts`) now encapsulates the `"idle" | "saving" | "saved" | "error"` state machine and auto‑reset timer:
 
-Use this in both `RoadmapEditor` and `AdminRoadmapSidePanel` so the save badge, timing, and transitions are uniform and easier to tweak.
+- Exposes `saveStatus`, `beginSaving`, `finishSaving`, `setIdle`, and `setError`.
+- Resets back to `"idle"` after a configurable delay (default 2000ms) when a save completes successfully.
+
+`RoadmapEditor` uses this hook to drive the top‑center save badge and passes its `beginSaving` / `finishSaving` helpers into `AdminRoadmapSidePanel`, which calls them from its PATCH/delete actions. This keeps save status handling for roadmap centralized and ensures consistent labels, timing, and transitions between the editor canvas and the admin side panel.
 
 ---
 

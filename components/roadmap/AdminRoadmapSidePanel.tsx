@@ -3,6 +3,7 @@
 import type { RoadmapItemWithSlug } from "@/lib/queries/roadmap";
 import { RoadmapSidePanelShell } from "@/components/roadmap/RoadmapSidePanelShell";
 import { ROADMAP_STATUS_OPTIONS, ROADMAP_TYPE_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { useEffect, useRef, useState } from "react";
 
 interface Props {
@@ -10,19 +11,19 @@ interface Props {
   onClose: () => void;
   onUpdate: (updated: RoadmapItemWithSlug) => void;
   onDelete: (id: string) => Promise<void>;
-  onSaveStatusChange?: (status: SaveStatus) => void;
+  onBeginSaving: () => void;
+  onFinishSaving: (ok: boolean) => void;
 }
-
-type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function AdminRoadmapSidePanel({
   item,
   onClose,
   onUpdate,
   onDelete,
-  onSaveStatusChange,
+  onBeginSaving,
+  onFinishSaving,
 }: Props) {
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveStatus, setSaveStatus] = useState<RoadmapSaveStatus>("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -44,12 +45,10 @@ export function AdminRoadmapSidePanel({
     setSaveStatus("idle");
   }, [item?.id]);
 
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   async function patch(fields: Record<string, unknown>) {
     if (!item) return;
+    onBeginSaving();
     setSaveStatus("saving");
-    onSaveStatusChange?.("saving");
     try {
       const res = await fetch(`/api/roadmap/${item.id}`, {
         method: "PATCH",
@@ -59,16 +58,11 @@ export function AdminRoadmapSidePanel({
       if (!res.ok) throw new Error();
       const updated: RoadmapItemWithSlug = await res.json();
       onUpdate(updated);
+      onFinishSaving(true);
       setSaveStatus("saved");
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      onSaveStatusChange?.("saved");
-      saveTimerRef.current = setTimeout(() => {
-        setSaveStatus("idle");
-        onSaveStatusChange?.("idle");
-      }, 2000);
     } catch {
+      onFinishSaving(false);
       setSaveStatus("error");
-      onSaveStatusChange?.("error");
     }
   }
 

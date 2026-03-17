@@ -20,7 +20,8 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { AdminRoadmapNode } from "./AdminRoadmapNode";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
 import { ViewportZoomDisplay } from "./ViewportZoomDisplay";
@@ -31,8 +32,6 @@ interface Props {
   initialItems: RoadmapItemWithSlug[];
   initialEdges: RoadmapEdge[];
 }
-
-type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 function toFlowNode(item: RoadmapItemWithSlug, selectedId: string | null): Node {
   return {
@@ -88,23 +87,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     [edges]
   );
 
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const beginSaving = useCallback(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    setSaveStatus("saving");
-  }, []);
-
-  const finishSaving = useCallback((ok: boolean) => {
-    if (!ok) {
-      setSaveStatus("error");
-      return;
-    }
-    setSaveStatus("saved");
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
-  }, []);
+  const { saveStatus, beginSaving, finishSaving } = useRoadmapSaveStatus();
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -684,7 +667,8 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         onClose={() => setSelectedId(null)}
         onUpdate={handleItemUpdate}
         onDelete={handleDeleteNode}
-        onSaveStatusChange={setSaveStatus}
+        onBeginSaving={beginSaving}
+        onFinishSaving={finishSaving}
       />
     </div>
   );
