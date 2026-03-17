@@ -46,12 +46,12 @@ const TYPE_STYLES: Record<
   learning: {
     label: "Learning",
     badgeBg: "rgba(56, 189, 248, 0.16)",
-    badgeColor: "#38bdf8",
+    badgeColor: "#0ea5e9",
   },
   project: {
     label: "Project",
-    badgeBg: "rgba(0, 229, 160, 0.12)",
-    badgeColor: "var(--accent)",
+    badgeBg: "rgba(129, 140, 248, 0.16)",
+    badgeColor: "#6366f1",
   },
   group: {
     label: "Group",
