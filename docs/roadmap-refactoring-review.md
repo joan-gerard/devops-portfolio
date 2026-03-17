@@ -26,21 +26,25 @@ All roadmap UIs (`RoadmapNode`, `AdminRoadmapNode`, `RoadmapSidePanel`, and `Adm
 
 ## 2. Shared Slide‑In Side Panel Shell (Admin + Public)
 
-**Current:**  
-`RoadmapSidePanel` and `AdminRoadmapSidePanel` both implement:
+**Status:** Completed (March 2026)
+
+**Current (before refactor):**  
+`RoadmapSidePanel` and `AdminRoadmapSidePanel` both implemented:
 
 - An absolute, right‑hand slide‑in panel with transform/transition.
 - A full-screen backdrop that closes on click.
 - Escape key handling to close.
 - Very similar header rows (title/status vs “Edit node”) and close button styles.
 
-**Suggestion:**  
-Extract a generic slide‑in panel shell, e.g. `RoadmapSidePanelShell` or a reusable `SlideOverPanel` component:
+**Change:**  
+A generic slide‑in panel shell `RoadmapSidePanelShell` (`components/roadmap/RoadmapSidePanelShell.tsx`) now centralizes:
 
 - Props like `isOpen`, `onClose`, `width`, `header`, `children`.
-- Responsible for backdrop, escape handling, and translateX animation.
+- Backdrop rendering and click-to-close behavior.
+- Escape key handling to close.
+- The right-hand slide-in layout and translateX animation.
 
-Use it in both `RoadmapSidePanel` and `AdminRoadmapSidePanel`, which would only own their specific content (status copy, fields, actions).
+Both `RoadmapSidePanel` (public) and `AdminRoadmapSidePanel` (admin) now import and use `RoadmapSidePanelShell`, and only own their specific header/body content (status copy, form fields, actions).
 
 ---
 
