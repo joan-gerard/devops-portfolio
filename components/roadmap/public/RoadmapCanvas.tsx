@@ -23,7 +23,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { RoadmapNode } from "./RoadmapNode";
+import { RoadmapNode } from "@/components/roadmap/nodes/public/RoadmapNode";
 import { RoadmapSidePanel } from "./RoadmapSidePanel";
 
 /** Fixed zoom level for the public roadmap (no zoom in/out). */
