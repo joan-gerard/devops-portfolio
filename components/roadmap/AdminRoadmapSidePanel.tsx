@@ -53,8 +53,8 @@ export function AdminRoadmapSidePanel({
     setSaveStatus("idle");
   }, [item?.id, item?.title, item?.description, item?.linked_page_id, item?.is_group_completed]);
 
-  async function patch(fields: Record<string, unknown>) {
-    if (!item) return;
+  async function patch(fields: Record<string, unknown>): Promise<boolean> {
+    if (!item) return false;
     onBeginSaving();
     setSaveStatus("saving");
     try {
@@ -68,9 +68,11 @@ export function AdminRoadmapSidePanel({
       onUpdate(updated);
       onFinishSaving(true);
       setSaveStatus("saved");
+      return true;
     } catch {
       onFinishSaving(false);
       setSaveStatus("error");
+      return false;
     }
   }
 
@@ -342,10 +344,12 @@ export function AdminRoadmapSidePanel({
                 </span>
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
+                    const previous = isGroupCompleted;
                     const next = !isGroupCompleted;
                     setIsGroupCompleted(next);
-                    patch({ is_group_completed: next });
+                    const ok = await patch({ is_group_completed: next });
+                    if (!ok) setIsGroupCompleted(previous);
                   }}
                   style={{
                     display: "flex",
