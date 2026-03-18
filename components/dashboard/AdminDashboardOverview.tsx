@@ -7,6 +7,8 @@ type AdminDashboardOverviewProps = {
   projectsPublished: number;
   projectsUnpublished: number;
   mediaCount: number;
+  roadmapCompletedLearning: number;
+  roadmapCompletedProject: number;
 };
 
 const cardBaseStyle: React.CSSProperties = {
@@ -40,6 +42,8 @@ export function AdminDashboardOverview({
   projectsPublished,
   projectsUnpublished,
   mediaCount,
+  roadmapCompletedLearning,
+  roadmapCompletedProject,
 }: AdminDashboardOverviewProps) {
   const displayName = userEmail?.trim() || "Admin";
 
@@ -54,6 +58,13 @@ export function AdminDashboardOverview({
   const overviewCards: Array<
     | { label: string; value: number; hint: string; href?: string }
     | { label: string; value: number; unpublished: number; published: number; href?: string }
+    | {
+        label: string;
+        value: number;
+        learningCompleted: number;
+        projectCompleted: number;
+        href?: string;
+      }
   > = [
     {
       label: "Notes",
@@ -69,7 +80,13 @@ export function AdminDashboardOverview({
       published: projectsPublished,
       href: "/admin/projects",
     },
-    { label: "Roadmap", value: 0, hint: "completed", href: "/admin/roadmap" },
+    {
+      label: "Roadmap",
+      value: roadmapCompletedLearning + roadmapCompletedProject,
+      learningCompleted: roadmapCompletedLearning,
+      projectCompleted: roadmapCompletedProject,
+      href: "/roadmap/edit",
+    },
     { label: "Media", value: mediaCount, hint: "files" },
   ];
 
@@ -115,6 +132,15 @@ export function AdminDashboardOverview({
                     <span style={{ whiteSpace: "nowrap" }}>unpublished – {card.unpublished}</span>
                     <span style={{ whiteSpace: "nowrap", color: "var(--accent)" }}>
                       published – {card.published}
+                    </span>
+                  </span>
+                ) : "learningCompleted" in card ? (
+                  <span style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ whiteSpace: "nowrap" }}>
+                      learning – {card.learningCompleted}
+                    </span>
+                    <span style={{ whiteSpace: "nowrap", color: "var(--accent)" }}>
+                      projects – {card.projectCompleted}
                     </span>
                   </span>
                 ) : (
