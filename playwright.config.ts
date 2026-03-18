@@ -23,18 +23,26 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+      testIgnore: [
+        "**/admin-content.spec.ts",
+        "**/destructive.spec.ts",
+        "**/roadmap-admin.spec.ts",
+      ],
     },
     {
       name: "firefox",
       use: { ...devices["Desktop Firefox"] },
-      testIgnore: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+      testIgnore: [
+        "**/admin-content.spec.ts",
+        "**/destructive.spec.ts",
+        "**/roadmap-admin.spec.ts",
+      ],
     },
     // Admin + destructive specs — 1 worker each so they don't race with each other or with parallel specs
     {
       name: "chromium-admin",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: ["**/admin-content.spec.ts", "**/destructive.spec.ts"],
+      testMatch: ["**/admin-content.spec.ts", "**/destructive.spec.ts", "**/roadmap-admin.spec.ts"],
       workers: 1,
       dependencies: ["chromium"],
     },

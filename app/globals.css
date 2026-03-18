@@ -15,6 +15,8 @@
   --border: #232838;
   --accent: #00e5a0;
   --accent-dim: rgba(0, 229, 160, 0.1);
+  --accent-2: #4f46e5;
+  --accent-2-dim: rgba(79, 70, 229, 0.18);
   --text: #e8eaf0;
   --text-dim: #9ca3af;
   --text-muted: #6b7280;
@@ -315,4 +317,35 @@ body {
 .u-text-accent-text-hover:hover,
 .u-text-accent-text-hover:focus-visible {
   color: var(--text);
+}
+
+/* ── React Flow controls (zoom, fit view) – match dark theme ───────────────── */
+.react-flow {
+  --xy-controls-button-background-color-default: var(--surface-2);
+  --xy-controls-button-background-color-hover-default: var(--surface);
+  --xy-controls-button-color-default: var(--text);
+  --xy-controls-button-color-hover-default: var(--text);
+  --xy-controls-button-border-color-default: var(--border);
+  --xy-controls-box-shadow-default: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Hard override in case CSS variables don’t apply (version mismatch) */
+.react-flow__controls button {
+  background-color: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2) !important;
+}
+.react-flow__controls button:hover {
+  background-color: var(--surface) !important;
+}
+
+/* React Flow attribution pill (bottom-right) – match controls styling */
+
+.react-flow__attribution a {
+  background-color: var(--surface-2) !important;
+  color: var(--text-muted) !important;
+  padding: 2px 8px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
 }

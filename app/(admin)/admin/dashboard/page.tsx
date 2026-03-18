@@ -13,6 +13,7 @@ export default async function DashboardPage() {
     [{ notesPublished, notesUnpublished }],
     [{ projectsPublished, projectsUnpublished }],
     [{ count: mediaCount }],
+    [{ roadmapCompletedLearning, roadmapCompletedProject }],
   ] = await Promise.all([
     sql`SELECT
         COUNT(*) FILTER (WHERE published = true)::int AS "notesPublished",
@@ -23,6 +24,10 @@ export default async function DashboardPage() {
         COUNT(*) FILTER (WHERE published = false)::int AS "projectsUnpublished"
       FROM projects`,
     sql`SELECT COUNT(*) FROM media`,
+    sql`SELECT
+        COUNT(*) FILTER (WHERE status = 'completed' AND type = 'learning')::int AS "roadmapCompletedLearning",
+        COUNT(*) FILTER (WHERE status = 'completed' AND type = 'project')::int AS "roadmapCompletedProject"
+      FROM roadmap_items`,
   ]);
 
   return (
@@ -33,6 +38,8 @@ export default async function DashboardPage() {
       projectsPublished={Number(projectsPublished)}
       projectsUnpublished={Number(projectsUnpublished)}
       mediaCount={Number(mediaCount)}
+      roadmapCompletedLearning={Number(roadmapCompletedLearning)}
+      roadmapCompletedProject={Number(roadmapCompletedProject)}
     />
   );
 }

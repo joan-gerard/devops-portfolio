@@ -57,8 +57,8 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
   - **What to test**: `isAllowedProjectUrlScheme`: accepts `http:` and `https:` URLs; rejects empty, whitespace, non-string, and URLs over max length (2048); rejects disallowed schemes (`javascript:`, `data:`, `file:`); rejects invalid URL strings; trims before parsing. `normalizeProjectUrl`: null/undefined/blank → null; non-blank string trimmed; non-string → null.
   - **Why**: Prevents XSS when project links (e.g. github_url, live_url) are rendered as `href`; security-sensitive.
 
-- **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`).
-  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, the three query functions return `null`/`[]` and log a warning; otherwise they rethrow. Also verify that when `IS_PRERENDER_BUILD === "true"` but the error is not a connection/aggregate error, the original error is still rethrown. This logic is subtle and directly impacts build reliability; tests can drive the suggested `withPrerenderFallback` refactor from your doc.
+- **Prerender fallback helpers & DB error utilities** – `lib/db-errors.ts`, `lib/api/postgres-errors.ts`, and the pattern in queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`, `getHomepageData`, `getRoadmapData`).
+  - **What to test**: When `IS_PRERENDER_BUILD === "true"` and `isConnectionErrorOrAggregate(error)` is true, those query functions return `null`/`[]`/empty data and log a warning; otherwise they rethrow. Also verify that when `IS_PRERENDER_BUILD === "true"` but the error is not a connection/aggregate error, the original error is still rethrown. This logic is subtle and directly impacts build reliability.
 
 - **Login submission logic** – `lib/submitLogin.ts`
   - **What to test**: When `signIn` returns `{ error: AUTH_ERROR_SERVICE_UNAVAILABLE }`, you map to the friendly “Sign-in is temporarily unavailable…” message; when it returns other `error` values you `decodeURIComponent` them; when no error you return `{ ok: true }`; when `signIn` throws you log and return `{ ok: false, error: DEFAULT_ERROR_MESSAGE }`. Mock `next-auth/react`’s `signIn` in unit tests.
@@ -71,7 +71,7 @@ These are low-friction, high-value tests: pure functions or simple I/O boundarie
 
 - **Home page constants and selection logic** – `lib/constants/home.ts`, `lib/queries/home.ts`
   - **What to test**: Any logic that selects “featured projects” or “recent notes” (once you confirm contents); ensure correct filtering/sorting and max counts.
-  - **Done:** `lib/__tests__/home.test.ts` — constants (TECH_STACK, ROADMAP_PHASES); `getHomepageData()` returns notes and projects from mocked `sql`, and the test asserts the actual SQL passed to the mock: notes query includes `WHERE published = true`, `slug != 'about'`, and `LIMIT 3`; projects query includes `WHERE published = true` and `LIMIT 3`.
+  - **Done:** `lib/__tests__/home.test.ts` — constants (TECH_STACK, ROADMAP_PHASES); `getHomepageData()` returns notes and projects from mocked `sql` (and now uses `withPrerenderFallback` for CI build resilience), and the test asserts the actual SQL passed to the mock: notes query includes `WHERE published = true`, `slug != 'about'`, and `LIMIT 3`; projects query includes `WHERE published = true` and `LIMIT 3`.
 
 ---
 
@@ -84,6 +84,9 @@ You can test these with either **integration tests** against a test DB or **high
 
 - **Project queries** – `lib/queries/project.ts`
   - **Done:** `lib/queries/__tests__/project.test.ts` — `getAllProjects`, `getAllPublishedProjects` (with prerender fallback), `getProjectById`, `getProjectBySlug` return expected shapes or `null`; connection-error + prerender returns `[]` for `getAllPublishedProjects`, while non-connection errors are rethrown even during prerender builds.
+
+- **Roadmap queries** – `lib/queries/roadmap.ts`
+  - **Done:** `getRoadmapData` uses `withPrerenderFallback` with fallback `{ items: [], edges: [] }` so the roadmap page prerenders in CI without a DB.
 
 - **Auth and login-attempt tracking** – `lib/queries/loginAttempts.ts`, `lib/auth.ts`
   - **Done:** `lib/queries/__tests__/loginAttempts.test.ts` — `checkRateLimit(undefined)` returns `{ allowed: true }` without calling sql; with IP: no record → insert and allow; expired window → reset and allow; within window under limit → increment and allow; at/over limit → `{ allowed: false, minutesLeft }`. `clearRateLimit(undefined)` no-ops; with IP calls sql. (`AUTH_ERROR_SERVICE_UNAVAILABLE` mapping is covered in `lib/__tests__/submitLogin.test.ts`.)
@@ -133,6 +136,12 @@ Use **React Testing Library** (with a `jsdom` environment).
 ## 5. End-to-End (E2E) Scenarios — done
 
 Using Playwright after basic tooling is in place.
+
+- **Roadmap (public + admin)**
+  - **What to test**:
+    - **Public `/roadmap`**: canvas mounts; clicking a node opens the side panel; clicking the same node again closes it; when a node has a linked slug, the side panel shows a “View note/project” action and navigation works.
+    - **Admin `/roadmap/edit`**: login required; clicking a node opens the edit side panel; editing title shows “Saved” and persists after refresh; toggling group completion persists after refresh.
+  - **Why**: The roadmap is interaction-heavy (React Flow canvas + side panels + API writes). A small number of focused E2E tests catches regressions in React Flow integration, auth, API routes, and DB persistence that unit/component tests can’t fully cover.
 
 - **Public read-only flows**
   - **What to test**: Visit home page and see recent notes and featured projects sections; clicking a project card goes to the project detail page. Visit `/notes`: list of notes appears; clicking a note shows detail; tag filter changes visible notes. 404 / error states behave as intended.
@@ -207,11 +216,11 @@ You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
 
 **E2E-only content behaviour (shared DB without staging):**
 
-- **Schema:** A migration adds `e2e_only BOOLEAN NOT NULL DEFAULT FALSE` to both `pages` and `projects`.
-- **Marking E2E content:** When the app runs with `E2E_TEST=1`, the `POST /api/pages` and `POST /api/projects` routes insert new rows with `e2e_only = true`. The `PATCH /api/pages/[id]` and `PATCH /api/projects/[id]` routes also set `e2e_only = true` when a request (in E2E mode) publishes an entity (`published` explicitly `true` in the body).
-- **Public queries:** All public-facing queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`, `getProjectBySlug`, and `getHomepageData`) add `AND e2e_only = false` to their `WHERE` clauses **unless** `E2E_TEST=1`. In E2E mode the filter is omitted so tests can assert that freshly created notes/projects are visible on `/notes/:slug`, `/projects/:slug`, and in listings.
-- **Public API GETs:** Unauthenticated `GET /api/pages`, `GET /api/projects`, `GET /api/pages/[id]`, and `GET /api/projects/[id]` also exclude `e2e_only` rows when not in E2E mode, so API consumers never see test content in normal dev/prod.
-- **Implication:** You can safely run Playwright E2E against the live database (shared with prod) without polluting real public views; any “E2E Note …” or “E2E Project …” that was created and published during tests is effectively hidden outside of E2E runs.
+- **Schema:** A migration adds `e2e_only BOOLEAN NOT NULL DEFAULT FALSE` to both `pages` and `projects`, and to `roadmap_items` so roadmap nodes created during E2E runs can also be hidden outside of E2E.
+- **Marking E2E content:** When the app runs with `E2E_TEST=1`, the `POST /api/pages`, `POST /api/projects`, and `POST /api/roadmap` routes insert new rows with `e2e_only = true`. The `PATCH /api/pages/[id]` and `PATCH /api/projects/[id]` routes also set `e2e_only = true` when a request (in E2E mode) publishes an entity (`published` explicitly `true` in the body).
+- **Public queries:** All public-facing queries (`getNoteBySlug`, `getAllPublishedNotes`, `getAllPublishedProjects`, `getProjectBySlug`, `getHomepageData`, and `getRoadmapData`) add `AND e2e_only = false` (or an equivalent `WHERE` clause) to their `WHERE` clauses **unless** `E2E_TEST=1`. In E2E mode the filter is omitted so tests can assert that freshly created notes/projects/roadmap nodes are visible on `/notes/:slug`, `/projects/:slug`, `/roadmap`, and in listings.
+- **Public API GETs:** Unauthenticated `GET /api/pages`, `GET /api/projects`, `GET /api/pages/[id]`, `GET /api/projects/[id]`, and `GET /api/roadmap` also exclude `e2e_only` rows when not in E2E mode, so API consumers never see test content in normal dev/prod.
+- **Implication:** You can safely run Playwright E2E against the live database (shared with prod) without polluting real public views; any “E2E Note …”, “E2E Project …”, or “E2E Roadmap …” entities that were created and published during tests are effectively hidden outside of E2E runs.
 
 **E2E project layout (playwright.config.ts):** Auth, public, and smoke specs run in parallel (`chromium` / `firefox` projects with default workers). Admin-content and destructive specs run in a single admin project (`chromium-admin`) with `workers: 1` and a `dependency` on the base Chromium project, so they run after the parallel suite and avoid cross-browser data races against shared admin state.
 

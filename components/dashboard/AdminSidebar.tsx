@@ -70,7 +70,7 @@ const navItems = [
   },
   {
     label: "Roadmap",
-    href: "/admin/roadmap/edit",
+    href: "/roadmap/edit",
     icon: (
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
         <circle cx="3" cy="4" r="1.5" stroke="currentColor" strokeWidth="1.2" />
