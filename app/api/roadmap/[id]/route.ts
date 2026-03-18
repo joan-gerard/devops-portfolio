@@ -94,8 +94,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           ELSE is_group_completed
         END,
         completed_at   = CASE
-          WHEN (${status ?? null})::text = 'completed' THEN NOW()
-          WHEN (${status ?? null})::text IS NOT NULL   THEN NULL
+          WHEN ${hasStatusField} AND (${status ?? null})::text = 'completed' THEN NOW()
+          WHEN ${hasStatusField} AND (${status ?? null})::text IS NOT NULL   THEN NULL
           ELSE completed_at
         END,
         updated_at = NOW()
