@@ -1,4 +1,4 @@
-import { PublicRoadmapLayout } from "@/components/public/roadmap";
+import { PublicRoadmapLayout } from "@/components/roadmap/public";
 import { getRoadmapData } from "@/lib/queries/roadmap";
 
 export const revalidate = 60;
