@@ -1,7 +1,7 @@
 "use client";
 
 import type { RoadmapItemWithSlug } from "@/types/roadmap";
-import { RoadmapSidePanelShell } from "@/components/roadmap/RoadmapSidePanelShell";
+import { RoadmapSidePanelShell } from "@/components/roadmap/panels/RoadmapSidePanelShell";
 import {
   ROADMAP_PANEL_BODY_STYLE,
   ROADMAP_PANEL_DESCRIPTION_EMPTY_STYLE,

@@ -29,7 +29,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { AdminRoadmapNode } from "@/components/roadmap/nodes/admin/AdminRoadmapNode";
-import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
+import { AdminRoadmapSidePanel } from "@/components/roadmap/panels/admin/AdminRoadmapSidePanel";
 import { ViewportZoomDisplay } from "./ViewportZoomDisplay";
 
 const nodeTypes = { adminRoadmapNode: AdminRoadmapNode };

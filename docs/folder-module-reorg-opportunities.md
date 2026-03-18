@@ -26,19 +26,25 @@ Status: Implemented by adding `components/roadmap/handles.ts`, moving public/adm
 ## 3. Reorganize roadmap side panels into a shared panels folder
 
 - Current:
-  - `components/roadmap/public/RoadmapSidePanel.tsx`
-  - `components/roadmap/AdminRoadmapSidePanel.tsx`
-  - shared shell already exists as `components/roadmap/RoadmapSidePanelShell.tsx`
+  - public side panel: `components/roadmap/panels/public/RoadmapSidePanel.tsx`
+  - admin side panel: `components/roadmap/panels/admin/AdminRoadmapSidePanel.tsx`
+  - shared shell: `components/roadmap/panels/RoadmapSidePanelShell.tsx`
 - Opportunity:
   - move the public and admin side panels into `components/roadmap/panels/public` and `components/roadmap/panels/admin` (or similar)
   - keep `RoadmapSidePanelShell` in the same panels feature area
 - No behavior changes: panel props, layout, and styles remain unchanged; imports/barrel exports are the main changes.
 
+Status: Implemented by moving both public/admin side panels and the shared `RoadmapSidePanelShell` into `components/roadmap/panels/*` and updating roadmap imports/barrels accordingly.
+
 ## 4. Extract roadmap "public vs admin" presentation modules without touching mapper behavior
 
 - Current:
   - `components/roadmap/roadmapFlowMapper.ts` already centralizes React Flow mapping (`toPublicFlowNodes`, `toAdminFlowNodes`, `toFlowEdges`).
-  - public presentation components live under `components/roadmap/public/`, while admin presentation components are still mostly in `components/roadmap/` root.
+  - public presentation components live under `components/roadmap/public/`.
+  - admin presentation components are split:
+    - editor still lives in `components/roadmap/` root
+    - admin side panel now lives under `components/roadmap/panels/admin/`
+    - admin node component now lives under `components/roadmap/nodes/admin/`
 - Opportunity:
   - keep `roadmapFlowMapper.ts` as-is, but align module ownership by moving admin presentation components into a symmetric folder (e.g. `components/roadmap/admin/*`) to match `components/roadmap/public/*`.
 - No behavior changes: the mapper API should stay identical; this is a navigation + ownership refactor.
@@ -73,6 +79,7 @@ Status: Implemented by adding `components/roadmap/handles.ts`, moving public/adm
 ## 7. Add missing barrel exports for roadmap subfolders
 
 - Current: roadmap has `components/roadmap/index.ts` (admin/editor exports) and `components/roadmap/public/index.ts` (public exports). When reorganizing further into deeper folders (nodes/panels/public/admin), it's still easy to miss exports or create inconsistent import paths.
+- Current (now): `components/roadmap/nodes/` exists, but it does not currently provide a consistent barrel-export surface (e.g. no `index.ts` at each node subfolder level).
 - Opportunity:
   - ensure each new roadmap subfolder has an `index.ts` barrel where appropriate
   - keep top-level feature exports stable (or provide compatibility re-exports)
