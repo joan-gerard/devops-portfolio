@@ -46,6 +46,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     type,
     linked_page_id,
     is_group_completed,
+    hasTitleField,
+    hasDescriptionField,
+    hasTypeField,
+    hasStatusField,
+    hasPositionXField,
+    hasPositionYField,
     hasLinkedPageIdField,
     hasIsGroupCompletedField,
   }: RoadmapNodePatchPayload = payload;
@@ -55,12 +61,30 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     WITH updated AS (
       UPDATE roadmap_items
       SET
-        title          = COALESCE(${title ?? null}, title),
-        description    = COALESCE(${description ?? null}, description),
-        type           = COALESCE(${type ?? null}, type),
-        status         = COALESCE(${status ?? null}, status),
-        position_x     = COALESCE(${position_x ?? null}, position_x),
-        position_y     = COALESCE(${position_y ?? null}, position_y),
+        title = CASE
+          WHEN ${hasTitleField} THEN ${title ?? null}
+          ELSE title
+        END,
+        description = CASE
+          WHEN ${hasDescriptionField} THEN ${description ?? null}
+          ELSE description
+        END,
+        type = CASE
+          WHEN ${hasTypeField} THEN ${type ?? null}
+          ELSE type
+        END,
+        status = CASE
+          WHEN ${hasStatusField} THEN ${status ?? null}
+          ELSE status
+        END,
+        position_x = CASE
+          WHEN ${hasPositionXField} THEN ${position_x ?? null}
+          ELSE position_x
+        END,
+        position_y = CASE
+          WHEN ${hasPositionYField} THEN ${position_y ?? null}
+          ELSE position_y
+        END,
         linked_page_id = CASE
           WHEN ${hasLinkedPageIdField} THEN ${linked_page_id ?? null}
           ELSE linked_page_id

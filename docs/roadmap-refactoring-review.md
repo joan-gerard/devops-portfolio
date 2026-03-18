@@ -173,6 +173,8 @@ Small API utilities now centralize this behavior:
 
 Each validator returns either a normalized, typed payload or a `NextResponse` with aligned error messages (e.g. `title is required`, `Invalid status. Allowed: …`, `position_x must be a number`, `source_id and target_id are required`). All three roadmap routes now use these helpers, reducing duplication and keeping request body validation consistent.
 
+**Note:** `validateRoadmapNodePatchPayload` also tracks whether each field is _present_ in the PATCH payload (even if `null`) so nullable columns like `description` can be explicitly cleared (set to `NULL`) without being treated as “no-op”.
+
 ---
 
 ## 9. Roadmap E2E Helper Consolidation

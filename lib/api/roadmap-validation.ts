@@ -27,10 +27,19 @@ export interface RoadmapNodePatchPayload {
   linked_page_id?: string | null;
   is_group_completed?: boolean;
   /**
-   * These flags are used to distinguish between an explicit
-   * `linked_page_id: null` / `is_group_completed: null` and
-   * the field simply not being present.
+   * These flags are used to distinguish between a field being explicitly
+   * present in the PATCH payload (including `null`) and the field simply
+   * not being present at all.
+   *
+   * This is important for nullable columns: e.g. description can be cleared
+   * by sending `description: null`, and the API must not treat that as “no-op”.
    */
+  hasTitleField: boolean;
+  hasDescriptionField: boolean;
+  hasTypeField: boolean;
+  hasStatusField: boolean;
+  hasPositionXField: boolean;
+  hasPositionYField: boolean;
   hasLinkedPageIdField: boolean;
   hasIsGroupCompletedField: boolean;
 }
@@ -127,23 +136,55 @@ export function validateRoadmapNodePatchPayload(
   }
 
   const recordBody = body as JsonObject;
+  const hasTitleField = Object.prototype.hasOwnProperty.call(recordBody, "title");
+  const hasDescriptionField = Object.prototype.hasOwnProperty.call(recordBody, "description");
+  const hasTypeField = Object.prototype.hasOwnProperty.call(recordBody, "type");
+  const hasStatusField = Object.prototype.hasOwnProperty.call(recordBody, "status");
+  const hasPositionXField = Object.prototype.hasOwnProperty.call(recordBody, "position_x");
+  const hasPositionYField = Object.prototype.hasOwnProperty.call(recordBody, "position_y");
   const hasLinkedPageIdField = Object.prototype.hasOwnProperty.call(recordBody, "linked_page_id");
   const hasIsGroupCompletedField = Object.prototype.hasOwnProperty.call(
     recordBody,
     "is_group_completed"
   );
 
+  if (hasTitleField) {
+    if (typeof title !== "string" || !title.trim()) {
+      return NextResponse.json({ error: "title must be a non-empty string" }, { status: 400 });
+    }
+  }
+
+  let normalizedDescription: string | null | undefined = undefined;
+  if (hasDescriptionField) {
+    if (typeof description === "string") {
+      const trimmed = description.trim();
+      normalizedDescription = trimmed ? trimmed : null;
+    } else if (description === null) {
+      normalizedDescription = null;
+    } else if (description === undefined) {
+      // Explicit `description: undefined` is unusual but treat it as a no-op.
+      normalizedDescription = undefined;
+    } else {
+      return NextResponse.json({ error: "description must be a string or null" }, { status: 400 });
+    }
+  }
+
   return {
     status: typeof status === "string" ? (status as RoadmapStatus) : undefined,
     position_x: typeof position_x === "number" ? position_x : undefined,
     position_y: typeof position_y === "number" ? position_y : undefined,
-    title: typeof title === "string" ? title : undefined,
-    description:
-      typeof description === "string" ? description : description == null ? null : undefined,
+    title: typeof title === "string" ? title.trim() : undefined,
+    description: normalizedDescription,
     type: typeof type === "string" ? (type as RoadmapType) : undefined,
     linked_page_id:
       typeof linked_page_id === "string" || linked_page_id === null ? linked_page_id : undefined,
     is_group_completed: typeof is_group_completed === "boolean" ? is_group_completed : undefined,
+    hasTitleField,
+    hasDescriptionField,
+    hasTypeField,
+    hasStatusField,
+    hasPositionXField,
+    hasPositionYField,
     hasLinkedPageIdField,
     hasIsGroupCompletedField,
   };

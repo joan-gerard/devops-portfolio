@@ -57,6 +57,31 @@ test.describe("Roadmap (admin)", () => {
 
     await expect(page.getByText(/^saved$/i).first()).toBeVisible({ timeout: 12000 });
 
+    // Edit description, then clear it (null), and confirm it persists.
+    // Ensure the panel is still open and fields are interactable.
+    await expect(page.getByText(/edit node/i)).toBeVisible();
+    const descriptionInput = page.getByRole("textbox", { name: /^description$/i });
+    await descriptionInput.fill("E2E description to be cleared");
+    await descriptionInput.blur();
+    await expect(page.getByText(/^saved$/i).first()).toBeVisible({ timeout: 12000 });
+
+    await page.reload();
+    await page.getByText(newTitle).first().click();
+    await expect(page.getByText(/edit node/i)).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /^description$/i })).toHaveValue(
+      "E2E description to be cleared"
+    );
+
+    const descriptionInput2 = page.getByRole("textbox", { name: /^description$/i });
+    await descriptionInput2.fill("");
+    await descriptionInput2.blur();
+    await expect(page.getByText(/^saved$/i).first()).toBeVisible({ timeout: 12000 });
+
+    await page.reload();
+    await page.getByText(newTitle).first().click();
+    await expect(page.getByText(/edit node/i)).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /^description$/i })).toHaveValue("");
+
     // Refresh and confirm persisted title appears on the canvas.
     await page.reload();
     await expect(page.getByText(newTitle).first()).toBeVisible({ timeout: 10000 });
