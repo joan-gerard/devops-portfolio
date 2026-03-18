@@ -10,6 +10,8 @@ Scope: structural refactors only (moving/renaming modules and folders, improving
   - keep `components/roadmap/admin/*` (or `components/roadmap/editor/*`) for what is currently in `components/roadmap/*`
 - No behavior changes: re-export from the old entry points (or update only local imports) so the rendered UI and props remain identical.
 
+Status: Implemented by moving the public roadmap components + tests into `components/roadmap/public/` and updating imports to point at the new barrel (legacy `components/public/roadmap/` barrel removed).
+
 ## 2. Clarify roadmap "node" variants and contracts
 
 - Current: `components/public/roadmap/RoadmapNode.tsx` and `components/roadmap/AdminRoadmapNode.tsx` are near-duplicates with subtle differences. The public node includes a comment that Handle IDs must match the admin node so editor edges connect.
