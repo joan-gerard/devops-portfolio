@@ -24,13 +24,16 @@ function buildItem(overrides: Partial<RoadmapItemWithSlug> = {}): RoadmapItemWit
 }
 
 const mockFetch = vi.fn();
+let originalFetch: typeof globalThis.fetch;
 
 describe("AdminRoadmapSidePanel", () => {
   beforeEach(() => {
+    originalFetch = globalThis.fetch;
     (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
   });
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     vi.resetAllMocks();
   });
 
