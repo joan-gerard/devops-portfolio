@@ -73,5 +73,13 @@ export async function patchRoadmapItem(page: Page, id: string, fields: Record<st
 }
 
 export async function deleteRoadmapItem(page: Page, id: string) {
-  await page.request.delete(`/api/roadmap/${id}`);
+  const res = await page.request.delete(`/api/roadmap/${id}`);
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "<unreadable response body>");
+    throw new Error(
+      `deleteRoadmapItem failed for id=${id}: ${res.status()} ${res.statusText()}\n${body}`
+    );
+  }
+
+  expect(res.ok()).toBeTruthy();
 }
