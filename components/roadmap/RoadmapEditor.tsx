@@ -26,13 +26,14 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
 import { AdminRoadmapNode } from "./AdminRoadmapNode";
 import { AdminRoadmapSidePanel } from "./AdminRoadmapSidePanel";
 import { ViewportZoomDisplay } from "./ViewportZoomDisplay";
 
 const nodeTypes = { adminRoadmapNode: AdminRoadmapNode };
+const ROADMAP_INTERACTIVITY_STORAGE_KEY = "devops-portfolio:roadmap-editor:isInteractive";
 
 interface Props {
   initialItems: RoadmapItemWithSlug[];
@@ -45,6 +46,7 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     Object.fromEntries(initialItems.map((i) => [i.id, i]))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isInteractive, setIsInteractive] = useState(true);
 
   const selectedItem = selectedId ? (itemsById[selectedId] ?? null) : null;
 
@@ -52,6 +54,26 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     toAdminFlowNodes(initialItems, null) as Node[]
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState(toFlowEdges(initialEdges) as Edge[]);
+
+  // Persist the lock (interactivity) toggle across refreshes.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(ROADMAP_INTERACTIVITY_STORAGE_KEY);
+      if (raw == null) return;
+      const parsed = JSON.parse(raw) as unknown;
+      if (typeof parsed === "boolean") setIsInteractive(parsed);
+    } catch (err) {
+      console.warn("[RoadmapEditor] Failed to read interactivity setting", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(ROADMAP_INTERACTIVITY_STORAGE_KEY, JSON.stringify(isInteractive));
+    } catch (err) {
+      console.warn("[RoadmapEditor] Failed to persist interactivity setting", err);
+    }
+  }, [isInteractive]);
 
   const styledEdges = useMemo(
     () =>
@@ -386,6 +408,9 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
         nodes={nodes}
         edges={styledEdges}
         connectionMode={ConnectionMode.Loose}
+        nodesDraggable={isInteractive}
+        nodesConnectable={isInteractive}
+        elementsSelectable={isInteractive}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -415,6 +440,8 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
             borderRadius: 6,
           }}
           fitViewOptions={{ padding: 0.2 }}
+          showInteractive
+          onInteractiveChange={setIsInteractive}
         />
         <Panel position="top-right">
           <ViewportZoomDisplay />
