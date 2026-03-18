@@ -1,6 +1,6 @@
 "use client";
 
-import type { RoadmapItemWithSlug } from "@/types/roadmap";
+import { DescriptionIcon, ExternalLinkIcon } from "@/components/icons/indicators";
 import {
   ROADMAP_NODE_CONTAINER_STYLE,
   ROADMAP_NODE_TITLE_STYLE,
@@ -10,6 +10,7 @@ import {
   ROADMAP_STATUS_NODE_STYLES,
   ROADMAP_TYPE_CONFIG,
 } from "@/components/roadmap/roadmapStyles";
+import type { RoadmapItemWithSlug } from "@/types/roadmap";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 export function AdminRoadmapNode({ data, selected }: NodeProps) {
@@ -17,6 +18,8 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
   const isGroup = item.type === "group";
   const statusStyles = ROADMAP_STATUS_NODE_STYLES[item.status];
   const typeStyles = ROADMAP_TYPE_CONFIG[item.type];
+  const hasLinkedPage = !!item.linked_page_slug;
+  const hasDescription = (item.description ?? "").trim().length > 0;
   const borderColor = selected
     ? "var(--text)"
     : isGroup
@@ -64,16 +67,36 @@ export function AdminRoadmapNode({ data, selected }: NodeProps) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {item.linked_page_slug && (
+              {hasLinkedPage && (
                 <span
+                  role="img"
+                  aria-label="Linked page added"
+                  title="Linked page added"
                   style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 9,
-                    color: "var(--accent)",
+                    color: "var(--text-muted)",
                     whiteSpace: "nowrap",
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
                   }}
                 >
-                  linked ↗
+                  <ExternalLinkIcon size={13} />
+                </span>
+              )}
+              {hasDescription && (
+                <span
+                  role="img"
+                  aria-label="Description added"
+                  title="Description added"
+                  style={{
+                    color: "var(--text-muted)",
+                    whiteSpace: "nowrap",
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <DescriptionIcon size={13} />
                 </span>
               )}
               <span

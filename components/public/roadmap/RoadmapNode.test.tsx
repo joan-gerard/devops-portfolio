@@ -21,7 +21,7 @@ function buildItem(overrides: Partial<RoadmapItemWithSlug> = {}): RoadmapItemWit
   const base: RoadmapItemWithSlug = {
     id: "item-1",
     title: "My Node",
-    description: "Desc",
+    description: null,
     type: "learning",
     status: "not_started",
     position_x: 10,
@@ -41,6 +41,7 @@ function renderNode(opts: {
   type?: RoadmapItemType;
   status?: RoadmapItemStatus;
   linked_page_slug?: string | null;
+  description?: string | null;
   is_group_completed?: boolean;
   selected?: boolean;
 }) {
@@ -48,11 +49,12 @@ function renderNode(opts: {
     type = "learning",
     status = "not_started",
     linked_page_slug = null,
+    description = null,
     is_group_completed = false,
     selected = false,
   } = opts;
 
-  const item = buildItem({ type, status, linked_page_slug, is_group_completed });
+  const item = buildItem({ type, status, linked_page_slug, description, is_group_completed });
 
   const nodeProps = {
     id: item.id,
@@ -71,6 +73,30 @@ describe("RoadmapNode", () => {
     expect(screen.getByText("Project")).toBeInTheDocument();
     expect(screen.getByText("◐")).toBeInTheDocument();
     expect(screen.getByText("My Node")).toBeInTheDocument();
+  });
+
+  it("renders linked page and description indicators for non-group nodes", () => {
+    renderNode({
+      type: "project",
+      status: "in_progress",
+      linked_page_slug: "my-linked-note",
+      description: "Has some description",
+    });
+
+    expect(screen.getByLabelText("Linked page added")).toBeInTheDocument();
+    expect(screen.getByLabelText("Description added")).toBeInTheDocument();
+  });
+
+  it("omits linked page and description indicators when absent", () => {
+    renderNode({
+      type: "project",
+      status: "in_progress",
+      linked_page_slug: null,
+      description: null,
+    });
+
+    expect(screen.queryByLabelText("Linked page added")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Description added")).not.toBeInTheDocument();
   });
 
   it("does not render type/status pills for group nodes", () => {

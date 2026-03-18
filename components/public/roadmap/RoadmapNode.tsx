@@ -1,6 +1,6 @@
 "use client";
 
-import type { RoadmapItemWithSlug } from "@/types/roadmap";
+import { DescriptionIcon, ExternalLinkIcon } from "@/components/icons/indicators";
 import {
   ROADMAP_NODE_CONTAINER_STYLE,
   ROADMAP_NODE_TITLE_STYLE,
@@ -10,6 +10,7 @@ import {
   ROADMAP_STATUS_NODE_STYLES,
   ROADMAP_TYPE_CONFIG,
 } from "@/components/roadmap/roadmapStyles";
+import type { RoadmapItemWithSlug } from "@/types/roadmap";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 export function RoadmapNode({ data, selected }: NodeProps) {
@@ -18,6 +19,8 @@ export function RoadmapNode({ data, selected }: NodeProps) {
   const statusStyles = ROADMAP_STATUS_NODE_STYLES[item.status];
   const typeStyles = ROADMAP_TYPE_CONFIG[item.type];
   const isSelected = selected ?? false;
+  const hasLinkedPage = !!item.linked_page_slug;
+  const hasDescription = (item.description ?? "").trim().length > 0;
   const isClickable = !isGroup && !!item.linked_page_slug;
 
   function handleClick() {
@@ -86,16 +89,53 @@ export function RoadmapNode({ data, selected }: NodeProps) {
               {typeStyles.label}
             </div>
 
-            {/* Status icon only */}
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 14,
-                color: statusStyles.iconColor,
-              }}
-            >
-              {ROADMAP_STATUS_ICON[item.status]}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {hasLinkedPage && (
+                <span
+                  role="img"
+                  aria-label="Linked page added"
+                  title="Linked page added"
+                  style={{
+                    color: "var(--text-muted)",
+                    whiteSpace: "nowrap",
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <ExternalLinkIcon size={13} />
+                </span>
+              )}
+
+              {hasDescription && (
+                <span
+                  role="img"
+                  aria-label="Description added"
+                  title="Description added"
+                  style={{
+                    color: "var(--text-muted)",
+                    whiteSpace: "nowrap",
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <DescriptionIcon size={13} />
+                </span>
+              )}
+
+              {/* Status icon */}
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 14,
+                  color: statusStyles.iconColor,
+                  lineHeight: 1,
+                }}
+              >
+                {ROADMAP_STATUS_ICON[item.status]}
+              </span>
+            </div>
           </div>
         )}
 
