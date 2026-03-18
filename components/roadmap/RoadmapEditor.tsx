@@ -46,7 +46,17 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
     Object.fromEntries(initialItems.map((i) => [i.id, i]))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isInteractive, setIsInteractive] = useState(true);
+  const [isInteractive, setIsInteractive] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const raw = window.localStorage.getItem(ROADMAP_INTERACTIVITY_STORAGE_KEY);
+      if (raw == null) return true;
+      const parsed = JSON.parse(raw) as unknown;
+      return typeof parsed === "boolean" ? parsed : true;
+    } catch {
+      return true;
+    }
+  });
 
   const selectedItem = selectedId ? (itemsById[selectedId] ?? null) : null;
 
@@ -55,21 +65,9 @@ export function RoadmapEditor({ initialItems, initialEdges }: Props) {
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState(toFlowEdges(initialEdges) as Edge[]);
 
-  // Persist the lock (interactivity) toggle across refreshes.
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(ROADMAP_INTERACTIVITY_STORAGE_KEY);
-      if (raw == null) return;
-      const parsed = JSON.parse(raw) as unknown;
-      if (typeof parsed === "boolean") setIsInteractive(parsed);
-    } catch (err) {
-      console.warn("[RoadmapEditor] Failed to read interactivity setting", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(ROADMAP_INTERACTIVITY_STORAGE_KEY, JSON.stringify(isInteractive));
+      window.localStorage.setItem(ROADMAP_INTERACTIVITY_STORAGE_KEY, JSON.stringify(isInteractive));
     } catch (err) {
       console.warn("[RoadmapEditor] Failed to persist interactivity setting", err);
     }
