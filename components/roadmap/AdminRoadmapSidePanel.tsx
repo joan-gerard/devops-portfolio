@@ -77,8 +77,11 @@ export function AdminRoadmapSidePanel({
   async function handleDeleteConfirmed() {
     if (!item) return;
     setIsDeleting(true);
-    await onDelete(item.id);
-    setIsDeleting(false);
+    try {
+      await onDelete(item.id);
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   const isVisible = item !== null;
