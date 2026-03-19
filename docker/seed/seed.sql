@@ -156,7 +156,7 @@ VALUES
     'completed',
     360,
     40,
-    '11111111-1111-1111-1111-111111111111',
+    (SELECT id FROM pages WHERE slug = 'docker-fundamentals'),
     FALSE,
     FALSE
   ),
@@ -168,7 +168,7 @@ VALUES
     'in_progress',
     360,
     180,
-    '11111111-1111-1111-1111-111111111112',
+    (SELECT id FROM pages WHERE slug = 'ci-cd-pipeline-basics'),
     FALSE,
     FALSE
   ),
@@ -180,7 +180,7 @@ VALUES
     'not_started',
     640,
     110,
-    '22222222-2222-2222-2222-222222222221',
+    (SELECT id FROM projects WHERE slug = 'devops-portfolio'),
     FALSE,
     FALSE
   )
