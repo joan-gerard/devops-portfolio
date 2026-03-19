@@ -1,0 +1,56 @@
+# docker-compose.yml
+# usage: docker compose --env-file .env.docker up --build
+# to remove all containers and volumes: docker compose down -v
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: devops_portal_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: devops_portal
+      POSTGRES_USER: devops_user
+      POSTGRES_PASSWORD: devops_password
+    ports:
+      - "5433:5432" # 5433 on host so it doesn't clash with a local Postgres on 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops_user -d devops_portal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  seed:
+    image: postgres:16-alpine
+    container_name: devops_portal_seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.docker
+    volumes:
+      - ./docker/seed/seed.sql:/seed.sql:ro
+    command: >
+      sh -c 'psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /seed.sql'
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devops_portal_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy # wait for DB healthcheck to pass before starting
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+
+volumes:
+  postgres_data:

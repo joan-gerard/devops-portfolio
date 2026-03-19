@@ -33,7 +33,6 @@ export async function getPageById(id: string): Promise<Page | null> {
 export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | null> => {
   return withPrerenderFallback(
     async () => {
-      console.log("[getNoteBySlug] called with slug:", slug);
       const rows = await sql<PublicNote[]>`
         SELECT id, title, slug, content, tags, updated_at
         FROM pages
@@ -43,10 +42,6 @@ export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | nu
         LIMIT 1
       `;
       const note = rows[0] ?? null;
-      console.log(
-        "[getNoteBySlug] result:",
-        note ? { id: note.id, slug: note.slug, published: true } : null
-      );
       return note;
     },
     null,

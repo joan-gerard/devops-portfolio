@@ -15,11 +15,18 @@ function getDatabaseUrl(): string {
   return url.trim();
 }
 
+function shouldRequireSsl(databaseUrl: string): boolean {
+  // Neon URLs in your .env include sslmode=require (and channel_binding=require)
+  return /sslmode=require/i.test(databaseUrl);
+}
+
 let _sql: ReturnType<typeof postgres> | null = null;
 
 function getClient(): ReturnType<typeof postgres> {
   if (!_sql) {
-    _sql = postgres(getDatabaseUrl(), { ssl: "require" });
+    const url = getDatabaseUrl();
+    const useSsl = shouldRequireSsl(url);
+    _sql = postgres(url, useSsl ? { ssl: "require" } : undefined);
   }
   return _sql;
 }
