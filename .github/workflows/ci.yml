@@ -36,7 +36,7 @@ jobs:
         run: pnpm test:ci
 
       - name: Build
-        run: pnpm build
+        run: pnpm build:dev
         env:
           # Build does not connect to the database — all routes are dynamic
           # and data is fetched at request time, not build time. A syntactically
