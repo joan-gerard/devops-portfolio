@@ -26,7 +26,7 @@ ENV ADMIN_PASSWORD_HASH=placeholder
 ENV IS_PRERENDER_BUILD=true
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN pnpm build
+RUN pnpm build:dev
 
 # ── Stage 3: runner ───────────────────────────────────────────────────────────
 # Minimal production image. Copies only the standalone output and static assets.

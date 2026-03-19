@@ -7,6 +7,8 @@
     "dev": "next dev",
     "dev:e2e": "NEXT_DIST_DIR=.next-e2e PORT=3001 E2E_TEST=1 next dev",
     "build": "next build",
+    "build:prod": "node scripts/swap-public-pages.mjs && next build",
+    "build:dev": "TARGET_ENV=dev node scripts/swap-public-pages.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
