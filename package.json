@@ -4,9 +4,9 @@
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "dev": "next dev",
+    "dev": "TARGET_ENV=dev node scripts/swap-public-pages.mjs && next dev",
     "dev:e2e": "TARGET_ENV=dev node scripts/swap-public-pages.mjs && NEXT_DIST_DIR=.next-e2e PORT=3001 E2E_TEST=1 next dev",
-    "build": "next build",
+    "build": "echo 'Use build:dev or build:prod instead' && exit 1",
     "build:prod": "TARGET_ENV=prod node scripts/swap-public-pages.mjs && next build",
     "build:dev": "TARGET_ENV=dev node scripts/swap-public-pages.mjs && next build",
     "start": "next start",
