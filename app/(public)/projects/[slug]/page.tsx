@@ -5,7 +5,7 @@ import { getProjectBySlug } from "@/lib/queries/project";
 import { notFound } from "next/navigation";
 
 /**
- * ISR (revalidate 3600) so a Neon cold start serves a cached snapshot instead of an empty page.
+ * ISR (revalidate 60) so a Neon cold start serves a cached snapshot instead of an empty page.
  * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
  * Segment config must be static; conditional dynamic/revalidate is not supported.
  */
