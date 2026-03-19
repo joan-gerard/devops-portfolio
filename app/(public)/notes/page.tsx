@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/public/PageContainer";
 import { PageHeader } from "@/components/public/PageHeader";
 import { getAllPublishedNotes } from "@/lib/queries/page";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export const metadata = {
   title: "Notes — DevOps Learning Portal",

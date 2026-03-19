@@ -1,0 +1,13 @@
+.git
+.gitignore
+.next
+node_modules
+.env*
+*.md
+.github
+e2e
+__tests__
+coverage
+.next-e2e
+docker-compose.yml
+README.md

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
    * - E2E dev server: sets `NEXT_DIST_DIR=.next-e2e` via script/env
    */
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  output: "standalone",
 };
 
 export default nextConfig;

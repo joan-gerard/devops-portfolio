@@ -8,7 +8,7 @@ import {
 import { PageContainer } from "@/components/public/PageContainer";
 import { getHomepageData } from "@/lib/queries/home";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function HomePage() {
   let notes: Awaited<ReturnType<typeof getHomepageData>>["notes"] = [];

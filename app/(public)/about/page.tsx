@@ -2,7 +2,7 @@ import { getNoteBySlug } from "@/lib/queries/page";
 
 import { AboutPageContent } from "@/components/public/about/AboutPageContent";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export const metadata = {
   title: "About — DevOps Learning Portal",

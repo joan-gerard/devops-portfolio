@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
  * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
  * Segment config must be static; conditional dynamic/revalidate is not supported.
  */
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

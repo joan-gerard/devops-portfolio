@@ -1,7 +1,7 @@
 // app/(public)/projects/[slug]/page.tsx
 
-import { getProjectBySlug } from "@/lib/queries/project";
 import { ProjectDetail } from "@/components/public/projects/ProjectDetail";
+import { getProjectBySlug } from "@/lib/queries/project";
 import { notFound } from "next/navigation";
 
 /**
@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
  * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
  * Segment config must be static; conditional dynamic/revalidate is not supported.
  */
-export const revalidate = 3600;
+export const revalidate = 60;
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
