@@ -13,9 +13,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const timestamp = new Date().toISOString();
+  const dbTimeoutMs = 3000;
 
   try {
-    await sql`SELECT 1`;
+    await Promise.race([
+      sql`SELECT 1`,
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("DB probe timed out")), dbTimeoutMs);
+      }),
+    ]);
 
     return NextResponse.json(
       {
