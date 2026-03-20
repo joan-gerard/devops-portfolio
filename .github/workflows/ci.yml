@@ -48,6 +48,10 @@ jobs:
           ADMIN_EMAIL: placeholder@placeholder.com
           ADMIN_PASSWORD_HASH: placeholder
           IS_PRERENDER_BUILD: "true"
+          NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
   e2e:
     name: E2E Tests
