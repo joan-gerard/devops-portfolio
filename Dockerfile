@@ -15,6 +15,9 @@ FROM node:20-alpine AS builder
 RUN corepack enable
 WORKDIR /app
 
+ARG R2_PUBLIC_URL
+ENV R2_PUBLIC_URL=$R2_PUBLIC_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

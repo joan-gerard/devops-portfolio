@@ -110,3 +110,5 @@ jobs:
           tags: devops-portal:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            R2_PUBLIC_URL=${{ secrets.R2_PUBLIC_URL }}
