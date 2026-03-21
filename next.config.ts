@@ -2,6 +2,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const r2Domain = process.env.R2_PUBLIC_URL ? new URL(process.env.R2_PUBLIC_URL).host : "";
+const isDev = process.env.NODE_ENV !== "production";
 
 const securityHeaders = [
   // ── Forces HTTPS for 2 years, including subdomains ─────────────────
@@ -56,12 +57,15 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      isDev
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        : "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:" + (r2Domain ? ` https://${r2Domain}` : ""),
       "font-src 'self'",
       "connect-src 'self'",
       "frame-src 'none'",
+      "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
