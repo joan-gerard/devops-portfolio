@@ -1,6 +1,75 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+const r2Domain = process.env.R2_PUBLIC_URL ? new URL(process.env.R2_PUBLIC_URL).host : "";
+
+const securityHeaders = [
+  // ── Forces HTTPS for 2 years, including subdomains ─────────────────
+  // preload signals intent to join the HSTS preload list (browsers load
+  // via HTTPS without ever making an initial HTTP request).
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  // ── Prevents the page being embedded in an iframe ──────────────────
+  // DENY means no context — not even same origin — can embed this page.
+  {
+    key: "X-Frame-Options",
+    value: "DENY",
+  },
+  // ── Prevents browsers guessing content type from response body ──────
+  // Without this, a browser might execute a response labelled text/plain
+  // as JavaScript if it looks like a script.
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  // ── Controls how much referrer info is sent with requests ───────────
+  // Full URL sent to same origin, only origin (no path) sent cross-origin.
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  // ── Disables browser features the app never uses ────────────────────
+  {
+    key: "Permissions-Policy",
+    value: [
+      "camera=()",
+      "microphone=()",
+      "geolocation=()",
+      "browsing-topics=()",
+      "interest-cohort=()",
+    ].join(", "),
+  },
+  // ── Content Security Policy ─────────────────────────────────────────
+  // Notes on 'unsafe-inline':
+  //   script-src: Next.js App Router injects inline hydration scripts.
+  //     Nonces are the correct solution but require significant Next.js
+  //     middleware plumbing. Acceptable trade-off for a portfolio.
+  //   style-src: Public pages use inline style={{}} objects throughout.
+  //     React Flow also uses inline styles extensively. No alternative
+  //     without a full refactor.
+  //
+  // connect-src 'self' covers the Sentry tunnel at /monitoring —
+  //   no need to whitelist sentry.io directly.
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:" + (r2Domain ? ` https://${r2Domain}` : ""),
+      "font-src 'self'",
+      "connect-src 'self'",
+      "frame-src 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  },
+];
+
 const nextConfig: NextConfig = {
   /**
    * Allow separate dev servers (normal dev vs E2E dev) to use different
@@ -11,6 +80,14 @@ const nextConfig: NextConfig = {
    */
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   output: "standalone",
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
