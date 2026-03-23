@@ -23,7 +23,7 @@ export async function getAllPages() {
       SELECT id, status, title
       FROM roadmap_items
       WHERE linked_page_id = p.id
-      ORDER BY updated_at DESC
+      ORDER BY updated_at DESC, id DESC
       LIMIT 1
     ) r ON true
     ORDER BY p.created_at ASC
@@ -50,7 +50,7 @@ export async function getPageById(id: string): Promise<Page | null> {
       SELECT id, status, title
       FROM roadmap_items
       WHERE linked_page_id = p.id
-      ORDER BY updated_at DESC
+      ORDER BY updated_at DESC, id DESC
       LIMIT 1
     ) r ON true
     WHERE p.id = ${id}
