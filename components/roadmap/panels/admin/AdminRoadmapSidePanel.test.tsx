@@ -24,12 +24,17 @@ function buildItem(overrides: Partial<RoadmapItemWithSlug> = {}): RoadmapItemWit
 }
 
 const mockFetch = vi.fn();
+const mockClipboardWriteText = vi.fn();
 let originalFetch: typeof globalThis.fetch;
 
 describe("AdminRoadmapSidePanel", () => {
   beforeEach(() => {
     originalFetch = globalThis.fetch;
     (globalThis as unknown as { fetch: typeof fetch }).fetch = mockFetch as unknown as typeof fetch;
+    Object.defineProperty(globalThis.navigator, "clipboard", {
+      value: { writeText: mockClipboardWriteText },
+      configurable: true,
+    });
   });
 
   afterEach(() => {
@@ -177,5 +182,69 @@ describe("AdminRoadmapSidePanel", () => {
         })
       );
     });
+  });
+
+  it("shows roadmap item ID for learning/project nodes only", () => {
+    const learningItem = buildItem({ id: "roadmap-item-123", type: "learning" });
+    const { rerender } = render(
+      <AdminRoadmapSidePanel
+        item={learningItem}
+        onClose={() => {}}
+        onUpdate={() => {}}
+        onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
+      />
+    );
+
+    const idInput = screen
+      .getAllByLabelText(/^Roadmap item ID$/i)
+      .find((el) => el.tagName === "INPUT") as HTMLInputElement | undefined;
+    expect(idInput).toBeDefined();
+    if (!idInput) return;
+    expect(idInput).toBeInTheDocument();
+    expect(idInput).toHaveValue("roadmap-item-123");
+    expect(idInput).toHaveAttribute("readonly");
+
+    const groupItem = buildItem({ id: "group-1", type: "group" });
+    rerender(
+      <AdminRoadmapSidePanel
+        item={groupItem}
+        onClose={() => {}}
+        onUpdate={() => {}}
+        onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
+      />
+    );
+
+    expect(screen.queryAllByLabelText(/^Roadmap item ID$/i)).toHaveLength(0);
+  });
+
+  it("copies roadmap item ID to clipboard", async () => {
+    const item = buildItem({ id: "roadmap-item-copy-1", type: "project" });
+    mockClipboardWriteText.mockResolvedValue(undefined);
+
+    render(
+      <AdminRoadmapSidePanel
+        item={item}
+        onClose={() => {}}
+        onUpdate={() => {}}
+        onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
+      />
+    );
+
+    const copyButton = screen.getByRole("button", { name: /Copy roadmap item ID/i });
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(mockClipboardWriteText).toHaveBeenCalledWith("roadmap-item-copy-1");
+    });
+
+    expect(screen.getByRole("button", { name: /Copy roadmap item ID/i })).toHaveTextContent(
+      "Copied"
+    );
   });
 });

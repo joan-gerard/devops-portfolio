@@ -31,9 +31,11 @@ export function AdminRoadmapSidePanel({
   onBeginSaving,
   onFinishSaving,
 }: Props) {
+  type CopyStatus = "idle" | "copied" | "error";
   const [saveStatus, setSaveStatus] = useState<RoadmapSaveStatus>("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
 
   // Local field states — kept in sync with item prop
   const [title, setTitle] = useState(item?.title ?? "");
@@ -51,7 +53,24 @@ export function AdminRoadmapSidePanel({
     setIsGroupCompleted(item?.is_group_completed ?? false);
     setConfirmDelete(false);
     setSaveStatus("idle");
+    setCopyStatus("idle");
   }, [item?.id, item?.title, item?.description, item?.linked_page_id, item?.is_group_completed]);
+
+  async function handleCopyRoadmapItemId(id: string) {
+    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setCopyStatus("error");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopyStatus("copied");
+      window.setTimeout(() => setCopyStatus("idle"), 1500);
+    } catch {
+      setCopyStatus("error");
+      window.setTimeout(() => setCopyStatus("idle"), 1500);
+    }
+  }
 
   async function patch(fields: Record<string, unknown>): Promise<boolean> {
     if (!item) return false;
@@ -326,6 +345,73 @@ export function AdminRoadmapSidePanel({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Roadmap item ID — only for learning/project */}
+            {item.type !== "group" && (
+              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Roadmap item ID
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyRoadmapItemId(item.id)}
+                    aria-label="Copy roadmap item ID"
+                    style={{
+                      background: "none",
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      color:
+                        copyStatus === "copied"
+                          ? "var(--accent)"
+                          : copyStatus === "error"
+                            ? "var(--red, #ff4444)"
+                            : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      lineHeight: 1.2,
+                      padding: "4px 6px",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {copyStatus === "copied"
+                      ? "Copied"
+                      : copyStatus === "error"
+                        ? "Copy failed"
+                        : "Copy ID"}
+                  </button>
+                </div>
+                <input
+                  value={item.id}
+                  readOnly
+                  aria-label="Roadmap item ID"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    color: "var(--text-muted)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    padding: "8px 10px",
+                    outline: "none",
+                    width: "100%",
+                    boxSizing: "border-box",
+                    cursor: "text",
+                  }}
+                />
+              </label>
             )}
 
             {/* Group completion toggle — only for group nodes */}
