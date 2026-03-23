@@ -30,7 +30,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 4. Delete Buttons
 
-**Current:** `DeleteNoteButton` and `DeleteProjectButton` share the same behaviour and UI: confirm (“Sure?” / Delete / Cancel), loading state, `fetch(DELETE)`, then `router.push(redirectTo)` or `router.refresh()`. Only the API URL differs (`/api/pages/${id}` vs `/api/projects/${id}`).
+**Current:** `DeleteNoteButton` and `DeleteProjectButton` share the same behaviour and UI: an accessible confirmation modal ("Confirm deletion"), loading state, `fetch(DELETE)`, then `router.push(redirectTo)` or `router.refresh()`. Only the API URL differs (`/api/pages/${id}` vs `/api/projects/${id}`).
 
 **Suggestion:** A single **ConfirmDeleteButton** (or **DeleteEntityButton**) that takes `deleteUrl`, `redirectTo?`, and optional `onPreventDefault` (for use in rows/cards where you need to stop link navigation). Both current buttons become one-liners that pass the right URL and redirect.
 

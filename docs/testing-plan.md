@@ -104,7 +104,7 @@ Use **React Testing Library** (with a `jsdom` environment).
   - **Why**: Critical entry point; tests also lock in the default error copy and redirect path.
 
 - **Delete buttons** – `components/notes/DeleteNoteButton.tsx`, `components/projects/DeleteProjectButton.tsx`
-  - **Done:** `components/notes/DeleteNoteButton.test.tsx`, `components/projects/DeleteProjectButton.test.tsx` — initial click shows the “Sure?” confirm UI; confirm click issues `fetch(DELETE)` to `/api/pages/:id` or `/api/projects/:id` and, depending on props, either calls `router.refresh()` or `router.push(redirectTo)`; cancel click hides the confirm UI and restores the original `Delete` button.
+  - **Done:** `components/notes/DeleteNoteButton.test.tsx`, `components/projects/DeleteProjectButton.test.tsx` — initial click opens an accessible modal dialog (`role="dialog"`, "Confirm deletion"); confirm click issues `fetch(DELETE)` to `/api/pages/:id` or `/api/projects/:id` and, depending on props, either calls `router.refresh()` or `router.push(redirectTo)`; cancel click closes the dialog and restores the original delete trigger button.
   - **What to extend**: Add explicit assertions for loading/disabled state on the confirm button during the request and, if you refactor, cover any shared `ConfirmDeleteButton` abstraction.
   - **Why**: Risky actions that must behave exactly; tests now guard both the confirm/cancel UX and the correct routing behaviour.
 
@@ -162,7 +162,7 @@ Using Playwright after basic tooling is in place.
 - **Destructive operations**
   - **What to test**: Deleting a note/project: confirm dialog appears; cancel leaves content unchanged; confirm removes item from admin list and public pages.
   - **Why**: Guards against regressions in delete behaviour or route paths.
-  - **Done:** `e2e/destructive.spec.ts` — "Sure?" confirm; cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
+  - **Done:** `e2e/destructive.spec.ts` — modal confirm dialog ("Confirm deletion"); cancel leaves content; confirm removes from admin and public. Requires E2E credentials; skipped when not set.
 
 **Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped. After the suite finishes, `globalTeardown` runs and deletes any `e2e_only` rows created during the run, guarded by `E2E_TEST=1`/`CI` so it only affects test environments.
 

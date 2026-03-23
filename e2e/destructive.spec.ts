@@ -48,11 +48,12 @@ test.describe("Destructive operations", () => {
 
     const { title } = await createPublishedNote(page);
 
-    await page.getByRole("button", { name: /^delete$/i }).click();
-    await expect(page.getByText("Sure?")).toBeVisible();
-    await page.getByRole("button", { name: /^cancel$/i }).click();
-    await expect(page.getByText("Sure?")).not.toBeVisible();
-    await expect(page.getByRole("button", { name: /^delete$/i })).toBeVisible();
+    await page.getByRole("button", { name: /delete note/i }).click();
+    const confirmDialog = page.getByRole("dialog", { name: /confirm deletion/i });
+    await expect(confirmDialog).toBeVisible();
+    await confirmDialog.getByRole("button", { name: /^cancel$/i }).click();
+    await expect(confirmDialog).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /delete note/i })).toBeVisible();
 
     await page.goto("/admin/notes");
     await expect(page.getByText(title)).toBeVisible();
@@ -70,12 +71,10 @@ test.describe("Destructive operations", () => {
     await page.getByText(title).first().click();
     await expect(page).toHaveURL(/\/admin\/editor\//);
 
-    await page.getByRole("button", { name: /^delete$/i }).click();
-    await expect(page.getByText("Sure?")).toBeVisible();
-    await page
-      .getByRole("button", { name: /^delete$/i })
-      .filter({ hasText: /^Delete$/ })
-      .click();
+    await page.getByRole("button", { name: /delete note/i }).click();
+    const confirmDialog = page.getByRole("dialog", { name: /confirm deletion/i });
+    await expect(confirmDialog).toBeVisible();
+    await confirmDialog.getByRole("button", { name: /^delete$/i }).click();
     await expect(page).toHaveURL("/admin/notes", { timeout: 10000 });
     await expect(page.getByText(title)).not.toBeVisible();
 
@@ -117,11 +116,12 @@ test.describe("Destructive operations", () => {
 
     const { title } = await createPublishedProject(page);
 
-    await page.getByRole("button", { name: /^delete$/i }).click();
-    await expect(page.getByText("Sure?")).toBeVisible();
-    await page.getByRole("button", { name: /^cancel$/i }).click();
-    await expect(page.getByText("Sure?")).not.toBeVisible();
-    await expect(page.getByRole("button", { name: /^delete$/i })).toBeVisible();
+    await page.getByRole("button", { name: /delete project/i }).click();
+    const confirmDialog = page.getByRole("dialog", { name: /confirm deletion/i });
+    await expect(confirmDialog).toBeVisible();
+    await confirmDialog.getByRole("button", { name: /^cancel$/i }).click();
+    await expect(confirmDialog).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /delete project/i })).toBeVisible();
 
     await page.goto("/admin/projects");
     await expect(page.getByText(title)).toBeVisible();
@@ -136,12 +136,10 @@ test.describe("Destructive operations", () => {
     await page.goto("/admin/projects");
     await page.getByText(title).first().click();
     await expect(page).toHaveURL(/\/admin\/projects\/[\w-]+/, { timeout: 10000 });
-    await page.getByRole("button", { name: /^delete$/i }).click();
-    await expect(page.getByText("Sure?")).toBeVisible();
-    await page
-      .getByRole("button", { name: /^delete$/i })
-      .filter({ hasText: /^Delete$/ })
-      .click();
+    await page.getByRole("button", { name: /delete project/i }).click();
+    const confirmDialog = page.getByRole("dialog", { name: /confirm deletion/i });
+    await expect(confirmDialog).toBeVisible();
+    await confirmDialog.getByRole("button", { name: /^delete$/i }).click();
     await expect(page).toHaveURL("/admin/projects", { timeout: 10000 });
     await expect(page.getByText(title)).not.toBeVisible();
 

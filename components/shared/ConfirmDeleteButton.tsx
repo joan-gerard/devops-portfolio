@@ -52,8 +52,8 @@ const triggerButtonStyle: React.CSSProperties = {
 };
 
 /**
- * Reusable delete button with confirmation: shows "Sure?" / Delete / Cancel,
- * then sends DELETE to deleteUrl and either redirects or refreshes.
+ * Reusable delete button with modal confirmation.
+ * Opens a "Confirm deletion" dialog, then sends DELETE to deleteUrl and either redirects or refreshes.
  * Call e.preventDefault() on click so it can be used inside links (e.g. row/card).
  */
 export function ConfirmDeleteButton({
