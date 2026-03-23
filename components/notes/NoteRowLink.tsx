@@ -4,6 +4,7 @@ import type { Page } from "@/types/pages";
 import Link from "next/link";
 import DeleteNoteButton from "./DeleteNoteButton";
 import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import { ADMIN_TABLE_COLUMN_TEMPLATE } from "@/components/admin/tableColumns";
 
 function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -28,7 +29,7 @@ export function NoteRowLink({ note, isLast }: Props) {
       href={`/admin/editor/${note.id}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "1fr auto auto auto auto auto",
+        gridTemplateColumns: ADMIN_TABLE_COLUMN_TEMPLATE,
         gap: "16px",
         alignItems: "center",
         padding: "12px 16px",
@@ -38,6 +39,24 @@ export function NoteRowLink({ note, isLast }: Props) {
       }}
       className="u-bg-surface-hover"
     >
+      {/* Status */}
+      <span
+        style={{
+          fontSize: "10px",
+          padding: "2px 8px",
+          borderRadius: "2px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          background: note.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
+          color: note.published ? "var(--accent)" : "var(--text-muted)",
+          border: `1px solid ${note.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
+          whiteSpace: "nowrap",
+          justifySelf: "start",
+        }}
+      >
+        {note.published ? "Published" : "Draft"}
+      </span>
+
       {/* Title */}
       <span
         style={{
@@ -58,7 +77,7 @@ export function NoteRowLink({ note, isLast }: Props) {
           display: "flex",
           gap: "4px",
           flexWrap: "wrap",
-          justifyContent: "flex-end",
+          justifyContent: "flex-start",
         }}
       >
         {note.tags.length > 0 ? (
@@ -83,23 +102,6 @@ export function NoteRowLink({ note, isLast }: Props) {
         )}
       </div>
 
-      {/* Status */}
-      <span
-        style={{
-          fontSize: "10px",
-          padding: "2px 8px",
-          borderRadius: "2px",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          background: note.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
-          color: note.published ? "var(--accent)" : "var(--text-muted)",
-          border: `1px solid ${note.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {note.published ? "Published" : "Draft"}
-      </span>
-
       {/* Roadmap */}
       <span
         style={{
@@ -112,6 +114,7 @@ export function NoteRowLink({ note, isLast }: Props) {
           color: roadmapStatusOption ? roadmapStatusOption.color : "var(--text-muted)",
           border: `1px solid ${roadmapStatusOption ? roadmapStatusOption.color : "var(--border)"}`,
           whiteSpace: "nowrap",
+          justifySelf: "start",
         }}
       >
         {roadmapStatusOption ? roadmapStatusOption.label : "Not linked"}

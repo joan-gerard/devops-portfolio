@@ -29,15 +29,16 @@ describe("DeleteProjectButton", () => {
   it("shows confirm UI when clicked", () => {
     render(<DeleteProjectButton id="project-1" />);
 
-    fireEvent.click(screen.getByText(/delete/i));
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
 
-    expect(screen.getByText(/sure\?/i)).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: /confirm deletion/i })).toBeInTheDocument();
+    expect(screen.getByText(/delete this project/i)).toBeInTheDocument();
   });
 
   it("calls DELETE API and refreshes when confirmed without redirect", async () => {
     render(<DeleteProjectButton id="project-1" />);
 
-    fireEvent.click(screen.getByText(/delete/i));
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
     fireEvent.click(screen.getByText(/^delete$/i));
 
     await waitFor(() => {
@@ -49,7 +50,7 @@ describe("DeleteProjectButton", () => {
   it("calls DELETE API and redirects when confirm clicked with redirectTo", async () => {
     render(<DeleteProjectButton id="project-2" redirectTo="/projects" />);
 
-    fireEvent.click(screen.getByText(/delete/i));
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
     fireEvent.click(screen.getByText(/^delete$/i));
 
     await waitFor(() => {
@@ -61,9 +62,10 @@ describe("DeleteProjectButton", () => {
   it("cancels and restores original button", () => {
     render(<DeleteProjectButton id="project-1" />);
 
-    fireEvent.click(screen.getByText(/delete/i));
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
     fireEvent.click(screen.getByText(/cancel/i));
 
-    expect(screen.getByText(/delete/i)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /confirm deletion/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete project/i })).toBeInTheDocument();
   });
 });

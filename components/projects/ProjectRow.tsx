@@ -4,6 +4,7 @@ import type { Project } from "@/types/projects";
 import Link from "next/link";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import { ADMIN_TABLE_COLUMN_TEMPLATE } from "@/components/admin/tableColumns";
 
 function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -28,7 +29,7 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
       href={`/admin/projects/${project.id}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "1fr auto auto auto auto auto",
+        gridTemplateColumns: ADMIN_TABLE_COLUMN_TEMPLATE,
         gap: "16px",
         alignItems: "center",
         padding: "12px 16px",
@@ -38,6 +39,24 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
       }}
       className="u-bg-surface-hover"
     >
+      {/* Status */}
+      <span
+        style={{
+          fontSize: "10px",
+          padding: "2px 8px",
+          borderRadius: "2px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          background: project.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
+          color: project.published ? "var(--accent)" : "var(--text-muted)",
+          border: `1px solid ${project.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
+          whiteSpace: "nowrap",
+          justifySelf: "start",
+        }}
+      >
+        {project.published ? "Published" : "Draft"}
+      </span>
+
       {/* Title */}
       <span
         style={{
@@ -53,7 +72,7 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
       </span>
 
       {/* Tech stack */}
-      <div style={{ display: "flex", gap: "4px", justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", gap: "4px", justifyContent: "flex-start", flexWrap: "wrap" }}>
         {project.tech_stack?.length > 0 ? (
           project.tech_stack.slice(0, 3).map((tech) => (
             <span
@@ -76,23 +95,6 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
         )}
       </div>
 
-      {/* Status */}
-      <span
-        style={{
-          fontSize: "10px",
-          padding: "2px 8px",
-          borderRadius: "2px",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          background: project.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
-          color: project.published ? "var(--accent)" : "var(--text-muted)",
-          border: `1px solid ${project.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {project.published ? "Published" : "Draft"}
-      </span>
-
       {/* Roadmap */}
       <span
         style={{
@@ -105,6 +107,7 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
           color: roadmapStatusOption ? roadmapStatusOption.color : "var(--text-muted)",
           border: `1px solid ${roadmapStatusOption ? roadmapStatusOption.color : "var(--border)"}`,
           whiteSpace: "nowrap",
+          justifySelf: "start",
         }}
       >
         {roadmapStatusOption ? roadmapStatusOption.label : "Not linked"}

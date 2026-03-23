@@ -1,4 +1,5 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { ADMIN_TABLE_COLUMN_TEMPLATE } from "@/components/admin/tableColumns";
 import { CreateEntityButton } from "@/components/shared/CreateEntityButton";
 import { ProjectRow } from "@/components/projects";
 import { getAllProjects } from "@/lib/queries/project";
@@ -54,7 +55,7 @@ export default async function ProjectsPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto auto auto auto auto",
+            gridTemplateColumns: ADMIN_TABLE_COLUMN_TEMPLATE,
             gap: "16px",
             padding: "10px 16px",
             background: "var(--surface)",
@@ -65,12 +66,12 @@ export default async function ProjectsPage() {
             color: "var(--text-muted)",
           }}
         >
+          <span style={{ textAlign: "left" }}>Publish</span>
           <span>Title</span>
-          <span>Stack</span>
-          <span>Publish</span>
-          <span>Roadmap</span>
-          <span>Updated</span>
-          <span></span>
+          <span style={{ textAlign: "left" }}>Stack</span>
+          <span style={{ textAlign: "left" }}>Roadmap</span>
+          <span style={{ textAlign: "left" }}>Updated</span>
+          <span aria-hidden />
         </div>
 
         {list.map((project, i) => (

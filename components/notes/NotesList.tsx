@@ -1,3 +1,4 @@
+import { ADMIN_TABLE_COLUMN_TEMPLATE } from "@/components/admin/tableColumns";
 import { NoteRowLink } from "@/components/notes";
 import type { Page } from "@/types/pages";
 
@@ -89,7 +90,7 @@ export function NotesList({ notes }: NotesListProps) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto auto auto auto auto",
+              gridTemplateColumns: ADMIN_TABLE_COLUMN_TEMPLATE,
               gap: "16px",
               padding: "10px 16px",
               background: "var(--surface)",
@@ -100,12 +101,12 @@ export function NotesList({ notes }: NotesListProps) {
               color: "var(--text-muted)",
             }}
           >
+            <span style={{ textAlign: "left" }}>Publish</span>
             <span>Title</span>
-            <span>Tags</span>
-            <span>Publish</span>
-            <span>Roadmap</span>
-            <span>Updated</span>
-            <span></span>
+            <span style={{ textAlign: "left" }}>Tags</span>
+            <span style={{ textAlign: "left" }}>Roadmap</span>
+            <span style={{ textAlign: "left" }}>Updated</span>
+            <span aria-hidden />
           </div>
 
           {/* Rows */}
