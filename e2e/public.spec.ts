@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * E2E: Public read-only flows.
@@ -6,6 +6,10 @@ import { expect, test } from "@playwright/test";
  * No authentication required.
  */
 test.describe("Public read-only flows", () => {
+  function projectDetailLinks(page: Page) {
+    return page.locator('a[href^="/projects/"]');
+  }
+
   test("home page shows recent notes and featured projects sections", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/DevOps Learning Portal/i);
@@ -19,14 +23,14 @@ test.describe("Public read-only flows", () => {
     await expect(page.getByRole("link", { name: /all projects/i })).toBeVisible();
   });
 
-  test("clicking project card Details goes to project detail page", async ({ page }) => {
+  test("clicking a project card link goes to project detail page", async ({ page }) => {
     await page.goto("/");
-    const detailsLink = page.getByRole("link", { name: /details/i }).first();
+    const detailsLink = projectDetailLinks(page).first();
     const count = await detailsLink.count();
     if (count === 0) {
       // No published projects: go to /projects and try first card there
       await page.goto("/projects");
-      const cardLink = page.getByRole("link", { name: /details/i }).first();
+      const cardLink = projectDetailLinks(page).first();
       if ((await cardLink.count()) === 0) {
         test.skip();
         return;
@@ -101,7 +105,7 @@ test.describe("Public read-only flows", () => {
     await page.goto("/projects");
     await expect(page).toHaveTitle(/Projects — DevOps Learning Portal/i);
     const hasEmpty = await page.getByText(/no projects published/i).isVisible();
-    const hasCard = (await page.getByRole("link", { name: /details/i }).count()) > 0;
+    const hasCard = (await projectDetailLinks(page).count()) > 0;
     expect(hasEmpty || hasCard).toBeTruthy();
   });
 
