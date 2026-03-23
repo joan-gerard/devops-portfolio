@@ -11,7 +11,7 @@ export function SignOutButton() {
         background: "transparent",
         borderRadius: "4px",
         padding: "6px 12px",
-        fontFamily: "monospace",
+        fontFamily: "var(--font-mono)",
         fontSize: "11px",
         cursor: "pointer",
         letterSpacing: "0.08em",

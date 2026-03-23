@@ -22,6 +22,15 @@ The public projects list is at `app/(public)/projects/page.tsx`. It uses `getAll
 
 The public About page is at `app/(public)/about/page.tsx`. It fetches the `about` note via `getNoteBySlug("about")` from `lib/queries/page.ts` and delegates rendering (header + rich text content/fallback) to `components/public/about/AboutPageContent.tsx`. A dedicated redirect route at `app/(public)/notes/about/page.tsx` ensures `/notes/about` requests are redirected to `/about`.
 
+## Branding and Theme
+
+Global theme tokens are defined in `app/globals.css` and should be used through semantic CSS variables (`var(--...)`) instead of hardcoded hex values.
+
+- Background surfaces use near-black tokens (`--bg`, `--surface`, `--surface-2`).
+- Primary text and headings use white (`--text`), with supporting text in grays (`--text-dim`, `--text-muted`).
+- Accent color is `#E8FF00` (`--accent`) and is intentionally limited to small emphasis UI such as buttons, badges, and interactive highlights.
+- Neutral/default and disabled states should prefer gray tokens over accent colors.
+
 ### Code style (Prettier)
 
 Format all files:

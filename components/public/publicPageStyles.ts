@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
 const labelBase: CSSProperties = {
   fontFamily: "var(--font-mono)",
   fontSize: "10px",
-  color: "var(--accent)",
+  color: "var(--text-dim)",
   textTransform: "uppercase",
   letterSpacing: "0.15em",
 };

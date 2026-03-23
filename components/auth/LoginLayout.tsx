@@ -5,7 +5,7 @@ const mainStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "#0d0f14",
+  background: "var(--bg)",
 };
 
 export function LoginLayout({ children }: { children: ReactNode }) {

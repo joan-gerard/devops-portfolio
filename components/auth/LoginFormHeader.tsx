@@ -1,12 +1,12 @@
 const titleStyle: React.CSSProperties = {
-  fontFamily: "monospace",
-  color: "#e8eaf0",
+  fontFamily: "var(--font-mono)",
+  color: "var(--text)",
   marginBottom: "8px",
 };
 
 const subtitleStyle: React.CSSProperties = {
-  fontFamily: "monospace",
-  color: "#6b7280",
+  fontFamily: "var(--font-mono)",
+  color: "var(--text-muted)",
   fontSize: "13px",
   marginBottom: "32px",
 };

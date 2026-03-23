@@ -4,9 +4,9 @@ import { useState } from "react";
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontFamily: "monospace",
+  fontFamily: "var(--font-mono)",
   fontSize: "11px",
-  color: "#6b7280",
+  color: "var(--text-muted)",
   marginBottom: "6px",
   textTransform: "uppercase",
   letterSpacing: "0.1em",
@@ -14,13 +14,13 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#13161d",
-  border: "1px solid #232838",
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
   borderRadius: "4px",
   padding: "10px 12px",
-  fontFamily: "monospace",
+  fontFamily: "var(--font-mono)",
   fontSize: "13px",
-  color: "#e8eaf0",
+  color: "var(--text)",
   outline: "none",
   boxSizing: "border-box",
 };
@@ -118,7 +118,7 @@ export function LoginFormField({
               border: "none",
               padding: "4px",
               cursor: "pointer",
-              color: "#6b7280",
+              color: "var(--text-muted)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

@@ -50,6 +50,8 @@ export const secondaryButtonStyle: CSSProperties = {
 export const publishButtonStyle: CSSProperties = {
   fontSize: "11px",
   padding: "5px 12px",
+  background: "var(--surface)",
+  color: "var(--text-dim)",
   borderRadius: "4px",
   border: "1px solid var(--border)",
   fontFamily: "var(--font-mono)",

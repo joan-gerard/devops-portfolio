@@ -1,7 +1,7 @@
 const errorStyle: React.CSSProperties = {
-  color: "#f87171",
+  color: "var(--red)",
   fontSize: "12px",
-  fontFamily: "monospace",
+  fontFamily: "var(--font-mono)",
   marginBottom: "16px",
 };
 
