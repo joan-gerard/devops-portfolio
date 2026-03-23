@@ -186,5 +186,47 @@ describe("useEditorPage", () => {
       expect(result.current.roadmapTitle).toBe("Roadmap node title");
       expect(result.current.saveStatus).toBe("saved");
     });
+
+    it("sets error and keeps prior roadmap metadata when previous unlink fails", async () => {
+      const linkedNote: Page = {
+        ...mockNote,
+        roadmap_item_id: "11111111-1111-1111-1111-111111111111",
+        roadmap_item_status: "not_started",
+        roadmap_item_title: "Old roadmap title",
+      };
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ status: "in_progress", title: "New roadmap title" }),
+        } as Response)
+        .mockResolvedValueOnce({ ok: false } as Response);
+
+      const { result } = renderHook(() => useEditorPage(linkedNote));
+
+      act(() => result.current.setRoadmapItemId("22222222-2222-2222-2222-222222222222"));
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.roadmapItemId);
+      });
+
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        1,
+        "/api/roadmap/22222222-2222-2222-2222-222222222222",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: "note-1" }),
+        })
+      );
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        "/api/roadmap/11111111-1111-1111-1111-111111111111",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: null }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("not_started");
+      expect(result.current.roadmapTitle).toBe("Old roadmap title");
+      expect(result.current.saveStatus).toBe("error");
+    });
   });
 });

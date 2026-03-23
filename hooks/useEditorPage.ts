@@ -136,18 +136,20 @@ export function useEditorPage(note: Page) {
           status: RoadmapItemStatus;
           title: string;
         };
+
+        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
+          const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          });
+          if (!unlinkRes.ok) throw new Error();
+        }
+
         setLinkedRoadmapItemId(nextRoadmapItemId);
         setRoadmapItemId(nextRoadmapItemId);
         setRoadmapStatus(linkedRoadmapItem.status);
         setRoadmapTitle(linkedRoadmapItem.title);
-
-        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
-          await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ linked_page_id: null }),
-          }).catch(() => null);
-        }
       } else {
         if (previousRoadmapItemId) {
           const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {

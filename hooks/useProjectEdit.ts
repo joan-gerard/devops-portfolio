@@ -135,18 +135,29 @@ export function useProjectEdit(project: Project) {
           status: RoadmapItemStatus;
           title: string;
         };
+
+        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
+          try {
+            const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ linked_page_id: null }),
+            });
+            if (!unlinkRes.ok) throw new Error();
+          } catch {
+            await fetch(`/api/roadmap/${nextRoadmapItemId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ linked_page_id: null }),
+            });
+            throw new Error();
+          }
+        }
+
         setLinkedRoadmapItemId(nextRoadmapItemId);
         setFields((prev) => ({ ...prev, roadmap_item_id: nextRoadmapItemId }));
         setRoadmapStatus(linkedRoadmapItem.status);
         setRoadmapTitle(linkedRoadmapItem.title);
-
-        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
-          await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ linked_page_id: null }),
-          }).catch(() => null);
-        }
       } else {
         if (previousRoadmapItemId) {
           const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
