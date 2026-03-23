@@ -5,17 +5,22 @@ import type { CSSProperties, ReactNode } from "react";
  * Use when you need maxWidth + margin but custom padding (e.g. PublicNav, PublicFooter).
  */
 export const pageContainerBaseStyle: CSSProperties = {
-  maxWidth: "1440px",
+  // Keep 1440px content width on large screens, while preserving horizontal gutter on smaller viewports.
+  maxWidth: "calc(1440px + 72px)",
+  width: "100%",
+  boxSizing: "border-box",
+  // 24px on small screens, growing up to 36px on larger screens.
+  paddingInline: "clamp(24px, 3vw, 36px)",
   margin: "0 auto",
 };
 
 /**
- * Full page container style: base + default padding (top 48px, sides 24px, bottom 80px).
+ * Full page container style: base + default vertical padding (top 48px, bottom 80px).
  * Use for standard content pages (notes, projects, detail, about).
  */
 export const pageContainerStyle: CSSProperties = {
   ...pageContainerBaseStyle,
-  padding: "48px 24px 80px",
+  paddingBlock: "48px 80px",
 };
 
 export type PageContainerProps = {
