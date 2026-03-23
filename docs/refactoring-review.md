@@ -116,7 +116,7 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 **Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, link row/base, “view all” link, and empty state. Home, projects, and Notes (if refactored) import from there. That reduces duplication and keeps the public look consistent.
 
-**Done:** Added **publicPageStyles** (`components/public/publicPageStyles.ts`) with unified tokens: label base → `sectionLabelStyle` / `pageHeaderLabelStyle`, `sectionHeadingStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`, `viewAllLinkStyle`, `tagStyle`, `cardSectionStyle` / `cardProjectStyle`, `linkRowStyle`, `linkBaseStyle`, `emptyMessageStyle`, `emptyStateWrapperStyle`. **HomeSection**, **NoteCard**, **ProjectCard**, **ProjectTechStackSection**, **PageHeader**, and **EmptyState** import from it. Removed `sectionStyles.ts` and `projectStyles.ts`; all public page styles now live in one file.
+**Done:** Added **publicPageStyles** (`components/public/publicPageStyles.ts`) with unified tokens: label base → `sectionLabelStyle` / `pageHeaderLabelStyle`, `sectionHeadingStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`, `cardSectionStyle` / `cardProjectStyle`, `linkRowStyle`, `linkBaseStyle`, `emptyMessageStyle`, `emptyStateWrapperStyle`. **HomeSection**, **NoteCard**, **ProjectCard**, **ProjectTechStackSection**, **PageHeader**, and **EmptyState** import from it. Removed `sectionStyles.ts` and `projectStyles.ts`; all public page styles now live in one file.
 
 ---
 

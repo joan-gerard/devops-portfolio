@@ -56,30 +56,6 @@ export const pageHeaderDescriptionStyle: CSSProperties = {
   lineHeight: 1.7,
 };
 
-// —— "View all" link —————————————————————————————————————————————————────────
-export const viewAllLinkStyle: CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "11px",
-  color: "var(--text-muted)",
-  textDecoration: "none",
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "4px",
-  marginTop: "24px",
-};
-
-// —— Tag (pill / tech stack / labels) ———————————————————————————————————————
-export const tagStyle: CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
-  color: "var(--text-muted)",
-  background: "var(--surface-2)",
-  border: "1px solid var(--border)",
-  borderRadius: "4px",
-  padding: "2px 8px",
-  textTransform: "lowercase",
-};
-
 // —— Cards —————————————————————————————————————————————————────────────────—
 const cardBase: CSSProperties = {
   background: "var(--surface)",

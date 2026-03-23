@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import {
+  emptyMessageStyle,
   sectionHeadingStyle,
   sectionLabelStyle,
-  viewAllLinkStyle,
-  emptyMessageStyle,
 } from "@/components/public/publicPageStyles";
+import Link from "next/link";
 
 export type HomeSectionProps = {
   /** Small uppercase label above the heading (e.g. "Recent Notes"). */
@@ -27,6 +26,16 @@ export type HomeSectionProps = {
 
 const defaultWrapperStyle: React.CSSProperties = {
   marginBottom: "72px",
+};
+
+const viewAllLinkStyle: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
+  fontSize: "16px",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "4px",
+  marginTop: "24px",
 };
 
 /**
@@ -59,7 +68,7 @@ export function HomeSection({
       {showEmpty && <p style={emptyMessageStyle}>{emptyMessage}</p>}
 
       {viewAllHref != null && viewAllLabel != null && (
-        <Link href={viewAllHref} style={viewAllLinkStyle}>
+        <Link href={viewAllHref} style={viewAllLinkStyle} className="u-text-muted-text-hover">
           {viewAllLabel}
         </Link>
       )}

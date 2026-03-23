@@ -1,8 +1,9 @@
 "use client";
 
-import { tagStyle } from "@/components/public/publicPageStyles";
+import { Chip } from "@/components/shared/Chip";
 import { RoadmapStatusBadge } from "@/components/shared/RoadmapStatusBadge";
 import Link from "next/link";
+import { FiExternalLink, FiGithub } from "react-icons/fi";
 
 type PublicContentCardProps = {
   href: string;
@@ -40,15 +41,15 @@ const iconRowStyle: React.CSSProperties = {
 };
 
 const iconBadgeStyle: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
   color: "var(--text-muted)",
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  borderRadius: "4px",
-  padding: "2px 6px",
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
+  // border: "1px solid var(--border)",
+  // background: "var(--surface-2)",
+  // borderRadius: "4px",
+  padding: "4px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: 1,
 };
 
 const cardContentStyle: React.CSSProperties = {
@@ -130,9 +131,7 @@ export function PublicContentCard({
           {chips.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
               {chips.map((chip) => (
-                <span key={chip} style={tagStyle}>
-                  {chip}
-                </span>
+                <Chip key={chip}>{chip}</Chip>
               ))}
             </div>
           )}
@@ -156,7 +155,7 @@ export function PublicContentCard({
                   title="GitHub URL available"
                   aria-label="GitHub URL available"
                 >
-                  GH
+                  <FiGithub size={18} aria-hidden="true" />
                 </span>
               )}
               {hasLiveUrl && (
@@ -165,7 +164,7 @@ export function PublicContentCard({
                   title="Live URL available"
                   aria-label="Live URL available"
                 >
-                  LIVE
+                  <FiExternalLink size={18} aria-hidden="true" />
                 </span>
               )}
             </div>
