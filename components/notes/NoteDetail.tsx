@@ -1,13 +1,13 @@
 "use client";
 import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
-import DOMPurify from "dompurify";
+import createDOMPurify from "dompurify";
 
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { BackLink } from "@/components/shared/BackLink";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { PageContainer } from "@/components/public/PageContainer";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const tagStyle: React.CSSProperties = {
   fontFamily: "var(--font-mono)",
@@ -85,9 +85,23 @@ const emptyContentStyle: React.CSSProperties = {
 
 function NoteDetailContent({ content, html }: NoteDetailContentProps) {
   const hasContent = content && Object.keys(content).length > 0;
-  if (hasContent && html) {
-    const safeHtml = DOMPurify.sanitize(html);
+  const [safeHtml, setSafeHtml] = useState("");
+
+  useEffect(() => {
+    if (!hasContent || !html) {
+      setSafeHtml("");
+      return;
+    }
+    const purified = createDOMPurify(window).sanitize(html);
+    setSafeHtml(purified);
+  }, [hasContent, html]);
+
+  if (hasContent && safeHtml) {
     return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
+  }
+  if (hasContent) {
+    // Keep server and initial client render identical; hydrate content after mount.
+    return <div className="note-content" aria-live="polite" />;
   }
   return <p style={emptyContentStyle}>No content yet.</p>;
 }
