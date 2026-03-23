@@ -12,7 +12,7 @@ import {
 } from "@/components/roadmap/roadmapStyles";
 import { formatRoadmapDate } from "@/lib/roadmap-date";
 import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   item: RoadmapItemWithSlug | null;
@@ -36,6 +36,7 @@ export function AdminRoadmapSidePanel({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Local field states — kept in sync with item prop
   const [title, setTitle] = useState(item?.title ?? "");
@@ -46,6 +47,10 @@ export function AdminRoadmapSidePanel({
 
   // Sync fields when the selected item changes
   useEffect(() => {
+    if (copyTimerRef.current !== null) {
+      clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = null;
+    }
     setTitle(item?.title ?? "");
     setDescription(item?.description ?? "");
     setIsGroupCompleted(item?.is_group_completed ?? false);
@@ -53,6 +58,25 @@ export function AdminRoadmapSidePanel({
     setSaveStatus("idle");
     setCopyStatus("idle");
   }, [item?.id, item?.title, item?.description, item?.is_group_completed]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  function scheduleCopyStatusReset() {
+    if (copyTimerRef.current !== null) {
+      clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = setTimeout(() => {
+      setCopyStatus("idle");
+      copyTimerRef.current = null;
+    }, 1500);
+  }
 
   async function handleCopyRoadmapItemId(id: string) {
     if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
@@ -63,10 +87,10 @@ export function AdminRoadmapSidePanel({
     try {
       await navigator.clipboard.writeText(id);
       setCopyStatus("copied");
-      window.setTimeout(() => setCopyStatus("idle"), 1500);
+      scheduleCopyStatusReset();
     } catch {
       setCopyStatus("error");
-      window.setTimeout(() => setCopyStatus("idle"), 1500);
+      scheduleCopyStatusReset();
     }
   }
 

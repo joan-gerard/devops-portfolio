@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { AdminHeader, AdminSidebar } from "@/components/dashboard";
 import { AuthSessionProvider } from "@/components/providers/AuthSessionProvider";
+import packageJson from "@/package.json";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -10,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <AuthSessionProvider session={session}>
       <div style={{ display: "flex", minHeight: "100vh" }}>
-        <AdminSidebar />
+        <AdminSidebar appVersion={packageJson.version} />
         <div
           style={{
             marginLeft: "var(--sidebar-width)",
