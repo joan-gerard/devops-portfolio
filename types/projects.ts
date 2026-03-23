@@ -14,6 +14,9 @@ export type Project = {
    * test content from real portfolio entries and hide it from public views.
    */
   e2e_only?: boolean;
+  roadmap_item_id?: string | null;
+  roadmap_item_status?: "not_started" | "in_progress" | "completed" | null;
+  roadmap_item_title?: string | null;
 };
 
 export type PublicProject = Omit<Project, "published" | "created_at">;

@@ -108,6 +108,23 @@ describe("useProjectEdit", () => {
 
       expect(result.current.saveStatus).toBe("error");
     });
+
+    it("does not PATCH while typing roadmap item id", async () => {
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+      act(() =>
+        result.current.handleChange("roadmap_item_id", "33333333-3333-3333-3333-333333333333")
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.current.fields.roadmap_item_id).toBe("33333333-3333-3333-3333-333333333333");
+    });
   });
 
   describe("handleSlugRegenerate", () => {
@@ -181,6 +198,34 @@ describe("useProjectEdit", () => {
 
       expect(result.current.published).toBe(true);
       expect(result.current.saveStatus).toBe("error");
+    });
+  });
+
+  describe("roadmap linking", () => {
+    it("links a roadmap item and stores its status", async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "completed", title: "Ship project" }),
+      } as Response);
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() =>
+        result.current.handleChange("roadmap_item_id", "33333333-3333-3333-3333-333333333334")
+      );
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.fields.roadmap_item_id);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/roadmap/33333333-3333-3333-3333-333333333334",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: "project-1" }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("completed");
+      expect(result.current.roadmapTitle).toBe("Ship project");
+      expect(result.current.saveStatus).toBe("saved");
     });
   });
 });

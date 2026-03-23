@@ -14,6 +14,7 @@ function buildItem(overrides: Partial<RoadmapItemWithSlug> = {}): RoadmapItemWit
     position_y: 0,
     linked_page_id: null,
     linked_page_slug: null,
+    linked_page_type: null,
     is_group_completed: false,
     completed_at: null,
     created_at: "2024-01-01T00:00:00.000Z",
@@ -144,44 +145,54 @@ describe("AdminRoadmapSidePanel", () => {
     });
   });
 
-  it("sends null linked_page_id when input is cleared", async () => {
-    const item = buildItem({ linked_page_id: "abc-123" });
-    const updatedItem = buildItem({ linked_page_id: null });
-
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => updatedItem,
-    } as Response);
-
-    const onUpdate = vi.fn();
-
-    render(
+  it("shows linked note/project status as read-only context", () => {
+    const noteLinkedItem = buildItem({
+      linked_page_slug: "docker-fundamentals",
+      linked_page_type: "note",
+    });
+    const { rerender } = render(
       <AdminRoadmapSidePanel
-        item={item}
+        item={noteLinkedItem}
         onClose={() => {}}
-        onUpdate={onUpdate}
+        onUpdate={() => {}}
         onDelete={async () => {}}
         onBeginSaving={() => {}}
         onFinishSaving={() => {}}
       />
     );
 
-    const input = screen.getByPlaceholderText(/paste page uuid/i) as HTMLInputElement;
-    expect(input.value).toBe(item.linked_page_id);
+    expect(screen.getByText(/Linked to note:/i)).toBeInTheDocument();
+    expect(screen.getByText("/notes/docker-fundamentals")).toBeInTheDocument();
 
-    fireEvent.change(input, { target: { value: "" } });
-    fireEvent.blur(input);
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        `/api/roadmap/${item.id}`,
-        expect.objectContaining({
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ linked_page_id: null }),
-        })
-      );
+    const projectLinkedItem = buildItem({
+      linked_page_slug: "devops-portfolio",
+      linked_page_type: "project",
     });
+    rerender(
+      <AdminRoadmapSidePanel
+        item={projectLinkedItem}
+        onClose={() => {}}
+        onUpdate={() => {}}
+        onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
+      />
+    );
+    expect(screen.getByText(/Linked to project:/i)).toBeInTheDocument();
+    expect(screen.getByText("/projects/devops-portfolio")).toBeInTheDocument();
+
+    const unlinkedItem = buildItem({ linked_page_slug: null, linked_page_type: null });
+    rerender(
+      <AdminRoadmapSidePanel
+        item={unlinkedItem}
+        onClose={() => {}}
+        onUpdate={() => {}}
+        onDelete={async () => {}}
+        onBeginSaving={() => {}}
+        onFinishSaving={() => {}}
+      />
+    );
+    expect(screen.getByText(/Not linked to a note or project/i)).toBeInTheDocument();
   });
 
   it("shows roadmap item ID for learning/project nodes only", () => {

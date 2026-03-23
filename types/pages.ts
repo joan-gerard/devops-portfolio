@@ -16,6 +16,9 @@ export type Page = {
   created_at?: string;
   updated_at: string;
   e2e_only?: boolean;
+  roadmap_item_id?: string | null;
+  roadmap_item_status?: "not_started" | "in_progress" | "completed" | null;
+  roadmap_item_title?: string | null;
 };
 
 export type PublicNote = Omit<Page, "published" | "created_at">;

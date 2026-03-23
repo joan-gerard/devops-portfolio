@@ -3,6 +3,7 @@
 import type { Project } from "@/types/projects";
 import Link from "next/link";
 import { DeleteProjectButton } from "./DeleteProjectButton";
+import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
 
 function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -18,12 +19,16 @@ type ProjectRowProps = {
 };
 
 export function ProjectRow({ project, isLast }: ProjectRowProps) {
+  const roadmapStatusOption = ROADMAP_STATUS_OPTIONS.find(
+    (option) => option.value === project.roadmap_item_status
+  );
+
   return (
     <Link
       href={`/admin/projects/${project.id}`}
       style={{
         display: "grid",
-        gridTemplateColumns: "1fr auto auto auto auto",
+        gridTemplateColumns: "1fr auto auto auto auto auto",
         gap: "16px",
         alignItems: "center",
         padding: "12px 16px",
@@ -86,6 +91,23 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
         }}
       >
         {project.published ? "Published" : "Draft"}
+      </span>
+
+      {/* Roadmap */}
+      <span
+        style={{
+          fontSize: "10px",
+          padding: "2px 8px",
+          borderRadius: "2px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          background: roadmapStatusOption ? "var(--surface-2)" : "var(--surface-2)",
+          color: roadmapStatusOption ? roadmapStatusOption.color : "var(--text-muted)",
+          border: `1px solid ${roadmapStatusOption ? roadmapStatusOption.color : "var(--border)"}`,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {roadmapStatusOption ? roadmapStatusOption.label : "Not linked"}
       </span>
 
       {/* Updated */}

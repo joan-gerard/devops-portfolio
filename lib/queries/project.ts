@@ -7,9 +7,30 @@ const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
 export async function getAllProjects() {
   return sql<Project[]>`
-    SELECT id, title, slug, description, tech_stack, github_url, live_url, published, created_at, updated_at, e2e_only
-    FROM projects
-    ORDER BY updated_at DESC
+    SELECT
+      p.id,
+      p.title,
+      p.slug,
+      p.description,
+      p.tech_stack,
+      p.github_url,
+      p.live_url,
+      p.published,
+      p.created_at,
+      p.updated_at,
+      p.e2e_only,
+      r.id AS roadmap_item_id,
+      r.status AS roadmap_item_status,
+      r.title AS roadmap_item_title
+    FROM projects p
+    LEFT JOIN LATERAL (
+      SELECT id, status, title
+      FROM roadmap_items
+      WHERE linked_page_id = p.id
+      ORDER BY updated_at DESC
+      LIMIT 1
+    ) r ON true
+    ORDER BY p.updated_at DESC
   `;
 }
 
@@ -46,8 +67,21 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
 }
 
 export async function getProjectById(id: string) {
-  const [project] = await sql`
-    SELECT * FROM projects WHERE id = ${id}
+  const [project] = await sql<Project[]>`
+    SELECT
+      p.*,
+      r.id AS roadmap_item_id,
+      r.status AS roadmap_item_status,
+      r.title AS roadmap_item_title
+    FROM projects p
+    LEFT JOIN LATERAL (
+      SELECT id, status, title
+      FROM roadmap_items
+      WHERE linked_page_id = p.id
+      ORDER BY updated_at DESC
+      LIMIT 1
+    ) r ON true
+    WHERE p.id = ${id}
   `;
   return project ?? null;
 }

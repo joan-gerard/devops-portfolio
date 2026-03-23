@@ -16,6 +16,7 @@ import { ProjectEditFormField } from "./ProjectEditFormField";
 import { ProjectSlugField } from "./ProjectSlugField";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { inputStyle } from "@/components/admin/formStyles";
+import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
 
 export function ProjectEditClient({ project }: { project: Project }) {
   const {
@@ -28,7 +29,15 @@ export function ProjectEditClient({ project }: { project: Project }) {
     handleChange,
     handleSlugRegenerate,
     togglePublished,
+    roadmapStatus,
+    roadmapTitle,
+    saveRoadmapLink,
   } = useProjectEdit(project);
+  const roadmapStatusLabel =
+    roadmapStatus != null
+      ? (ROADMAP_STATUS_OPTIONS.find((option) => option.value === roadmapStatus)?.label ??
+        roadmapStatus)
+      : null;
 
   return (
     <div style={{ maxWidth: "680px", margin: "0 auto" }}>
@@ -76,6 +85,30 @@ export function ProjectEditClient({ project }: { project: Project }) {
             }}
             placeholder="What did you build and why? What problems did it solve?"
             aria-label="Project description"
+          />
+        </ProjectEditFormField>
+
+        <ProjectEditFormField
+          label="Roadmap item ID"
+          hint={
+            roadmapStatus ? (
+              <span style={{ color: "var(--accent)" }}>
+                Linked roadmap status: {roadmapStatusLabel}
+                {roadmapTitle ? ` (${roadmapTitle})` : ""}
+              </span>
+            ) : (
+              "Optional: paste a roadmap item UUID to link this project."
+            )
+          }
+        >
+          <input
+            type="text"
+            value={fields.roadmap_item_id}
+            onChange={(event) => handleChange("roadmap_item_id", event.target.value)}
+            onBlur={() => saveRoadmapLink(fields.roadmap_item_id)}
+            style={inputStyle}
+            placeholder="Roadmap item UUID"
+            aria-label="Roadmap item ID"
           />
         </ProjectEditFormField>
 

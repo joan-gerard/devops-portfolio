@@ -18,6 +18,8 @@ import DeleteNoteButton from "../notes/DeleteNoteButton";
 import { EditorFormField } from "./EditorFormField";
 import { EditorSlugField } from "./EditorSlugField";
 import { EditorTitleInput } from "./EditorTitleInput";
+import { inputStyle } from "@/components/admin/formStyles";
+import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
 
 export function EditorPageClient({ note }: { note: Page }) {
   const {
@@ -32,7 +34,17 @@ export function EditorPageClient({ note }: { note: Page }) {
     handleSlugChange,
     handleSlugRegenerate,
     togglePublished,
+    roadmapItemId,
+    roadmapStatus,
+    roadmapTitle,
+    setRoadmapItemId,
+    saveRoadmapLink,
   } = useEditorPage(note);
+  const roadmapStatusLabel =
+    roadmapStatus != null
+      ? (ROADMAP_STATUS_OPTIONS.find((option) => option.value === roadmapStatus)?.label ??
+        roadmapStatus)
+      : null;
 
   return (
     <div style={{ maxWidth: "860px", margin: "0 auto" }}>
@@ -63,6 +75,30 @@ export function EditorPageClient({ note }: { note: Page }) {
           onSave={setSaveStatus}
           fieldName="tags"
           apiPath="pages"
+        />
+      </EditorFormField>
+
+      <EditorFormField
+        label="Roadmap item ID"
+        hint={
+          roadmapStatus ? (
+            <span style={{ color: "var(--accent)" }}>
+              Linked roadmap status: {roadmapStatusLabel}
+              {roadmapTitle ? ` (${roadmapTitle})` : ""}
+            </span>
+          ) : (
+            "Optional: paste a roadmap item UUID to link this note."
+          )
+        }
+      >
+        <input
+          type="text"
+          value={roadmapItemId}
+          onChange={(event) => setRoadmapItemId(event.target.value)}
+          onBlur={() => saveRoadmapLink(roadmapItemId)}
+          style={inputStyle}
+          placeholder="Roadmap item UUID"
+          aria-label="Roadmap item ID"
         />
       </EditorFormField>
 

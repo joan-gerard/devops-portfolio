@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Project } from "@/types/projects";
 import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
 import type { SaveStatus } from "@/lib/adminSave";
+import type { RoadmapItemStatus } from "@/types/roadmap";
 
 export type { SaveStatus } from "@/lib/adminSave";
 
@@ -13,6 +14,7 @@ export type ProjectEditFields = {
   description: string;
   github_url: string;
   live_url: string;
+  roadmap_item_id: string;
 };
 
 /**
@@ -31,12 +33,18 @@ export type ProjectEditFields = {
 export function useProjectEdit(project: Project) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(project.published);
+  const [linkedRoadmapItemId, setLinkedRoadmapItemId] = useState(project.roadmap_item_id ?? "");
+  const [roadmapStatus, setRoadmapStatus] = useState<RoadmapItemStatus | null>(
+    project.roadmap_item_status ?? null
+  );
+  const [roadmapTitle, setRoadmapTitle] = useState(project.roadmap_item_title ?? null);
   const [fields, setFields] = useState<ProjectEditFields>({
     title: project.title,
     slug: project.slug,
     description: project.description,
     github_url: project.github_url ?? "",
     live_url: project.live_url ?? "",
+    roadmap_item_id: project.roadmap_item_id ?? "",
   });
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,6 +82,7 @@ export function useProjectEdit(project: Project) {
 
   function handleChange(field: keyof ProjectEditFields, value: string) {
     setFields((prev) => ({ ...prev, [field]: value }));
+    if (field === "roadmap_item_id") return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveField({ [field]: value });
@@ -107,6 +116,58 @@ export function useProjectEdit(project: Project) {
     }
   }
 
+  async function saveRoadmapLink(nextRoadmapItemIdRaw: string) {
+    const nextRoadmapItemId = nextRoadmapItemIdRaw.trim();
+    const previousRoadmapItemId = linkedRoadmapItemId.trim();
+    if (nextRoadmapItemId === previousRoadmapItemId) return;
+
+    setSaveStatus("saving");
+    try {
+      if (nextRoadmapItemId) {
+        const linkRes = await fetch(`/api/roadmap/${nextRoadmapItemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ linked_page_id: project.id }),
+        });
+        if (!linkRes.ok) throw new Error();
+
+        const linkedRoadmapItem = (await linkRes.json()) as {
+          status: RoadmapItemStatus;
+          title: string;
+        };
+        setLinkedRoadmapItemId(nextRoadmapItemId);
+        setFields((prev) => ({ ...prev, roadmap_item_id: nextRoadmapItemId }));
+        setRoadmapStatus(linkedRoadmapItem.status);
+        setRoadmapTitle(linkedRoadmapItem.title);
+
+        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
+          await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          }).catch(() => null);
+        }
+      } else {
+        if (previousRoadmapItemId) {
+          const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          });
+          if (!unlinkRes.ok) throw new Error();
+        }
+        setLinkedRoadmapItemId("");
+        setFields((prev) => ({ ...prev, roadmap_item_id: "" }));
+        setRoadmapStatus(null);
+        setRoadmapTitle(null);
+      }
+
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   return {
     fields,
     setFields,
@@ -118,5 +179,8 @@ export function useProjectEdit(project: Project) {
     handleChange,
     handleSlugRegenerate,
     togglePublished,
+    roadmapStatus,
+    roadmapTitle,
+    saveRoadmapLink,
   };
 }

@@ -89,7 +89,7 @@ export function NotesList({ notes }: NotesListProps) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto auto auto",
+              gridTemplateColumns: "1fr auto auto auto auto auto",
               gap: "16px",
               padding: "10px 16px",
               background: "var(--surface)",
@@ -102,7 +102,8 @@ export function NotesList({ notes }: NotesListProps) {
           >
             <span>Title</span>
             <span>Tags</span>
-            <span>Status</span>
+            <span>Publish</span>
+            <span>Roadmap</span>
             <span>Updated</span>
             <span></span>
           </div>

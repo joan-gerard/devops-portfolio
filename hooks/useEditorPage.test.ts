@@ -161,4 +161,30 @@ describe("useEditorPage", () => {
       expect(result.current.saveStatus).toBe("error");
     });
   });
+
+  describe("roadmap linking", () => {
+    it("links a roadmap item and stores its status", async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "in_progress", title: "Roadmap node title" }),
+      } as Response);
+      const { result } = renderHook(() => useEditorPage(mockNote));
+
+      act(() => result.current.setRoadmapItemId("33333333-3333-3333-3333-333333333333"));
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.roadmapItemId);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/roadmap/33333333-3333-3333-3333-333333333333",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: "note-1" }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("in_progress");
+      expect(result.current.roadmapTitle).toBe("Roadmap node title");
+      expect(result.current.saveStatus).toBe("saved");
+    });
+  });
 });

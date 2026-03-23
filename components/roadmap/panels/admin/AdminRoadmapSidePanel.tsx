@@ -40,7 +40,6 @@ export function AdminRoadmapSidePanel({
   // Local field states — kept in sync with item prop
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [linkedPageId, setLinkedPageId] = useState(item?.linked_page_id ?? "");
   const [isGroupCompleted, setIsGroupCompleted] = useState<boolean>(
     item?.is_group_completed ?? false
   );
@@ -49,12 +48,11 @@ export function AdminRoadmapSidePanel({
   useEffect(() => {
     setTitle(item?.title ?? "");
     setDescription(item?.description ?? "");
-    setLinkedPageId(item?.linked_page_id ?? "");
     setIsGroupCompleted(item?.is_group_completed ?? false);
     setConfirmDelete(false);
     setSaveStatus("idle");
     setCopyStatus("idle");
-  }, [item?.id, item?.title, item?.description, item?.linked_page_id, item?.is_group_completed]);
+  }, [item?.id, item?.title, item?.description, item?.is_group_completed]);
 
   async function handleCopyRoadmapItemId(id: string) {
     if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
@@ -472,9 +470,9 @@ export function AdminRoadmapSidePanel({
               </div>
             )}
 
-            {/* Linked page ID — only for learning/project */}
+            {/* Linked content — only for learning/project */}
             {item.type !== "group" && (
-              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <span
                   style={{
                     fontFamily: "var(--font-mono)",
@@ -484,35 +482,33 @@ export function AdminRoadmapSidePanel({
                     letterSpacing: "0.1em",
                   }}
                 >
-                  Linked page UUID
-                  {item.linked_page_slug && (
-                    <span style={{ color: "var(--accent)", marginLeft: 6, textTransform: "none" }}>
-                      → /notes/{item.linked_page_slug}
-                    </span>
-                  )}
+                  Linked content
                 </span>
-                <input
-                  value={linkedPageId}
-                  onChange={(e) => setLinkedPageId(e.target.value)}
-                  onBlur={() => {
-                    const val = linkedPageId.trim() || null;
-                    if (val !== item.linked_page_id) patch({ linked_page_id: val });
-                  }}
-                  placeholder="paste page UUID"
+                <div
                   style={{
                     background: "var(--surface-2)",
                     border: "1px solid var(--border)",
                     borderRadius: 4,
-                    color: "var(--text)",
+                    color: "var(--text-muted)",
                     fontFamily: "var(--font-mono)",
                     fontSize: 11,
                     padding: "8px 10px",
-                    outline: "none",
-                    width: "100%",
-                    boxSizing: "border-box",
+                    lineHeight: 1.5,
                   }}
-                />
-              </label>
+                >
+                  {item.linked_page_slug && item.linked_page_type ? (
+                    <>
+                      Linked to {item.linked_page_type === "note" ? "note" : "project"}:{" "}
+                      <span style={{ color: "var(--accent)" }}>
+                        /{item.linked_page_type === "note" ? "notes" : "projects"}/
+                        {item.linked_page_slug}
+                      </span>
+                    </>
+                  ) : (
+                    "Not linked to a note or project"
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Completed at */}

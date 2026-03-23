@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Page } from "@/types/pages";
 import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
 import type { SaveStatus } from "@/lib/adminSave";
+import type { RoadmapItemStatus } from "@/types/roadmap";
 
 export type { SaveStatus } from "@/lib/adminSave";
 
@@ -25,6 +26,12 @@ export function useEditorPage(note: Page) {
   const [slug, setSlug] = useState(note.slug);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(note.published);
+  const [roadmapItemId, setRoadmapItemId] = useState(note.roadmap_item_id ?? "");
+  const [linkedRoadmapItemId, setLinkedRoadmapItemId] = useState(note.roadmap_item_id ?? "");
+  const [roadmapStatus, setRoadmapStatus] = useState<RoadmapItemStatus | null>(
+    note.roadmap_item_status ?? null
+  );
+  const [roadmapTitle, setRoadmapTitle] = useState(note.roadmap_item_title ?? null);
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,6 +117,58 @@ export function useEditorPage(note: Page) {
     slugTimer.current = setTimeout(() => saveSlugFromTitle(generatedSlug), DEBOUNCE_MS);
   }
 
+  async function saveRoadmapLink(nextRoadmapItemIdRaw: string) {
+    const nextRoadmapItemId = nextRoadmapItemIdRaw.trim();
+    const previousRoadmapItemId = linkedRoadmapItemId.trim();
+    if (nextRoadmapItemId === previousRoadmapItemId) return;
+
+    setSaveStatus("saving");
+    try {
+      if (nextRoadmapItemId) {
+        const linkRes = await fetch(`/api/roadmap/${nextRoadmapItemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ linked_page_id: note.id }),
+        });
+        if (!linkRes.ok) throw new Error();
+
+        const linkedRoadmapItem = (await linkRes.json()) as {
+          status: RoadmapItemStatus;
+          title: string;
+        };
+        setLinkedRoadmapItemId(nextRoadmapItemId);
+        setRoadmapItemId(nextRoadmapItemId);
+        setRoadmapStatus(linkedRoadmapItem.status);
+        setRoadmapTitle(linkedRoadmapItem.title);
+
+        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
+          await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          }).catch(() => null);
+        }
+      } else {
+        if (previousRoadmapItemId) {
+          const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          });
+          if (!unlinkRes.ok) throw new Error();
+        }
+        setLinkedRoadmapItemId("");
+        setRoadmapItemId("");
+        setRoadmapStatus(null);
+        setRoadmapTitle(null);
+      }
+
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   return {
     title,
     slug,
@@ -122,5 +181,10 @@ export function useEditorPage(note: Page) {
     handleSlugChange,
     handleSlugRegenerate,
     togglePublished,
+    roadmapItemId,
+    roadmapStatus,
+    roadmapTitle,
+    setRoadmapItemId,
+    saveRoadmapLink,
   };
 }
