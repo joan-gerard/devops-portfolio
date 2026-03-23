@@ -50,7 +50,7 @@ export function RoadmapStatusBadge({ statusLabel, style }: RoadmapStatusBadgePro
         display: "inline-flex",
         alignItems: "center",
         width: "fit-content",
-        padding: "2px 8px",
+        padding: "4px 10px",
         borderRadius: "99px",
         whiteSpace: "nowrap",
         ...getBadgeColors(normalizedStatus),

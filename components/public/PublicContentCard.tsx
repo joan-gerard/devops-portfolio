@@ -1,6 +1,6 @@
 "use client";
 
-import { cardContentStyle, tagStyle } from "@/components/public/publicPageStyles";
+import { tagStyle } from "@/components/public/publicPageStyles";
 import { RoadmapStatusBadge } from "@/components/shared/RoadmapStatusBadge";
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ type PublicContentCardProps = {
   href: string;
   title: string;
   roadmapStatus: string;
-  preview: string;
+  summary: string;
   chips: string[];
   updatedAt?: string;
   hasGithubUrl?: boolean;
@@ -51,11 +51,34 @@ const iconBadgeStyle: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
+const cardContentStyle: React.CSSProperties = {
+  border: "0.5px solid var(--border)",
+  borderRadius: "6px",
+  padding: "24px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "24px",
+  transition: "border-color 0.15s",
+};
+
+const topSectionStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+};
+
+const bottomSectionStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  marginTop: "auto",
+  gap: "10px",
+};
+
 export function PublicContentCard({
   href,
   title,
   roadmapStatus,
-  preview,
+  summary,
   chips,
   updatedAt,
   hasGithubUrl = false,
@@ -74,73 +97,78 @@ export function PublicContentCard({
         className="u-border-accent-hover"
         data-testid={testId}
       >
-        <RoadmapStatusBadge statusLabel={roadmapStatus} style={{ marginBottom: "10px" }} />
+        <div style={topSectionStyle}>
+          <RoadmapStatusBadge statusLabel={roadmapStatus} style={{ marginBottom: "10px" }} />
 
-        <h2
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontSize: "20px",
-            fontWeight: "700",
-            color: "var(--text)",
-            marginBottom: "8px",
-            lineHeight: 1.3,
-          }}
-        >
-          {title}
-        </h2>
+          <h2
+            style={{
+              fontFamily: "var(--font-syne)",
+              fontSize: "20px",
+              fontWeight: "700",
+              color: "var(--text)",
+              marginBottom: "8px",
+              lineHeight: 1.3,
+            }}
+          >
+            {title}
+          </h2>
 
-        <p
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "12px",
-            color: "var(--text-dim)",
-            lineHeight: 1.7,
-          }}
-        >
-          {preview}
-        </p>
-
-        {chips.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {chips.map((chip) => (
-              <span key={chip} style={tagStyle}>
-                {chip}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div style={footerRowStyle}>
           <p
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              color: "var(--text-muted)",
-              whiteSpace: "nowrap",
+              fontSize: "12px",
+              color: "var(--text-dim)",
+              lineHeight: 1.7,
+              marginBottom: "10px",
             }}
           >
-            {updatedAt ? `Updated ${formatDate(updatedAt)}` : "Updated —"}
+            {summary}
           </p>
+        </div>
 
-          <div style={iconRowStyle}>
-            {hasGithubUrl && (
-              <span
-                style={iconBadgeStyle}
-                title="GitHub URL available"
-                aria-label="GitHub URL available"
-              >
-                GH
-              </span>
-            )}
-            {hasLiveUrl && (
-              <span
-                style={iconBadgeStyle}
-                title="Live URL available"
-                aria-label="Live URL available"
-              >
-                LIVE
-              </span>
-            )}
+        <div style={bottomSectionStyle}>
+          {chips.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+              {chips.map((chip) => (
+                <span key={chip} style={tagStyle}>
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div style={footerRowStyle}>
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
+                color: "var(--text-muted)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {updatedAt ? `Updated ${formatDate(updatedAt)}` : "Updated —"}
+            </p>
+
+            <div style={iconRowStyle}>
+              {hasGithubUrl && (
+                <span
+                  style={iconBadgeStyle}
+                  title="GitHub URL available"
+                  aria-label="GitHub URL available"
+                >
+                  GH
+                </span>
+              )}
+              {hasLiveUrl && (
+                <span
+                  style={iconBadgeStyle}
+                  title="Live URL available"
+                  aria-label="Live URL available"
+                >
+                  LIVE
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </article>

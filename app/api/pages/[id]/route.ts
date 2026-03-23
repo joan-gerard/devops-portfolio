@@ -72,13 +72,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
-  const { title, slug, content, tags, published } = body as {
+  const { title, slug, summary, content, tags, published } = body as {
     title?: string;
     slug?: string;
+    summary?: string;
     content?: Record<string, unknown>;
     tags?: string[];
     published?: boolean;
   };
+
+  if (summary !== undefined && typeof summary !== "string") {
+    return NextResponse.json({ error: "summary must be a string" }, { status: 400 });
+  }
 
   const slugToWrite = slug !== undefined && slug !== null ? normalizeSlug(String(slug)) : undefined;
   if (slugToWrite !== undefined) {
@@ -95,6 +100,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       UPDATE pages SET
         title     = COALESCE(${title ?? null},     title),
         slug      = COALESCE(${slugToWrite ?? null}, slug),
+        summary   = COALESCE(${summary ?? null},   summary),
         content   = COALESCE(${content ? sql.json(content as JSONValue) : null}, content),
         tags      = COALESCE(${tags ?? null},      tags),
         published = COALESCE(${published ?? null}, published),

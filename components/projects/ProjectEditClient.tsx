@@ -73,6 +73,21 @@ export function ProjectEditClient({ project }: { project: Project }) {
           published={published}
         />
 
+        <ProjectEditFormField label="Summary">
+          <textarea
+            value={fields.summary}
+            onChange={(e) => handleChange("summary", e.target.value)}
+            rows={3}
+            style={{
+              ...inputStyle,
+              resize: "vertical",
+              lineHeight: "1.6",
+            }}
+            placeholder="Short summary shown on cards and listing pages"
+            aria-label="Project summary"
+          />
+        </ProjectEditFormField>
+
         <ProjectEditFormField label="Description">
           <textarea
             value={fields.description}

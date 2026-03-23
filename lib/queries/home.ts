@@ -24,6 +24,7 @@ export async function getHomepageData(): Promise<{
             p.id,
             p.title,
             p.slug,
+            p.summary,
             p.tags,
             p.updated_at,
             r.status AS roadmap_item_status
@@ -46,6 +47,7 @@ export async function getHomepageData(): Promise<{
             p.id,
             p.title,
             p.slug,
+            p.summary,
             p.description,
             p.tech_stack,
             p.github_url,

@@ -2,6 +2,7 @@ export type Project = {
   id: string;
   title: string;
   slug: string;
+  summary?: string;
   description: string;
   tech_stack: string[];
   github_url: string | null;

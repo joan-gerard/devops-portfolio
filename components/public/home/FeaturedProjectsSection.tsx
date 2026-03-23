@@ -28,7 +28,7 @@ export function FeaturedProjectsSection({ projects }: FeaturedProjectsSectionPro
                   ? ROADMAP_STATUS_LABEL[project.roadmap_item_status]
                   : "Not linked"
               }
-              preview={project.description?.trim() || "Preview coming soon."}
+              summary={project.summary?.trim() || "Summary coming soon."}
               chips={project.tech_stack}
               updatedAt={project.updated_at}
               hasGithubUrl={Boolean(project.github_url)}

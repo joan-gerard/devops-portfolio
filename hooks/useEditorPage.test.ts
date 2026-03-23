@@ -7,6 +7,7 @@ const mockNote: Page = {
   id: "note-1",
   title: "Initial Title",
   slug: "initial-slug",
+  summary: "Initial summary",
   tags: [],
   published: false,
   updated_at: "2024-01-01T00:00:00Z",
@@ -28,6 +29,7 @@ describe("useEditorPage", () => {
       const { result } = renderHook(() => useEditorPage(mockNote));
       expect(result.current.title).toBe("Initial Title");
       expect(result.current.slug).toBe("initial-slug");
+      expect(result.current.summary).toBe("Initial summary");
       expect(result.current.published).toBe(false);
       expect(result.current.saveStatus).toBe("idle");
       expect(result.current.statusLabel).toBe("");
@@ -118,6 +120,31 @@ describe("useEditorPage", () => {
         expect.objectContaining({
           method: "PATCH",
           body: JSON.stringify({ slug: "new-slug" }),
+        })
+      );
+      expect(result.current.saveStatus).toBe("saved");
+    });
+  });
+
+  describe("debounced summary save", () => {
+    it("updates local summary and PATCHes after debounce", async () => {
+      const { result } = renderHook(() => useEditorPage(mockNote));
+
+      act(() => result.current.handleSummaryChange("Updated summary"));
+      expect(result.current.summary).toBe("Updated summary");
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/pages/note-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ summary: "Updated summary" }),
         })
       );
       expect(result.current.saveStatus).toBe("saved");

@@ -28,7 +28,7 @@ export function RecentNotesSection({ notes }: RecentNotesSectionProps) {
                   ? ROADMAP_STATUS_LABEL[note.roadmap_item_status]
                   : "Not linked"
               }
-              preview="Preview coming soon."
+              summary={note.summary?.trim() || "Summary coming soon."}
               chips={note.tags.slice(0, 3)}
               updatedAt={note.updated_at}
             />

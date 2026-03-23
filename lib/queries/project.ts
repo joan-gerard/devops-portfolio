@@ -11,6 +11,7 @@ export async function getAllProjects() {
       p.id,
       p.title,
       p.slug,
+      p.summary,
       p.description,
       p.tech_stack,
       p.github_url,
@@ -43,6 +44,7 @@ export type PublishedProject = Pick<
   | "id"
   | "title"
   | "slug"
+  | "summary"
   | "description"
   | "tech_stack"
   | "github_url"
@@ -67,6 +69,7 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
           p.id,
           p.title,
           p.slug,
+          p.summary,
           p.description,
           p.tech_stack,
           p.github_url,
@@ -112,7 +115,7 @@ export async function getProjectById(id: string) {
 
 export const getProjectBySlug = cache(async (slug: string): Promise<PublicProject | null> => {
   const rows = await sql<PublicProject[]>`
-    SELECT id, title, slug, description, tech_stack, github_url, live_url, updated_at
+    SELECT id, title, slug, summary, description, tech_stack, github_url, live_url, updated_at
     FROM projects
     WHERE slug = ${slug}
       AND published = true

@@ -11,6 +11,7 @@ export type { SaveStatus } from "@/lib/adminSave";
 export type ProjectEditFields = {
   title: string;
   slug: string;
+  summary: string;
   description: string;
   github_url: string;
   live_url: string;
@@ -41,6 +42,7 @@ export function useProjectEdit(project: Project) {
   const [fields, setFields] = useState<ProjectEditFields>({
     title: project.title,
     slug: project.slug,
+    summary: project.summary ?? "",
     description: project.description,
     github_url: project.github_url ?? "",
     live_url: project.live_url ?? "",

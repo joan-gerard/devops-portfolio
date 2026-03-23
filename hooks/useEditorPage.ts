@@ -24,6 +24,7 @@ export type { SaveStatus } from "@/lib/adminSave";
 export function useEditorPage(note: Page) {
   const [title, setTitle] = useState(note.title);
   const [slug, setSlug] = useState(note.slug);
+  const [summary, setSummary] = useState(note.summary ?? "");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(note.published);
   const [roadmapItemId, setRoadmapItemId] = useState(note.roadmap_item_id ?? "");
@@ -35,6 +36,7 @@ export function useEditorPage(note: Page) {
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const summaryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function saveTitle(newTitle: string) {
     setSaveStatus("saving");
@@ -81,6 +83,21 @@ export function useEditorPage(note: Page) {
     }
   }
 
+  async function saveSummary(newSummary: string) {
+    setSaveStatus("saving");
+    try {
+      const res = await fetch(`/api/pages/${note.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summary: newSummary }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   async function togglePublished() {
     const newValue = !published;
     setPublished(newValue);
@@ -115,6 +132,12 @@ export function useEditorPage(note: Page) {
     setSlug(generatedSlug);
     if (slugTimer.current) clearTimeout(slugTimer.current);
     slugTimer.current = setTimeout(() => saveSlugFromTitle(generatedSlug), DEBOUNCE_MS);
+  }
+
+  function handleSummaryChange(newSummary: string) {
+    setSummary(newSummary);
+    if (summaryTimer.current) clearTimeout(summaryTimer.current);
+    summaryTimer.current = setTimeout(() => saveSummary(newSummary), DEBOUNCE_MS);
   }
 
   async function saveRoadmapLink(nextRoadmapItemIdRaw: string) {
@@ -174,6 +197,7 @@ export function useEditorPage(note: Page) {
   return {
     title,
     slug,
+    summary,
     saveStatus,
     setSaveStatus,
     published,
@@ -182,6 +206,7 @@ export function useEditorPage(note: Page) {
     handleTitleChange,
     handleSlugChange,
     handleSlugRegenerate,
+    handleSummaryChange,
     togglePublished,
     roadmapItemId,
     roadmapStatus,

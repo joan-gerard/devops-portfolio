@@ -25,6 +25,7 @@ export function EditorPageClient({ note }: { note: Page }) {
   const {
     title,
     slug,
+    summary,
     saveStatus,
     setSaveStatus,
     published,
@@ -33,6 +34,7 @@ export function EditorPageClient({ note }: { note: Page }) {
     handleTitleChange,
     handleSlugChange,
     handleSlugRegenerate,
+    handleSummaryChange,
     togglePublished,
     roadmapItemId,
     roadmapStatus,
@@ -67,6 +69,21 @@ export function EditorPageClient({ note }: { note: Page }) {
         onRegenerateFromTitle={() => handleSlugRegenerate(slugify(title))}
         published={published}
       />
+
+      <EditorFormField label="Summary">
+        <textarea
+          value={summary}
+          onChange={(event) => handleSummaryChange(event.target.value)}
+          rows={3}
+          style={{
+            ...inputStyle,
+            resize: "vertical",
+            lineHeight: "1.6",
+          }}
+          placeholder="Short summary shown on cards and listing pages"
+          aria-label="Note summary"
+        />
+      </EditorFormField>
 
       <EditorFormField label="Tags">
         <TagInput

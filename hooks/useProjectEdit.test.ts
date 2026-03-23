@@ -7,6 +7,7 @@ const mockProject: Project = {
   id: "project-1",
   title: "Initial Project",
   slug: "initial-project",
+  summary: "Initial summary",
   description: "Initial description",
   tech_stack: [],
   github_url: null,
@@ -32,6 +33,7 @@ describe("useProjectEdit", () => {
       const { result } = renderHook(() => useProjectEdit(mockProject));
       expect(result.current.fields.title).toBe("Initial Project");
       expect(result.current.fields.slug).toBe("initial-project");
+      expect(result.current.fields.summary).toBe("Initial summary");
       expect(result.current.fields.description).toBe("Initial description");
       expect(result.current.published).toBe(false);
       expect(result.current.saveStatus).toBe("idle");
@@ -107,6 +109,30 @@ describe("useProjectEdit", () => {
       });
 
       expect(result.current.saveStatus).toBe("error");
+    });
+
+    it("updates summary immediately and PATCHes after debounce", async () => {
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() => result.current.handleChange("summary", "Updated summary"));
+      expect(result.current.fields.summary).toBe("Updated summary");
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/projects/project-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ summary: "Updated summary" }),
+        })
+      );
+      expect(result.current.saveStatus).toBe("saved");
     });
 
     it("does not PATCH while typing roadmap item id", async () => {

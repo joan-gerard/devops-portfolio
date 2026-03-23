@@ -11,6 +11,7 @@ export async function getAllPages() {
       p.id,
       p.title,
       p.slug,
+      p.summary,
       p.tags,
       p.published,
       p.updated_at,
@@ -36,6 +37,7 @@ export async function getPageById(id: string): Promise<Page | null> {
       p.id,
       p.title,
       p.slug,
+      p.summary,
       p.content,
       p.tags,
       p.published,
@@ -70,7 +72,7 @@ export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | nu
   return withPrerenderFallback(
     async () => {
       const rows = await sql<PublicNote[]>`
-        SELECT id, title, slug, content, tags, updated_at
+        SELECT id, title, slug, summary, content, tags, updated_at
         FROM pages
         WHERE slug = ${slug}
           AND published = true
@@ -89,7 +91,7 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   return withPrerenderFallback<PublishedNotePreview[]>(
     () =>
       sql<PublishedNotePreview[]>`
-        SELECT id, title, slug, tags, updated_at
+        SELECT id, title, slug, summary, tags, updated_at
         FROM pages
         WHERE published = true
           AND slug != 'about'

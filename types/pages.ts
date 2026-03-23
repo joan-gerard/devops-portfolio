@@ -10,6 +10,7 @@ export type Page = {
   id: string;
   title: string;
   slug: string;
+  summary?: string;
   content?: Record<string, unknown>;
   tags: string[];
   published: boolean;

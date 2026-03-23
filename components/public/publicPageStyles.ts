@@ -93,17 +93,6 @@ export const cardSectionStyle: CSSProperties = {
   padding: "20px",
 };
 
-/** Shared content card for public notes/projects — includes flex layout and transition. */
-export const cardContentStyle: CSSProperties = {
-  border: "1px solid var(--border)",
-  borderRadius: "6px",
-  padding: "24px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "16px",
-  transition: "border-color 0.15s",
-};
-
 // —— Link row and base (card actions) ———————————————————————————————————————
 export const linkRowStyle: CSSProperties = {
   display: "flex",
