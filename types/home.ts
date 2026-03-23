@@ -9,6 +9,7 @@ export type RecentNote = {
   slug: string;
   tags: string[];
   updated_at: string;
+  roadmap_item_status?: "not_started" | "in_progress" | "completed" | null;
 };
 
 export type FeaturedProject = {
@@ -19,6 +20,8 @@ export type FeaturedProject = {
   tech_stack: string[];
   github_url: string | null;
   live_url: string | null;
+  updated_at: string;
+  roadmap_item_status?: "not_started" | "in_progress" | "completed" | null;
 };
 
 export type RoadmapPhase = {

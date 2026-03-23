@@ -93,9 +93,10 @@ export const cardSectionStyle: CSSProperties = {
   padding: "20px",
 };
 
-/** Card for project list (ProjectCard) — includes flex layout and transition. */
-export const cardProjectStyle: CSSProperties = {
-  ...cardBase,
+/** Shared content card for public notes/projects — includes flex layout and transition. */
+export const cardContentStyle: CSSProperties = {
+  border: "1px solid var(--border)",
+  borderRadius: "6px",
   padding: "24px",
   display: "flex",
   flexDirection: "column",

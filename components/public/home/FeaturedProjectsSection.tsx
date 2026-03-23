@@ -1,12 +1,8 @@
 import type { FeaturedProject } from "@/types/home";
-import { ProjectCard } from "@/components/public/projects/ProjectCard";
+import { PublicContentCard } from "@/components/public/PublicContentCard";
+import { ROADMAP_STATUS_LABEL } from "@/components/roadmap/roadmapStyles";
 import { HomeSection } from "./HomeSection";
-
-const projectsGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))",
-  gap: "12px",
-};
+import styles from "./HomeCardsGrid.module.css";
 
 type FeaturedProjectsSectionProps = { projects: FeaturedProject[] };
 
@@ -20,9 +16,25 @@ export function FeaturedProjectsSection({ projects }: FeaturedProjectsSectionPro
       viewAllLabel="All projects →"
     >
       {projects.length > 0 ? (
-        <div style={projectsGridStyle}>
+        <div className={styles.grid}>
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <PublicContentCard
+              key={project.id}
+              href={`/projects/${project.slug}`}
+              ariaLabel={`Open project ${project.title}`}
+              title={project.title}
+              roadmapStatus={
+                project.roadmap_item_status
+                  ? ROADMAP_STATUS_LABEL[project.roadmap_item_status]
+                  : "Not linked"
+              }
+              preview={project.description?.trim() || "Preview coming soon."}
+              chips={project.tech_stack}
+              updatedAt={project.updated_at}
+              hasGithubUrl={Boolean(project.github_url)}
+              hasLiveUrl={Boolean(project.live_url)}
+              testId="project-card"
+            />
           ))}
         </div>
       ) : null}

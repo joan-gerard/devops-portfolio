@@ -2,6 +2,7 @@
 
 import { ADMIN_TABLE_COLUMN_TEMPLATE } from "@/components/admin/tableColumns";
 import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import { RoadmapStatusBadge } from "@/components/shared/RoadmapStatusBadge";
 import type { Project } from "@/types/projects";
 import Link from "next/link";
 import { DeleteProjectButton } from "./DeleteProjectButton";
@@ -23,12 +24,6 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
   const roadmapStatusOption = ROADMAP_STATUS_OPTIONS.find(
     (option) => option.value === project.roadmap_item_status
   );
-  const roadmapBadgeColor =
-    project.roadmap_item_status === "in_progress"
-      ? "var(--text-dim)"
-      : project.roadmap_item_status === "completed"
-        ? "var(--accent)"
-        : (roadmapStatusOption?.color ?? "var(--text-muted)");
   const rowLinkColumnTemplate = ADMIN_TABLE_COLUMN_TEMPLATE.split(" ").slice(0, -1).join(" ");
 
   return (
@@ -116,22 +111,20 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
         </div>
 
         {/* Roadmap */}
-        <span
-          style={{
-            fontSize: "10px",
-            padding: "2px 8px",
-            borderRadius: "2px",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            background: roadmapStatusOption ? "var(--surface-2)" : "var(--surface-2)",
-            color: roadmapBadgeColor,
-            border: `1px solid ${roadmapBadgeColor}`,
-            whiteSpace: "nowrap",
-            justifySelf: "start",
-          }}
-        >
-          {roadmapStatusOption ? roadmapStatusOption.label : "Not linked"}
-        </span>
+        {roadmapStatusOption ? (
+          <RoadmapStatusBadge statusLabel={roadmapStatusOption.label} />
+        ) : (
+          <span
+            style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              whiteSpace: "nowrap",
+              justifySelf: "start",
+            }}
+          >
+            —
+          </span>
+        )}
 
         {/* Updated */}
         <span

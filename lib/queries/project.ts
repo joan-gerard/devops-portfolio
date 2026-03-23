@@ -40,7 +40,15 @@ export async function getAllProjects() {
  */
 export type PublishedProject = Pick<
   Project,
-  "id" | "title" | "slug" | "description" | "tech_stack" | "github_url" | "live_url"
+  | "id"
+  | "title"
+  | "slug"
+  | "description"
+  | "tech_stack"
+  | "github_url"
+  | "live_url"
+  | "updated_at"
+  | "roadmap_item_status"
 >;
 
 /**
@@ -55,11 +63,27 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
   return withPrerenderFallback<PublishedProject[]>(
     () =>
       sql<PublishedProject[]>`
-        SELECT id, title, slug, description, tech_stack, github_url, live_url
-        FROM projects
-        WHERE published = true
+        SELECT
+          p.id,
+          p.title,
+          p.slug,
+          p.description,
+          p.tech_stack,
+          p.github_url,
+          p.live_url,
+          p.updated_at,
+          r.status AS roadmap_item_status
+        FROM projects p
+        LEFT JOIN LATERAL (
+          SELECT status
+          FROM roadmap_items
+          WHERE linked_page_id = p.id
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 1
+        ) r ON true
+        WHERE p.published = true
           ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-        ORDER BY updated_at DESC
+        ORDER BY p.updated_at DESC
       `,
     [],
     "[getAllPublishedProjects] DB unavailable during prerender build — returning empty list."
