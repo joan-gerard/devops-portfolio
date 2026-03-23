@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
  * Use when you need maxWidth + margin but custom padding (e.g. PublicNav, PublicFooter).
  */
 export const pageContainerBaseStyle: CSSProperties = {
-  maxWidth: "1100px",
+  maxWidth: "1440px",
   margin: "0 auto",
 };
 
