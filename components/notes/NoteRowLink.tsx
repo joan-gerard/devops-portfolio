@@ -23,6 +23,12 @@ export function NoteRowLink({ note, isLast }: Props) {
   const roadmapStatusOption = ROADMAP_STATUS_OPTIONS.find(
     (option) => option.value === note.roadmap_item_status
   );
+  const roadmapBadgeColor =
+    note.roadmap_item_status === "in_progress"
+      ? "var(--text-dim)"
+      : note.roadmap_item_status === "completed"
+        ? "var(--accent)"
+        : (roadmapStatusOption?.color ?? "var(--text-muted)");
 
   return (
     <Link
@@ -47,9 +53,9 @@ export function NoteRowLink({ note, isLast }: Props) {
           borderRadius: "2px",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          background: note.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
-          color: note.published ? "var(--accent)" : "var(--text-muted)",
-          border: `1px solid ${note.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
+          background: note.published ? "var(--accent)" : "var(--surface-2)",
+          color: note.published ? "#000" : "var(--text-muted)",
+          border: `1px solid ${note.published ? "var(--accent)" : "var(--border)"}`,
           whiteSpace: "nowrap",
           justifySelf: "start",
         }}
@@ -111,8 +117,8 @@ export function NoteRowLink({ note, isLast }: Props) {
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           background: "var(--surface-2)",
-          color: roadmapStatusOption ? roadmapStatusOption.color : "var(--text-muted)",
-          border: `1px solid ${roadmapStatusOption ? roadmapStatusOption.color : "var(--border)"}`,
+          color: roadmapBadgeColor,
+          border: `1px solid ${roadmapBadgeColor}`,
           whiteSpace: "nowrap",
           justifySelf: "start",
         }}

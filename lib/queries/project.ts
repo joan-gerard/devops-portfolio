@@ -30,7 +30,7 @@ export async function getAllProjects() {
       ORDER BY updated_at DESC
       LIMIT 1
     ) r ON true
-    ORDER BY p.updated_at DESC
+    ORDER BY p.created_at ASC
   `;
 }
 

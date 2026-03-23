@@ -23,6 +23,12 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
   const roadmapStatusOption = ROADMAP_STATUS_OPTIONS.find(
     (option) => option.value === project.roadmap_item_status
   );
+  const roadmapBadgeColor =
+    project.roadmap_item_status === "in_progress"
+      ? "var(--text-dim)"
+      : project.roadmap_item_status === "completed"
+        ? "var(--accent)"
+        : (roadmapStatusOption?.color ?? "var(--text-muted)");
 
   return (
     <Link
@@ -47,9 +53,9 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
           borderRadius: "2px",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          background: project.published ? "rgba(0, 229, 160, 0.1)" : "var(--surface-2)",
-          color: project.published ? "var(--accent)" : "var(--text-muted)",
-          border: `1px solid ${project.published ? "rgba(0, 229, 160, 0.2)" : "var(--border)"}`,
+          background: project.published ? "var(--accent)" : "var(--surface-2)",
+          color: project.published ? "#000" : "var(--text-muted)",
+          border: `1px solid ${project.published ? "var(--accent)" : "var(--border)"}`,
           whiteSpace: "nowrap",
           justifySelf: "start",
         }}
@@ -104,8 +110,8 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           background: roadmapStatusOption ? "var(--surface-2)" : "var(--surface-2)",
-          color: roadmapStatusOption ? roadmapStatusOption.color : "var(--text-muted)",
-          border: `1px solid ${roadmapStatusOption ? roadmapStatusOption.color : "var(--border)"}`,
+          color: roadmapBadgeColor,
+          border: `1px solid ${roadmapBadgeColor}`,
           whiteSpace: "nowrap",
           justifySelf: "start",
         }}

@@ -18,7 +18,7 @@ describe("page queries", () => {
   });
 
   describe("getAllPages", () => {
-    it("returns pages from sql ordered by updated_at DESC", async () => {
+    it("returns pages from sql ordered by created_at ASC", async () => {
       const pages: Page[] = [
         {
           id: "2",
