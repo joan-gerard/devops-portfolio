@@ -7,7 +7,7 @@ import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { BackLink } from "@/components/shared/BackLink";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { PageContainer } from "@/components/public/PageContainer";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 const tagStyle: React.CSSProperties = {
   fontFamily: "var(--font-mono)",
@@ -83,18 +83,23 @@ const emptyContentStyle: React.CSSProperties = {
   fontStyle: "italic",
 };
 
+const subscribeNever = () => () => {};
+
+function useIsHydrated() {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false
+  );
+}
+
 function NoteDetailContent({ content, html }: NoteDetailContentProps) {
   const hasContent = content && Object.keys(content).length > 0;
-  const [safeHtml, setSafeHtml] = useState("");
-
-  useEffect(() => {
-    if (!hasContent || !html) {
-      setSafeHtml("");
-      return;
-    }
-    const purified = createDOMPurify(window).sanitize(html);
-    setSafeHtml(purified);
-  }, [hasContent, html]);
+  const isHydrated = useIsHydrated();
+  const safeHtml = useMemo(() => {
+    if (!hasContent || !html || !isHydrated) return "";
+    return createDOMPurify(window).sanitize(html);
+  }, [hasContent, html, isHydrated]);
 
   if (hasContent && safeHtml) {
     return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
