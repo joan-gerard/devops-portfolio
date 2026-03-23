@@ -41,6 +41,8 @@ const triggerButtonStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
+  flexShrink: 0,
+  lineHeight: 0,
   width: "22px",
   height: "22px",
   padding: 0,

@@ -38,7 +38,7 @@ export function NoteRowLink({ note, isLast }: Props) {
         gridTemplateColumns: ADMIN_TABLE_COLUMN_TEMPLATE,
         gap: "16px",
         alignItems: "center",
-        // padding: "12px 16px",
+        padding: "12px 16px",
         borderBottom: isLast ? "none" : "1px solid var(--border)",
         background: "transparent",
       }}
@@ -49,7 +49,6 @@ export function NoteRowLink({ note, isLast }: Props) {
           display: "grid",
           gridTemplateColumns: rowLinkColumnTemplate,
           gap: "16px",
-          padding: "12px 16px",
           alignItems: "center",
           gridColumn: "1 / 6",
           minWidth: 0,
@@ -151,7 +150,14 @@ export function NoteRowLink({ note, isLast }: Props) {
         </span>
       </Link>
       {/* Delete */}
-      <div style={{ gridColumn: "6 / 7" }}>
+      <div
+        style={{
+          gridColumn: "6 / 7",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <DeleteNoteButton id={note.id} />
       </div>
     </div>
