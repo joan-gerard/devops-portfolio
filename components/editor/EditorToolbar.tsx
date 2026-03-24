@@ -1,7 +1,7 @@
 "use client";
 
 import { Editor } from "@tiptap/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = { editor: Editor | null; noteId: string };
 
@@ -11,10 +11,53 @@ type ToolbarButton = {
   isActive?: boolean;
 };
 
+const CODE_LANGUAGES = [
+  { label: "Plain", value: "plaintext" },
+  { label: "TS/TSX", value: "typescript" },
+  { label: "JS/JSX", value: "javascript" },
+  { label: "Bash", value: "bash" },
+  { label: "Dockerfile", value: "dockerfile" },
+  { label: "JSON", value: "json" },
+  { label: "Python", value: "python" },
+  { label: "SQL", value: "sql" },
+] as const;
+
+type CodeLanguageValue = (typeof CODE_LANGUAGES)[number]["value"];
+
 export default function EditorToolbar({ editor, noteId }: Props) {
   const [uploading, setUploading] = useState(false);
+  const [selectedCodeLanguage, setSelectedCodeLanguage] = useState<CodeLanguageValue>("plaintext");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const syncSelectedLanguage = () => {
+      if (!editor.isActive("codeBlock")) return;
+      const attrs = editor.getAttributes("codeBlock");
+      const rawLanguage = attrs.language;
+      if (typeof rawLanguage !== "string" || rawLanguage.length === 0) {
+        setSelectedCodeLanguage("plaintext");
+        return;
+      }
+      const isKnown = CODE_LANGUAGES.some((option) => option.value === rawLanguage);
+      setSelectedCodeLanguage(isKnown ? (rawLanguage as CodeLanguageValue) : "plaintext");
+    };
+
+    syncSelectedLanguage();
+    editor.on("selectionUpdate", syncSelectedLanguage);
+    editor.on("transaction", syncSelectedLanguage);
+    return () => {
+      editor.off("selectionUpdate", syncSelectedLanguage);
+      editor.off("transaction", syncSelectedLanguage);
+    };
+  }, [editor]);
+
   if (!editor) return null;
+
+  const handleCodeBlockToggle = () => {
+    editor.chain().focus().setCodeBlock({ language: selectedCodeLanguage }).run();
+  };
 
   const groups: ToolbarButton[][] = [
     [
@@ -69,7 +112,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
       },
       {
         label: "</>",
-        action: () => editor.chain().focus().toggleCodeBlock().run(),
+        action: handleCodeBlockToggle,
         isActive: editor.isActive("codeBlock"),
       },
     ],
@@ -159,6 +202,39 @@ export default function EditorToolbar({ editor, noteId }: Props) {
           )}
         </div>
       ))}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <span
+          style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}
+        >
+          Lang
+        </span>
+        <select
+          value={selectedCodeLanguage}
+          onChange={(event) => {
+            const nextLanguage = event.target.value as CodeLanguageValue;
+            setSelectedCodeLanguage(nextLanguage);
+            if (!editor.isActive("codeBlock")) return;
+            editor.chain().focus().updateAttributes("codeBlock", { language: nextLanguage }).run();
+          }}
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            borderRadius: "4px",
+            color: "var(--text-dim)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "11px",
+            padding: "4px 6px",
+            outline: "none",
+          }}
+          aria-label="Code block language"
+        >
+          {CODE_LANGUAGES.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
       {/* Image upload — separate from formatting groups */}
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
         <input

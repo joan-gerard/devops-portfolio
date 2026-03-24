@@ -2,11 +2,12 @@
 import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
 import createDOMPurify from "dompurify";
+import hljs from "highlight.js/lib/common";
 
-import { getSharedExtensions } from "@/lib/tipTapExtensions";
-import { BackLink } from "@/components/shared/BackLink";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { PageContainer } from "@/components/public/PageContainer";
+import { BackLink } from "@/components/shared/BackLink";
+import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { useMemo, useSyncExternalStore } from "react";
 
 const tagStyle: React.CSSProperties = {
@@ -98,7 +99,29 @@ function NoteDetailContent({ content, html }: NoteDetailContentProps) {
   const isHydrated = useIsHydrated();
   const safeHtml = useMemo(() => {
     if (!hasContent || !html || !isHydrated) return "";
-    return createDOMPurify(window).sanitize(html);
+    const sanitized = createDOMPurify(window).sanitize(html);
+    const document = new DOMParser().parseFromString(sanitized, "text/html");
+    const codeBlocks = document.querySelectorAll("pre code");
+
+    codeBlocks.forEach((block) => {
+      const classNames = block.className.split(/\s+/).filter(Boolean);
+      const languageClass = classNames.find((name) => name.startsWith("language-"));
+      const language = languageClass?.replace("language-", "");
+      const sourceCode = block.textContent ?? "";
+
+      try {
+        const highlighted =
+          language && hljs.getLanguage(language)
+            ? hljs.highlight(sourceCode, { language, ignoreIllegals: true }).value
+            : hljs.highlightAuto(sourceCode).value;
+        block.innerHTML = highlighted;
+        block.classList.add("hljs");
+      } catch {
+        // Keep original text content as fallback if highlight parsing fails.
+      }
+    });
+
+    return document.body.innerHTML;
   }, [hasContent, html, isHydrated]);
 
   if (hasContent && safeHtml) {

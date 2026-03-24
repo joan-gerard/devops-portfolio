@@ -107,6 +107,49 @@ body {
   font-size: 13px;
 }
 
+/* Syntax highlighting tokens used by TipTap lowlight (hljs classes). */
+:is(.tiptap-editor, .note-content) pre .hljs-comment,
+:is(.tiptap-editor, .note-content) pre .hljs-quote {
+  color: #7f8a9a;
+  font-style: italic;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-keyword,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-tag,
+:is(.tiptap-editor, .note-content) pre .hljs-literal,
+:is(.tiptap-editor, .note-content) pre .hljs-type {
+  color: #ff7ab6;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-string,
+:is(.tiptap-editor, .note-content) pre .hljs-title,
+:is(.tiptap-editor, .note-content) pre .hljs-section,
+:is(.tiptap-editor, .note-content) pre .hljs-attribute,
+:is(.tiptap-editor, .note-content) pre .hljs-addition {
+  color: #9fda71;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-number,
+:is(.tiptap-editor, .note-content) pre .hljs-symbol,
+:is(.tiptap-editor, .note-content) pre .hljs-bullet {
+  color: #f7c56b;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-variable,
+:is(.tiptap-editor, .note-content) pre .hljs-template-variable,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-class,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-id {
+  color: #7bdff2;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-emphasis {
+  font-style: italic;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-strong {
+  font-weight: 700;
+}
+
 .tiptap-editor blockquote {
   border-left: 3px solid var(--accent);
   padding-left: 16px;
