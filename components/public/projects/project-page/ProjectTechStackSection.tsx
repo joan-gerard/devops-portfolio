@@ -23,7 +23,7 @@ export function ProjectTechStackSection({ techStack }: ProjectTechStackSectionPr
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
         {techStack.map((tech, index) => (
-          <Chip key={`${tech}-${index}`}>{tech}</Chip>
+          <Chip key={`${tech}-${index}`} tag={tech} />
         ))}
       </div>
     </div>

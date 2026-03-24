@@ -16,12 +16,6 @@ const sectionDividerStyle = {
   margin: "0 0 32px",
 };
 
-const metadataDateStyle: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "11px",
-  color: "var(--text-muted)",
-};
-
 type ProjectDetailProps = {
   project: PublicProject;
 };
@@ -34,12 +28,10 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
     timeZone: "UTC",
   });
 
-  const metadata = <p style={metadataDateStyle}>Last updated {updatedAt}</p>;
-
   return (
     <PageContainer>
       <BackLink href="/projects">← All projects</BackLink>
-      <DetailPageHeader label="Project" title={project.title} metadata={metadata} />
+      <DetailPageHeader label="Project" title={project.title} tags={[]} updatedAt={updatedAt} />
       <hr style={sectionDividerStyle} />
       <ProjectDescriptionSection description={project.description} />
       <ProjectTechStackSection techStack={project.tech_stack} />

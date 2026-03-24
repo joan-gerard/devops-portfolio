@@ -10,23 +10,6 @@ import { BackLink } from "@/components/shared/BackLink";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { useMemo, useSyncExternalStore } from "react";
 
-const tagStyle: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
-  color: "var(--text-muted)",
-  background: "var(--surface-2)",
-  border: "1px solid var(--border)",
-  borderRadius: "4px",
-  padding: "2px 8px",
-  textTransform: "lowercase",
-};
-
-const metadataDateStyle: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
-  color: "var(--text-muted)",
-};
-
 export type NoteDetailProps = {
   note: PublicNote;
 };
@@ -49,23 +32,10 @@ export function NoteDetail({ note }: NoteDetailProps) {
     return generateHTML(content as Parameters<typeof generateHTML>[0], getSharedExtensions());
   }, [note.content]);
 
-  const metadata = (
-    <>
-      {note.tags.map((t) => (
-        <span key={t} style={tagStyle}>
-          {t}
-        </span>
-      ))}
-      <span style={{ ...metadataDateStyle, marginLeft: note.tags.length > 0 ? "4px" : 0 }}>
-        {updatedAt}
-      </span>
-    </>
-  );
-
   return (
     <PageContainer>
       <BackLink href="/notes">← All notes</BackLink>
-      <DetailPageHeader label="Note" title={note.title} metadata={metadata} />
+      <DetailPageHeader label="Note" title={note.title} tags={note.tags} updatedAt={updatedAt} />
       <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }} />
       <NoteDetailContent content={note.content} html={output} />
     </PageContainer>

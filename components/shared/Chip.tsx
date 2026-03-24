@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 const chipStyle: CSSProperties = {
   fontFamily: "var(--font-mono)",
@@ -10,11 +10,20 @@ const chipStyle: CSSProperties = {
   textTransform: "lowercase",
 };
 
+function getTagChipStyle(tag: string): CSSProperties | undefined {
+  const normalizedTag = tag.trim().toLowerCase();
+  if (normalizedTag === "learning" || normalizedTag === "project") {
+    return { backgroundColor: "var(--accent)", color: "var(--bg)" };
+  }
+  return undefined;
+}
+
 type ChipProps = {
-  children: ReactNode;
+  tag: string;
   style?: CSSProperties;
 };
 
-export function Chip({ children, style }: ChipProps) {
-  return <span style={{ ...chipStyle, ...style }}>{children}</span>;
+export function Chip({ tag, style }: ChipProps) {
+  const tagStyle = getTagChipStyle(tag);
+  return <span style={{ ...chipStyle, ...tagStyle, ...style }}>{tag}</span>;
 }

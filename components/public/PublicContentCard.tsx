@@ -131,7 +131,7 @@ export function PublicContentCard({
           {chips.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
               {chips.map((chip) => (
-                <Chip key={chip}>{chip}</Chip>
+                <Chip key={chip} tag={chip} />
               ))}
             </div>
           )}

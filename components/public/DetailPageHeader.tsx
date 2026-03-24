@@ -1,4 +1,5 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
+import { Chip } from "../shared/Chip";
 
 /**
  * Shared style constants for detail page headers (label, title, metadata area).
@@ -15,8 +16,8 @@ export const detailPageHeaderLabelStyle: CSSProperties = {
 
 export const detailPageHeaderTitleStyle: CSSProperties = {
   fontFamily: "var(--font-heading)",
-  fontSize: "32px",
-  fontWeight: "800",
+  fontSize: "48px",
+  fontWeight: "500",
   color: "var(--text)",
   marginBottom: "12px",
   letterSpacing: "-0.02em",
@@ -33,20 +34,26 @@ export const detailPageHeaderMetadataStyle: CSSProperties = {
 export type DetailPageHeaderProps = {
   label: string;
   title: string;
-  /** Optional metadata row (e.g. tags + date for notes, "Last updated" for projects). */
-  metadata?: ReactNode;
+  tags: string[];
+  updatedAt: string;
 };
 
 /**
  * Shared header for detail pages: small uppercase label, main title, optional metadata row.
  * Used by note detail (label "Note", tags + date) and project detail (label "Project", date).
  */
-export function DetailPageHeader({ label, title, metadata }: DetailPageHeaderProps) {
+export function DetailPageHeader({ label, title, tags, updatedAt }: DetailPageHeaderProps) {
   return (
     <div style={{ marginBottom: "32px" }}>
-      <p style={detailPageHeaderLabelStyle}>{label}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <p style={detailPageHeaderLabelStyle}>{label}</p>
+        <p style={detailPageHeaderLabelStyle}>•</p>
+        <p style={detailPageHeaderLabelStyle}>{updatedAt}</p>
+      </div>
       <h1 style={detailPageHeaderTitleStyle}>{title}</h1>
-      {metadata != null && <div style={detailPageHeaderMetadataStyle}>{metadata}</div>}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+        {tags != null && tags.map((tag) => <Chip key={tag} tag={tag} />)}
+      </div>
     </div>
   );
 }

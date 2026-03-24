@@ -84,7 +84,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Suggestion:** A **DetailPageHeader** component with props like `label`, `title`, and `metadata?: ReactNode`, and shared styles for label, title, and metadata container. Note detail passes tags + date; project detail passes only date. This keeps one place for typography and spacing.
 
-**Done:** Added **DetailPageHeader** in `components/public/DetailPageHeader.tsx` with shared style constants (`detailPageHeaderLabelStyle`, `detailPageHeaderTitleStyle`, `detailPageHeaderMetadataStyle`) and props `label`, `title`, `metadata?`. **NoteDetail** and **ProjectDetail** use it; **ProjectDetailHeader** removed. Note passes tags + date as metadata; project passes "Last updated" paragraph.
+**Done:** Added **DetailPageHeader** in `components/public/DetailPageHeader.tsx` with shared style constants (`detailPageHeaderLabelStyle`, `detailPageHeaderTitleStyle`, `detailPageHeaderMetadataStyle`) and props `label`, `title`, `tags`, `updatedAt`. The top row shows `label • updatedAt` (formatted date string); tag chips render below the title. **NoteDetail** passes note tags and the same locale date format as before; **ProjectDetail** passes `tags={[]}` and the project `updated_at` formatted the same way. **ProjectDetailHeader** removed.
 
 ---
 

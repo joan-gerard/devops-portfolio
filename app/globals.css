@@ -19,7 +19,7 @@
   --accent-2-dim: rgba(156, 163, 175, 0.18);
   --text: #ffffff;
   --text-dim: #c5c5c5;
-  --text-muted: #8a8a8a;
+  --text-muted: #a4a4a4;
   --red: #f87171;
   --yellow: #e8ff00;
 
@@ -219,8 +219,8 @@ body {
   font-family: var(--font-heading);
   font-weight: 700;
   color: var(--text);
-  margin-top: 2em;
-  margin-bottom: 0.5em;
+  margin-top: 2.5em;
+  margin-bottom: 0.75em;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -237,7 +237,7 @@ body {
 
 .note-content p {
   margin-top: 0;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
 }
 
 .note-content p:last-child {
