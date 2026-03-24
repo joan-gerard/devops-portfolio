@@ -103,7 +103,7 @@ export function PublicContentCard({
 
           <h2
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "var(--font-heading)",
               fontSize: "20px",
               fontWeight: "700",
               color: "var(--text)",

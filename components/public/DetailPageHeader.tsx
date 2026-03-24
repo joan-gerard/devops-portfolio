@@ -1,5 +1,4 @@
-import type { CSSProperties } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 /**
  * Shared style constants for detail page headers (label, title, metadata area).
@@ -7,7 +6,7 @@ import type { ReactNode } from "react";
  */
 export const detailPageHeaderLabelStyle: CSSProperties = {
   fontFamily: "var(--font-mono)",
-  fontSize: "10px",
+  fontSize: "14px",
   color: "var(--accent)",
   textTransform: "uppercase",
   letterSpacing: "0.15em",
@@ -15,7 +14,7 @@ export const detailPageHeaderLabelStyle: CSSProperties = {
 };
 
 export const detailPageHeaderTitleStyle: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "32px",
   fontWeight: "800",
   color: "var(--text)",

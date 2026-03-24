@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Syne } from "next/font/google";
+import { JetBrains_Mono, Roboto, Syne } from "next/font/google";
 import "./globals.css";
 
 const syne = Syne({
@@ -12,6 +12,12 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
   variable: "--font-mono",
+});
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700", "900"],
+  variable: "--font-heading",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${syne.variable} ${jetbrainsMono.variable} antialiased`}>{children}</body>
+      <body className={`${syne.variable} ${jetbrainsMono.variable} ${roboto.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

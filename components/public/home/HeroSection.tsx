@@ -16,7 +16,7 @@ export function HeroSection() {
       </p>
       <h1
         style={{
-          fontFamily: "var(--font-syne)",
+          fontFamily: "var(--font-heading)",
           fontSize: "clamp(36px, 6vw, 64px)",
           fontWeight: "800",
           color: "var(--text)",

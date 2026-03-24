@@ -37,7 +37,7 @@ export function AdminHeader() {
     >
       <h1
         style={{
-          fontFamily: "var(--font-syne)",
+          fontFamily: "var(--font-heading)",
           fontSize: "15px",
           fontWeight: "700",
           color: "var(--text)",

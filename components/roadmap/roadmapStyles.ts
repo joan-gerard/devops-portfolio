@@ -1,5 +1,5 @@
-import type { CSSProperties } from "react";
 import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import type { CSSProperties } from "react";
 
 export const ROADMAP_STATUS: RoadmapItemStatus[] = ["not_started", "in_progress", "completed"];
 
@@ -106,7 +106,7 @@ export const ROADMAP_PAGE_CONTAINER_STYLE: CSSProperties = {
 };
 
 export const ROADMAP_PAGE_HEADING_STYLE: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: 28,
   fontWeight: 800,
   color: "var(--text)",
@@ -170,7 +170,7 @@ export const ROADMAP_PANEL_HEADER_TITLE_CONTAINER_STYLE: CSSProperties = {
 };
 
 export const ROADMAP_PANEL_TITLE_STYLE: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: 16,
   fontWeight: 700,
   color: "var(--text)",

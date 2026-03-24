@@ -25,6 +25,7 @@
 
   --font-syne: "Syne", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  --font-heading: "Roboto", sans-serif;
 
   --sidebar-width: 220px;
   --header-height: 52px;
@@ -57,7 +58,7 @@ body {
 }
 
 .tiptap-editor h1 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 28px;
   font-weight: 800;
   color: var(--text);
@@ -66,7 +67,7 @@ body {
 }
 
 .tiptap-editor h2 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 700;
   color: var(--text);
@@ -74,7 +75,7 @@ body {
 }
 
 .tiptap-editor h3 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
   color: var(--text-dim);
@@ -215,7 +216,7 @@ body {
 .note-content h1,
 .note-content h2,
 .note-content h3 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-weight: 700;
   color: var(--text);
   margin-top: 2em;

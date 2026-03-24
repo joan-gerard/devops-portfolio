@@ -4,9 +4,9 @@ import { PublicNote } from "@/types/pages";
 import { generateHTML } from "@tiptap/html";
 import { useMemo } from "react";
 
-import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import { EmptyState } from "@/components/public/EmptyState";
 import { PageContainer } from "@/components/public/PageContainer";
+import { getSharedExtensions } from "@/lib/tipTapExtensions";
 
 export type AboutPageContentProps = {
   aboutNote: PublicNote | null;
@@ -59,7 +59,7 @@ function AboutHeader({ title, updatedAt }: AboutHeaderProps) {
       </p>
       <h1
         style={{
-          fontFamily: "var(--font-syne)",
+          fontFamily: "var(--font-heading)",
           fontSize: "32px",
           fontWeight: "800",
           color: "var(--text)",

@@ -136,7 +136,11 @@ export function ConfirmDeleteButton({
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <h2
-                style={{ fontSize: "16px", fontFamily: "var(--font-syne)", color: "var(--text)" }}
+                style={{
+                  fontSize: "16px",
+                  fontFamily: "var(--font-heading)",
+                  color: "var(--text)",
+                }}
               >
                 {modalTitle}
               </h2>

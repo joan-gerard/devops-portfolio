@@ -121,7 +121,7 @@ export function AdminSidebar({ appVersion }: AdminSidebarProps) {
       >
         <span
           style={{
-            fontFamily: "var(--font-syne)",
+            fontFamily: "var(--font-heading)",
             fontWeight: 800,
             fontSize: "14px",
             color: "var(--text)",

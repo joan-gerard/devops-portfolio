@@ -30,7 +30,7 @@ export const pageHeaderLabelStyle: CSSProperties = {
 // —— Headings ———————————————————————————————————————————————————————————————
 /** Section heading (e.g. "What I've been writing") — used by HomeSection. */
 export const sectionHeadingStyle: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "20px",
   fontWeight: "700",
   color: "var(--text)",
@@ -39,7 +39,7 @@ export const sectionHeadingStyle: CSSProperties = {
 
 /** Page header heading (e.g. "Projects") — used by PageHeader. */
 export const pageHeaderHeadingStyle: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "32px",
   fontWeight: "800",
   color: "var(--text)",

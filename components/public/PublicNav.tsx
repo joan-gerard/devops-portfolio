@@ -1,8 +1,8 @@
 "use client";
 
+import { pageContainerBaseStyle } from "@/components/public/PageContainer";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { pageContainerBaseStyle } from "@/components/public/PageContainer";
 
 const NAV_LINKS = [
   { href: "/notes", label: "Notes" },
@@ -38,7 +38,7 @@ export function PublicNav() {
         <Link
           href="/"
           style={{
-            fontFamily: "var(--font-syne)",
+            fontFamily: "var(--font-heading)",
             fontSize: "15px",
             fontWeight: "700",
             color: "var(--text)",

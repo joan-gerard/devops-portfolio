@@ -33,7 +33,7 @@ export default async function RoadmapEditPage() {
         <div>
           <h1
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "var(--font-heading)",
               fontSize: 16,
               fontWeight: 700,
               color: "var(--text)",

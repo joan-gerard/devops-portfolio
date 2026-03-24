@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import type { PublishedNotePreview } from "@/types/pages";
+import Link from "next/link";
 
 const tagPill: React.CSSProperties = {
   fontFamily: "var(--font-mono)",
@@ -41,7 +41,7 @@ export function NotesListItem({ note }: NotesListItemProps) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "var(--font-heading)",
               fontSize: "15px",
               fontWeight: "700",
               color: "var(--text)",

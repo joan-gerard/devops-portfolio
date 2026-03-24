@@ -115,7 +115,7 @@ export function AdminDashboardOverview({
             <>
               <div
                 style={{
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "var(--font-heading)",
                   fontSize: "28px",
                   fontWeight: "800",
                   color: "var(--text)",
