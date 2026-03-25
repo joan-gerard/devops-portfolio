@@ -32,13 +32,6 @@ export default async function ProjectsPage() {
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px" }}>
             No projects yet
           </p>
-          <CreateEntityButton
-            apiPath="/api/projects"
-            defaultTitle="Untitled Project"
-            redirectPathPrefix="/admin/projects"
-            buttonLabel="+ New project"
-            errorMessage="Failed to create project"
-          />
         </div>
       );
     }

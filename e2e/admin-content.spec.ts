@@ -51,7 +51,10 @@ test.describe("Admin content lifecycle", () => {
     test.skip(!hasE2ECredentials(), "E2E credentials required");
 
     await page.goto("/admin/projects");
-    await page.getByRole("button", { name: /new project/i }).click();
+    await page
+      .getByRole("region", { name: /your projects/i })
+      .getByRole("button", { name: /new project/i })
+      .click();
     await expect(page).toHaveURL(/\/admin\/projects\/[\w-]+/, { timeout: 10000 });
 
     const title = `E2E Project ${Date.now()}`;
