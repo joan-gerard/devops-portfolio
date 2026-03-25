@@ -161,12 +161,23 @@ body {
 
 .tiptap-editor ul,
 .tiptap-editor ol {
-  padding-left: 20px;
+  padding-left: 24px;
   margin-bottom: 12px;
+  list-style-position: outside;
 }
 
 .tiptap-editor li {
   margin-bottom: 4px;
+  display: list-item;
+  list-style-position: outside;
+}
+
+.tiptap-editor ul {
+  list-style-type: disc;
+}
+
+.tiptap-editor ol {
+  list-style-type: decimal;
 }
 
 .tiptap-editor p.is-editor-empty:first-child::before {
@@ -248,10 +259,22 @@ body {
 .note-content ol {
   padding-left: 1.5em;
   margin-bottom: 1em;
+  list-style-position: outside;
 }
 
 .note-content li {
   margin-bottom: 0.25em;
+  display: list-item;
+  list-style-position: outside;
+}
+
+.note-content ul {
+  list-style-type: disc;
+}
+
+.note-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5em !important;
 }
 
 .note-content code {

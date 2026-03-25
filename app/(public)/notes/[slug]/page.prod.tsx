@@ -1,5 +1,6 @@
 import { NoteDetail } from "@/components/notes/NoteDetail";
-import { getNoteBySlug } from "@/lib/queries/page";
+import { getAllPublishedNotes, getNoteBySlug } from "@/lib/queries/page";
+import { getRelatedNotesByTagOverlap } from "@/lib/relatedNotes";
 import { notFound } from "next/navigation";
 
 /**
@@ -24,8 +25,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  */
 export default async function NoteDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const note = await getNoteBySlug(slug);
+  const [note, allPublishedNotes] = await Promise.all([
+    getNoteBySlug(slug),
+    getAllPublishedNotes(),
+  ]);
   if (!note) notFound();
 
-  return <NoteDetail note={note} />;
+  const candidates = allPublishedNotes.filter((n) => n.slug !== note.slug);
+
+  const relatedNotes = getRelatedNotesByTagOverlap(note, candidates, 5);
+
+  return <NoteDetail note={note} relatedNotes={relatedNotes} />;
 }
