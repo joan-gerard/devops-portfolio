@@ -12,9 +12,18 @@ export const metadata = {
 export default async function NotesPage() {
   const notes = await getAllPublishedNotes();
 
-  // Build sorted, deduplicated tag list from all published notes.
+  // Build sorted tag counts from all published notes.
   // Done server-side so the client component receives a stable array.
-  const allTags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort();
+  const tagCountMap = new Map<string, number>();
+  for (const note of notes) {
+    for (const tag of note.tags) {
+      tagCountMap.set(tag, (tagCountMap.get(tag) ?? 0) + 1);
+    }
+  }
+
+  const tagCounts = Array.from(tagCountMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([tag, count]) => ({ tag, count }));
 
   return (
     <PageContainer>
@@ -23,7 +32,7 @@ export default async function NotesPage() {
         heading="What I've been learning"
         description="Notes written while working through my DevOps course — covering infrastructure, security, tooling, and everything in between."
       />
-      <NotesPageClient notes={notes} allTags={allTags} />
+      <NotesPageClient notes={notes} tagCounts={tagCounts} />
     </PageContainer>
   );
 }

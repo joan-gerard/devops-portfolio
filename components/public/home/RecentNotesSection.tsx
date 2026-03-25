@@ -1,8 +1,7 @@
-import type { RecentNote } from "@/types/home";
 import { PublicContentCard } from "@/components/public/PublicContentCard";
 import { ROADMAP_STATUS_LABEL } from "@/components/roadmap/roadmapStyles";
+import type { RecentNote } from "@/types/home";
 import { HomeSection } from "./HomeSection";
-import styles from "./HomeCardsGrid.module.css";
 
 type RecentNotesSectionProps = { notes: RecentNote[] };
 
@@ -16,7 +15,7 @@ export function RecentNotesSection({ notes }: RecentNotesSectionProps) {
       viewAllLabel="All notes →"
     >
       {notes.length > 0 ? (
-        <div className={styles.grid}>
+        <div className={"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
           {notes.map((note) => (
             <PublicContentCard
               key={note.id}

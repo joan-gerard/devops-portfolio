@@ -84,19 +84,26 @@ test.describe("Public read-only flows", () => {
       return;
     }
     await allButton.click();
-    // Click first tag if present (other than "all") within the tag filter bar
-    const tagButtons = page
-      .getByTestId("notes-tag-filter")
-      .getByRole("button")
-      .filter({ hasNotText: /^all$/i });
+
+    // On smaller screens the filters are in the top tag bar; on large screens they're in an aside.
+    const tagFilterBar = page.getByTestId("notes-tag-filter");
+    const aside = page.getByTestId("notes-filters-aside");
+
+    const filterRoot = (await tagFilterBar.isVisible().catch(() => false)) ? tagFilterBar : aside;
+
+    // Click first tag if present (other than "all") within the filter UI
+    const tagButtons = filterRoot.getByRole("button").filter({ hasNotText: /^all$/i });
     const tagCount = await tagButtons.count();
     if (tagCount === 0) {
       test.skip();
       return;
     }
-    await tagButtons.first().click();
-    // Filter is applied: result count for the active tag is visible
-    await expect(page.getByText(/note[s]? tagged/i)).toBeVisible();
+
+    const firstTagButton = tagButtons.first();
+    await firstTagButton.click();
+
+    // Filter is applied: the selected tag button is marked active
+    await expect(firstTagButton).toHaveAttribute("aria-pressed", "true");
     // We stay on the notes listing URL
     await expect(page).toHaveURL("/notes");
   });

@@ -10,8 +10,8 @@
   }
 }
 
-@media (min-width: 1441px) {
+/* @media (min-width: 1441px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-}
+} */
