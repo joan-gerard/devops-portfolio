@@ -34,7 +34,12 @@ export async function getRoadmapData(): Promise<RoadmapDataWithSlug> {
             r.created_at,
             r.updated_at,
             r.e2e_only,
-            COALESCE(p.slug, pr.slug) AS linked_page_slug
+            COALESCE(p.slug, pr.slug) AS linked_page_slug,
+            CASE
+              WHEN p.id IS NOT NULL THEN 'note'
+              WHEN pr.id IS NOT NULL THEN 'project'
+              ELSE NULL
+            END AS linked_page_type
           FROM roadmap_items r
           LEFT JOIN pages p ON p.id = r.linked_page_id
           LEFT JOIN projects pr ON pr.id = r.linked_page_id

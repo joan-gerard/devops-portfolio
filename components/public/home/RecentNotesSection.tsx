@@ -1,12 +1,7 @@
+import { PublicContentCard } from "@/components/public/PublicContentCard";
+import { ROADMAP_STATUS_LABEL } from "@/components/roadmap/roadmapStyles";
 import type { RecentNote } from "@/types/home";
 import { HomeSection } from "./HomeSection";
-import { NoteCard } from "./NoteCard";
-
-const notesGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-  gap: "12px",
-};
 
 type RecentNotesSectionProps = { notes: RecentNote[] };
 
@@ -20,9 +15,22 @@ export function RecentNotesSection({ notes }: RecentNotesSectionProps) {
       viewAllLabel="All notes →"
     >
       {notes.length > 0 ? (
-        <div style={notesGridStyle}>
+        <div className={"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
           {notes.map((note) => (
-            <NoteCard key={note.id} note={note} />
+            <PublicContentCard
+              key={note.id}
+              href={`/notes/${note.slug}`}
+              ariaLabel={`Open note ${note.title}`}
+              title={note.title}
+              roadmapStatus={
+                note.roadmap_item_status
+                  ? ROADMAP_STATUS_LABEL[note.roadmap_item_status]
+                  : "Not linked"
+              }
+              summary={note.summary?.trim() || "Summary coming soon."}
+              chips={note.tags.slice(0, 3)}
+              updatedAt={note.updated_at}
+            />
           ))}
         </div>
       ) : null}

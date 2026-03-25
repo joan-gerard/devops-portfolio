@@ -86,7 +86,11 @@ const navItems = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  appVersion: string;
+}
+
+export function AdminSidebar({ appVersion }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -117,7 +121,7 @@ export function AdminSidebar() {
       >
         <span
           style={{
-            fontFamily: "var(--font-syne)",
+            fontFamily: "var(--font-heading)",
             fontWeight: 800,
             fontSize: "14px",
             color: "var(--text)",
@@ -196,7 +200,7 @@ export function AdminSidebar() {
         }}
       >
         <div style={{ marginBottom: "2px" }}>Learning Portal</div>
-        <div style={{ color: "var(--accent)", opacity: 0.6 }}>v0.1.0</div>
+        <div style={{ color: "var(--accent)", opacity: 0.6 }}>v{appVersion}</div>
       </div>
     </aside>
   );

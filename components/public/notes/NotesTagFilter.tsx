@@ -1,7 +1,7 @@
 "use client";
 
 type NotesTagFilterProps = {
-  allTags: string[];
+  tagCounts: { tag: string; count: number }[];
   activeTag: string | null;
   onTagChange: (tag: string | null) => void;
 };
@@ -17,10 +17,10 @@ const buttonBase: React.CSSProperties = {
 };
 
 /**
- * Tag filter bar for the Notes page: "all" plus one button per tag.
+ * Tag filter bar for the Notes page: "all" plus one button per tag (with counts).
  */
-export function NotesTagFilter({ allTags, activeTag, onTagChange }: NotesTagFilterProps) {
-  if (allTags.length === 0) return null;
+export function NotesTagFilter({ tagCounts, activeTag, onTagChange }: NotesTagFilterProps) {
+  if (tagCounts.length === 0) return null;
 
   return (
     <div
@@ -35,6 +35,7 @@ export function NotesTagFilter({ allTags, activeTag, onTagChange }: NotesTagFilt
       <button
         type="button"
         onClick={() => onTagChange(null)}
+        aria-pressed={activeTag === null}
         style={{
           ...buttonBase,
           background: activeTag === null ? "var(--accent)" : "transparent",
@@ -43,19 +44,21 @@ export function NotesTagFilter({ allTags, activeTag, onTagChange }: NotesTagFilt
       >
         all
       </button>
-      {allTags.map((t) => (
+      {tagCounts.map(({ tag, count }) => (
         <button
           type="button"
-          key={t}
-          onClick={() => onTagChange(activeTag === t ? null : t)}
+          key={tag}
+          onClick={() => onTagChange(activeTag === tag ? null : tag)}
+          aria-pressed={activeTag === tag}
           style={{
             ...buttonBase,
-            background: activeTag === t ? "var(--accent)" : "transparent",
-            color: activeTag === t ? "var(--bg)" : "var(--text-muted)",
+            background: activeTag === tag ? "var(--accent)" : "transparent",
+            color: activeTag === tag ? "var(--bg)" : "var(--text-muted)",
             textTransform: "lowercase",
           }}
         >
-          {t}
+          {tag}
+          <span style={{ marginLeft: 6, opacity: 0.85 }}>({count})</span>
         </button>
       ))}
     </div>

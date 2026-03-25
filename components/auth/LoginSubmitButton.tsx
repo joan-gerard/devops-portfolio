@@ -7,7 +7,7 @@ const baseButtonStyle: React.CSSProperties = {
   border: "none",
   borderRadius: "4px",
   padding: "10px",
-  fontFamily: "monospace",
+  fontFamily: "var(--font-mono)",
   fontSize: "13px",
   fontWeight: "600",
 };
@@ -19,8 +19,8 @@ export function LoginSubmitButton({ loading }: LoginSubmitButtonProps) {
       disabled={loading}
       style={{
         ...baseButtonStyle,
-        background: loading ? "#1a1e28" : "#00e5a0",
-        color: loading ? "#6b7280" : "#0d0f14",
+        background: loading ? "var(--surface-2)" : "var(--accent)",
+        color: loading ? "var(--text-muted)" : "var(--bg)",
         cursor: loading ? "not-allowed" : "pointer",
       }}
     >

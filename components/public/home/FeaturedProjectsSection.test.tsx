@@ -10,6 +10,7 @@ const mockProject: FeaturedProject = {
   tech_stack: ["Kubernetes"],
   github_url: null,
   live_url: null,
+  updated_at: "2024-06-01T12:00:00Z",
 };
 
 describe("FeaturedProjectsSection", () => {

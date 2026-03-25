@@ -1,4 +1,4 @@
-import { tagStyle } from "@/components/public/publicPageStyles";
+import { Chip } from "@/components/shared/Chip";
 
 type ProjectTechStackSectionProps = {
   techStack: string[];
@@ -23,9 +23,7 @@ export function ProjectTechStackSection({ techStack }: ProjectTechStackSectionPr
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
         {techStack.map((tech, index) => (
-          <span key={`${tech}-${index}`} style={tagStyle}>
-            {tech}
-          </span>
+          <Chip key={`${tech}-${index}`} tag={tech} />
         ))}
       </div>
     </div>

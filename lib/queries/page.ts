@@ -7,17 +7,55 @@ const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
 export async function getAllPages() {
   return sql<Page[]>`
-    SELECT id, title, slug, tags, published, updated_at, e2e_only
-    FROM pages
-    ORDER BY updated_at DESC
+    SELECT
+      p.id,
+      p.title,
+      p.slug,
+      p.summary,
+      p.tags,
+      p.published,
+      p.updated_at,
+      p.e2e_only,
+      r.id AS roadmap_item_id,
+      r.status AS roadmap_item_status,
+      r.title AS roadmap_item_title
+    FROM pages p
+    LEFT JOIN LATERAL (
+      SELECT id, status, title
+      FROM roadmap_items
+      WHERE linked_page_id = p.id
+      ORDER BY updated_at DESC, id DESC
+      LIMIT 1
+    ) r ON true
+    ORDER BY p.created_at ASC
   `;
 }
 
 export async function getPageById(id: string): Promise<Page | null> {
   const rows = await sql<Page[]>`
-    SELECT id, title, slug, content, tags, published, created_at, updated_at, e2e_only
-    FROM pages
-    WHERE id = ${id}
+    SELECT
+      p.id,
+      p.title,
+      p.slug,
+      p.summary,
+      p.content,
+      p.tags,
+      p.published,
+      p.created_at,
+      p.updated_at,
+      p.e2e_only,
+      r.id AS roadmap_item_id,
+      r.status AS roadmap_item_status,
+      r.title AS roadmap_item_title
+    FROM pages p
+    LEFT JOIN LATERAL (
+      SELECT id, status, title
+      FROM roadmap_items
+      WHERE linked_page_id = p.id
+      ORDER BY updated_at DESC, id DESC
+      LIMIT 1
+    ) r ON true
+    WHERE p.id = ${id}
     LIMIT 1
   `;
   return rows[0] ?? null;
@@ -34,7 +72,7 @@ export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | nu
   return withPrerenderFallback(
     async () => {
       const rows = await sql<PublicNote[]>`
-        SELECT id, title, slug, content, tags, updated_at
+        SELECT id, title, slug, summary, content, tags, updated_at
         FROM pages
         WHERE slug = ${slug}
           AND published = true
@@ -53,12 +91,26 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   return withPrerenderFallback<PublishedNotePreview[]>(
     () =>
       sql<PublishedNotePreview[]>`
-        SELECT id, title, slug, tags, updated_at
-        FROM pages
-        WHERE published = true
-          AND slug != 'about'
-          ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-        ORDER BY updated_at DESC
+        SELECT
+          p.id,
+          p.title,
+          p.slug,
+          p.summary,
+          p.tags,
+          p.updated_at,
+          r.status AS roadmap_item_status
+        FROM pages p
+        LEFT JOIN LATERAL (
+          SELECT id, status, title
+          FROM roadmap_items
+          WHERE linked_page_id = p.id
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 1
+        ) r ON true
+        WHERE p.published = true
+          AND p.slug != 'about'
+          ${isE2ETestRuntime ? sql`` : sql`AND p.e2e_only = false`}
+        ORDER BY p.updated_at DESC
       `,
     [],
     "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list."

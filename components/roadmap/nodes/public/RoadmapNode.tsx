@@ -66,7 +66,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
             isGroup
               ? item.is_group_completed
                 ? "var(--accent)"
-                : "rgba(148, 163, 184, 0.5)"
+                : "var(--border)"
               : isSelected
                 ? "var(--text)"
                 : statusStyles.border
@@ -76,7 +76,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
             isSelected && !isGroup
               ? "0 0 0 1px var(--text), 0 0 14px 2px rgba(248,250,252,0.16)"
               : !isGroup && statusStyles.pulse
-                ? `0 0 0 1px ${statusStyles.border}, 0 0 18px 3px var(--accent-2-dim)`
+                ? `0 0 0 1px ${statusStyles.border}, 0 0 18px 3px var(--accent-dim)`
                 : !isGroup
                   ? `0 0 0 1px ${statusStyles.border}`
                   : "none",
@@ -90,7 +90,7 @@ export function RoadmapNode({ data, selected }: NodeProps) {
           (e.currentTarget as HTMLDivElement).style.borderColor = isGroup
             ? item.is_group_completed
               ? "var(--accent)"
-              : "rgba(148, 163, 184, 0.5)"
+              : "var(--border)"
             : isSelected
               ? "var(--text)"
               : statusStyles.border;

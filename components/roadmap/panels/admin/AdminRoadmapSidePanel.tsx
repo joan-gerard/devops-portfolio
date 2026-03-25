@@ -12,7 +12,7 @@ import {
 } from "@/components/roadmap/roadmapStyles";
 import { formatRoadmapDate } from "@/lib/roadmap-date";
 import type { RoadmapSaveStatus } from "@/hooks/useRoadmapSaveStatus";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   item: RoadmapItemWithSlug | null;
@@ -31,27 +31,68 @@ export function AdminRoadmapSidePanel({
   onBeginSaving,
   onFinishSaving,
 }: Props) {
+  type CopyStatus = "idle" | "copied" | "error";
   const [saveStatus, setSaveStatus] = useState<RoadmapSaveStatus>("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Local field states — kept in sync with item prop
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [linkedPageId, setLinkedPageId] = useState(item?.linked_page_id ?? "");
   const [isGroupCompleted, setIsGroupCompleted] = useState<boolean>(
     item?.is_group_completed ?? false
   );
 
   // Sync fields when the selected item changes
   useEffect(() => {
+    if (copyTimerRef.current !== null) {
+      clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = null;
+    }
     setTitle(item?.title ?? "");
     setDescription(item?.description ?? "");
-    setLinkedPageId(item?.linked_page_id ?? "");
     setIsGroupCompleted(item?.is_group_completed ?? false);
     setConfirmDelete(false);
     setSaveStatus("idle");
-  }, [item?.id, item?.title, item?.description, item?.linked_page_id, item?.is_group_completed]);
+    setCopyStatus("idle");
+  }, [item?.id, item?.title, item?.description, item?.is_group_completed]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  function scheduleCopyStatusReset() {
+    if (copyTimerRef.current !== null) {
+      clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = setTimeout(() => {
+      setCopyStatus("idle");
+      copyTimerRef.current = null;
+    }, 1500);
+  }
+
+  async function handleCopyRoadmapItemId(id: string) {
+    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setCopyStatus("error");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopyStatus("copied");
+      scheduleCopyStatusReset();
+    } catch {
+      setCopyStatus("error");
+      scheduleCopyStatusReset();
+    }
+  }
 
   async function patch(fields: Record<string, unknown>): Promise<boolean> {
     if (!item) return false;
@@ -328,6 +369,73 @@ export function AdminRoadmapSidePanel({
               </div>
             )}
 
+            {/* Roadmap item ID — only for learning/project */}
+            {item.type !== "group" && (
+              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Roadmap item ID
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyRoadmapItemId(item.id)}
+                    aria-label="Copy roadmap item ID"
+                    style={{
+                      background: "none",
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      color:
+                        copyStatus === "copied"
+                          ? "var(--accent)"
+                          : copyStatus === "error"
+                            ? "var(--red, #ff4444)"
+                            : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      lineHeight: 1.2,
+                      padding: "4px 6px",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {copyStatus === "copied"
+                      ? "Copied"
+                      : copyStatus === "error"
+                        ? "Copy failed"
+                        : "Copy ID"}
+                  </button>
+                </div>
+                <input
+                  value={item.id}
+                  readOnly
+                  aria-label="Roadmap item ID"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    color: "var(--text-muted)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    padding: "8px 10px",
+                    outline: "none",
+                    width: "100%",
+                    boxSizing: "border-box",
+                    cursor: "text",
+                  }}
+                />
+              </label>
+            )}
+
             {/* Group completion toggle — only for group nodes */}
             {item.type === "group" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -386,9 +494,9 @@ export function AdminRoadmapSidePanel({
               </div>
             )}
 
-            {/* Linked page ID — only for learning/project */}
+            {/* Linked content — only for learning/project */}
             {item.type !== "group" && (
-              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <span
                   style={{
                     fontFamily: "var(--font-mono)",
@@ -398,35 +506,33 @@ export function AdminRoadmapSidePanel({
                     letterSpacing: "0.1em",
                   }}
                 >
-                  Linked page UUID
-                  {item.linked_page_slug && (
-                    <span style={{ color: "var(--accent)", marginLeft: 6, textTransform: "none" }}>
-                      → /notes/{item.linked_page_slug}
-                    </span>
-                  )}
+                  Linked content
                 </span>
-                <input
-                  value={linkedPageId}
-                  onChange={(e) => setLinkedPageId(e.target.value)}
-                  onBlur={() => {
-                    const val = linkedPageId.trim() || null;
-                    if (val !== item.linked_page_id) patch({ linked_page_id: val });
-                  }}
-                  placeholder="paste page UUID"
+                <div
                   style={{
                     background: "var(--surface-2)",
                     border: "1px solid var(--border)",
                     borderRadius: 4,
-                    color: "var(--text)",
+                    color: "var(--text-muted)",
                     fontFamily: "var(--font-mono)",
                     fontSize: 11,
                     padding: "8px 10px",
-                    outline: "none",
-                    width: "100%",
-                    boxSizing: "border-box",
+                    lineHeight: 1.5,
                   }}
-                />
-              </label>
+                >
+                  {item.linked_page_slug && item.linked_page_type ? (
+                    <>
+                      Linked to {item.linked_page_type === "note" ? "note" : "project"}:{" "}
+                      <span style={{ color: "var(--accent)" }}>
+                        /{item.linked_page_type === "note" ? "notes" : "projects"}/
+                        {item.linked_page_slug}
+                      </span>
+                    </>
+                  ) : (
+                    "Not linked to a note or project"
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Completed at */}

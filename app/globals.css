@@ -9,22 +9,23 @@
 }
 
 :root {
-  --bg: #0d0f14;
-  --surface: #13161d;
-  --surface-2: #1a1e28;
-  --border: #232838;
-  --accent: #00e5a0;
-  --accent-dim: rgba(0, 229, 160, 0.1);
-  --accent-2: #4f46e5;
-  --accent-2-dim: rgba(79, 70, 229, 0.18);
-  --text: #e8eaf0;
-  --text-dim: #9ca3af;
-  --text-muted: #6b7280;
+  --bg: #080808;
+  --surface: #101010;
+  --surface-2: #181818;
+  --border: #2a2a2a;
+  --accent: #e8ff00;
+  --accent-dim: rgba(232, 255, 0, 0.14);
+  --accent-2: #9ca3af;
+  --accent-2-dim: rgba(156, 163, 175, 0.18);
+  --text: #ffffff;
+  --text-dim: #c5c5c5;
+  --text-muted: #a4a4a4;
   --red: #f87171;
-  --yellow: #f5c542;
+  --yellow: #e8ff00;
 
   --font-syne: "Syne", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  --font-heading: "Roboto", sans-serif;
 
   --sidebar-width: 220px;
   --header-height: 52px;
@@ -57,7 +58,7 @@ body {
 }
 
 .tiptap-editor h1 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 28px;
   font-weight: 800;
   color: var(--text);
@@ -66,7 +67,7 @@ body {
 }
 
 .tiptap-editor h2 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 700;
   color: var(--text);
@@ -74,7 +75,7 @@ body {
 }
 
 .tiptap-editor h3 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
   color: var(--text-dim);
@@ -107,6 +108,49 @@ body {
   font-size: 13px;
 }
 
+/* Syntax highlighting tokens used by TipTap lowlight (hljs classes). */
+:is(.tiptap-editor, .note-content) pre .hljs-comment,
+:is(.tiptap-editor, .note-content) pre .hljs-quote {
+  color: #7f8a9a;
+  font-style: italic;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-keyword,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-tag,
+:is(.tiptap-editor, .note-content) pre .hljs-literal,
+:is(.tiptap-editor, .note-content) pre .hljs-type {
+  color: #ff7ab6;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-string,
+:is(.tiptap-editor, .note-content) pre .hljs-title,
+:is(.tiptap-editor, .note-content) pre .hljs-section,
+:is(.tiptap-editor, .note-content) pre .hljs-attribute,
+:is(.tiptap-editor, .note-content) pre .hljs-addition {
+  color: #9fda71;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-number,
+:is(.tiptap-editor, .note-content) pre .hljs-symbol,
+:is(.tiptap-editor, .note-content) pre .hljs-bullet {
+  color: #f7c56b;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-variable,
+:is(.tiptap-editor, .note-content) pre .hljs-template-variable,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-class,
+:is(.tiptap-editor, .note-content) pre .hljs-selector-id {
+  color: #7bdff2;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-emphasis {
+  font-style: italic;
+}
+
+:is(.tiptap-editor, .note-content) pre .hljs-strong {
+  font-weight: 700;
+}
+
 .tiptap-editor blockquote {
   border-left: 3px solid var(--accent);
   padding-left: 16px;
@@ -117,12 +161,23 @@ body {
 
 .tiptap-editor ul,
 .tiptap-editor ol {
-  padding-left: 20px;
+  padding-left: 24px;
   margin-bottom: 12px;
+  list-style-position: outside;
 }
 
 .tiptap-editor li {
   margin-bottom: 4px;
+  display: list-item;
+  list-style-position: outside;
+}
+
+.tiptap-editor ul {
+  list-style-type: disc;
+}
+
+.tiptap-editor ol {
+  list-style-type: decimal;
 }
 
 .tiptap-editor p.is-editor-empty:first-child::before {
@@ -172,11 +227,11 @@ body {
 .note-content h1,
 .note-content h2,
 .note-content h3 {
-  font-family: var(--font-syne);
+  font-family: var(--font-heading);
   font-weight: 700;
   color: var(--text);
-  margin-top: 2em;
-  margin-bottom: 0.5em;
+  margin-top: 2.5em;
+  margin-bottom: 0.75em;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -193,7 +248,7 @@ body {
 
 .note-content p {
   margin-top: 0;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
 }
 
 .note-content p:last-child {
@@ -204,10 +259,22 @@ body {
 .note-content ol {
   padding-left: 1.5em;
   margin-bottom: 1em;
+  list-style-position: outside;
 }
 
 .note-content li {
   margin-bottom: 0.25em;
+  display: list-item;
+  list-style-position: outside;
+}
+
+.note-content ul {
+  list-style-type: disc;
+}
+
+.note-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5em !important;
 }
 
 .note-content code {
@@ -227,9 +294,27 @@ body {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 16px 20px;
+  position: relative;
+  padding: 28px 20px 16px 20px;
   overflow-x: auto;
   margin-bottom: 1em;
+}
+
+.note-content pre .code-lang-badge {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  pointer-events: none;
 }
 
 /* pre > code resets the inline code styles */

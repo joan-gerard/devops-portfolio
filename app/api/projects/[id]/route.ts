@@ -60,15 +60,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
   }
 
-  const { title, slug, description, tech_stack, github_url, live_url, published } = body as {
-    title?: string;
-    slug?: string;
-    description?: string;
-    tech_stack?: string[];
-    github_url?: string | null;
-    live_url?: string | null;
-    published?: boolean;
-  };
+  const { title, slug, summary, description, tech_stack, github_url, live_url, published } =
+    body as {
+      title?: string;
+      slug?: string;
+      summary?: string;
+      description?: string;
+      tech_stack?: string[];
+      github_url?: string | null;
+      live_url?: string | null;
+      published?: boolean;
+    };
+
+  if (summary !== undefined && typeof summary !== "string") {
+    return NextResponse.json({ error: "summary must be a string" }, { status: 400 });
+  }
 
   const slugToWrite = slug !== undefined && slug !== null ? normalizeSlug(String(slug)) : undefined;
   if (slugToWrite !== undefined) {
@@ -102,6 +108,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       UPDATE projects SET
         title       = COALESCE(${title ?? null},       title),
         slug        = COALESCE(${slugToWrite ?? null}, slug),
+        summary     = COALESCE(${summary ?? null},     summary),
         description = COALESCE(${description ?? null}, description),
         tech_stack  = COALESCE(${tech_stack ?? null},  tech_stack),
         github_url  = COALESCE(${normalizedGithubUrl ?? null},  github_url),

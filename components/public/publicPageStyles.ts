@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
 const labelBase: CSSProperties = {
   fontFamily: "var(--font-mono)",
   fontSize: "10px",
-  color: "var(--accent)",
+  color: "var(--text-dim)",
   textTransform: "uppercase",
   letterSpacing: "0.15em",
 };
@@ -30,7 +30,7 @@ export const pageHeaderLabelStyle: CSSProperties = {
 // —— Headings ———————————————————————————————————————————————————————————————
 /** Section heading (e.g. "What I've been writing") — used by HomeSection. */
 export const sectionHeadingStyle: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "20px",
   fontWeight: "700",
   color: "var(--text)",
@@ -39,7 +39,7 @@ export const sectionHeadingStyle: CSSProperties = {
 
 /** Page header heading (e.g. "Projects") — used by PageHeader. */
 export const pageHeaderHeadingStyle: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "32px",
   fontWeight: "800",
   color: "var(--text)",
@@ -56,30 +56,6 @@ export const pageHeaderDescriptionStyle: CSSProperties = {
   lineHeight: 1.7,
 };
 
-// —— "View all" link —————————————————————————————————————————————————────────
-export const viewAllLinkStyle: CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "11px",
-  color: "var(--text-muted)",
-  textDecoration: "none",
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "4px",
-  marginTop: "24px",
-};
-
-// —— Tag (pill / tech stack / labels) ———————————————————————————————————————
-export const tagStyle: CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: "10px",
-  color: "var(--text-muted)",
-  background: "var(--surface-2)",
-  border: "1px solid var(--border)",
-  borderRadius: "4px",
-  padding: "2px 8px",
-  textTransform: "lowercase",
-};
-
 // —— Cards —————————————————————————————————————————————————────────────────—
 const cardBase: CSSProperties = {
   background: "var(--surface)",
@@ -91,16 +67,6 @@ const cardBase: CSSProperties = {
 export const cardSectionStyle: CSSProperties = {
   ...cardBase,
   padding: "20px",
-};
-
-/** Card for project list (ProjectCard) — includes flex layout and transition. */
-export const cardProjectStyle: CSSProperties = {
-  ...cardBase,
-  padding: "24px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "16px",
-  transition: "border-color 0.15s",
 };
 
 // —— Link row and base (card actions) ———————————————————————————————————————

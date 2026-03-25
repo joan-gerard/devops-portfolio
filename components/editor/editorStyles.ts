@@ -6,7 +6,7 @@ export const titleInputStyle: CSSProperties = {
   background: "transparent",
   border: "none",
   outline: "none",
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: "32px",
   fontWeight: "800",
   color: "var(--text)",

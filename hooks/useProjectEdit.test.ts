@@ -7,6 +7,7 @@ const mockProject: Project = {
   id: "project-1",
   title: "Initial Project",
   slug: "initial-project",
+  summary: "Initial summary",
   description: "Initial description",
   tech_stack: [],
   github_url: null,
@@ -32,6 +33,7 @@ describe("useProjectEdit", () => {
       const { result } = renderHook(() => useProjectEdit(mockProject));
       expect(result.current.fields.title).toBe("Initial Project");
       expect(result.current.fields.slug).toBe("initial-project");
+      expect(result.current.fields.summary).toBe("Initial summary");
       expect(result.current.fields.description).toBe("Initial description");
       expect(result.current.published).toBe(false);
       expect(result.current.saveStatus).toBe("idle");
@@ -108,6 +110,47 @@ describe("useProjectEdit", () => {
 
       expect(result.current.saveStatus).toBe("error");
     });
+
+    it("updates summary immediately and PATCHes after debounce", async () => {
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() => result.current.handleChange("summary", "Updated summary"));
+      expect(result.current.fields.summary).toBe("Updated summary");
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/projects/project-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ summary: "Updated summary" }),
+        })
+      );
+      expect(result.current.saveStatus).toBe("saved");
+    });
+
+    it("does not PATCH while typing roadmap item id", async () => {
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+      act(() =>
+        result.current.handleChange("roadmap_item_id", "33333333-3333-3333-3333-333333333333")
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.current.fields.roadmap_item_id).toBe("33333333-3333-3333-3333-333333333333");
+    });
   });
 
   describe("handleSlugRegenerate", () => {
@@ -180,6 +223,115 @@ describe("useProjectEdit", () => {
       });
 
       expect(result.current.published).toBe(true);
+      expect(result.current.saveStatus).toBe("error");
+    });
+  });
+
+  describe("roadmap linking", () => {
+    it("links a roadmap item and stores its status", async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "completed", title: "Ship project" }),
+      } as Response);
+      const { result } = renderHook(() => useProjectEdit(mockProject));
+
+      act(() =>
+        result.current.handleChange("roadmap_item_id", "33333333-3333-3333-3333-333333333334")
+      );
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.fields.roadmap_item_id);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/roadmap/33333333-3333-3333-3333-333333333334",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: "project-1" }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("completed");
+      expect(result.current.roadmapTitle).toBe("Ship project");
+      expect(result.current.saveStatus).toBe("saved");
+    });
+
+    it("rolls back new link and sets error when previous unlink fails", async () => {
+      const linkedProject: Project = {
+        ...mockProject,
+        roadmap_item_id: "11111111-1111-1111-1111-111111111111",
+        roadmap_item_status: "not_started",
+        roadmap_item_title: "Old roadmap title",
+      };
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ status: "completed", title: "New roadmap title" }),
+        } as Response)
+        .mockResolvedValueOnce({ ok: false } as Response)
+        .mockResolvedValueOnce({ ok: true } as Response);
+
+      const { result } = renderHook(() => useProjectEdit(linkedProject));
+
+      act(() =>
+        result.current.handleChange("roadmap_item_id", "22222222-2222-2222-2222-222222222222")
+      );
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.fields.roadmap_item_id);
+      });
+
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        1,
+        "/api/roadmap/22222222-2222-2222-2222-222222222222",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: "project-1" }),
+        })
+      );
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        "/api/roadmap/11111111-1111-1111-1111-111111111111",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: null }),
+        })
+      );
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        3,
+        "/api/roadmap/22222222-2222-2222-2222-222222222222",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: null }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("not_started");
+      expect(result.current.roadmapTitle).toBe("Old roadmap title");
+      expect(result.current.saveStatus).toBe("error");
+    });
+
+    it("keeps roadmap metadata unchanged and sets error when unlinking current item fails", async () => {
+      const linkedProject: Project = {
+        ...mockProject,
+        roadmap_item_id: "11111111-1111-1111-1111-111111111111",
+        roadmap_item_status: "not_started",
+        roadmap_item_title: "Old roadmap title",
+      };
+      vi.mocked(global.fetch).mockResolvedValueOnce({ ok: false } as Response);
+
+      const { result } = renderHook(() => useProjectEdit(linkedProject));
+
+      act(() => result.current.handleChange("roadmap_item_id", ""));
+      await act(async () => {
+        await result.current.saveRoadmapLink(result.current.fields.roadmap_item_id);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/roadmap/11111111-1111-1111-1111-111111111111",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ linked_page_id: null }),
+        })
+      );
+      expect(result.current.roadmapStatus).toBe("not_started");
+      expect(result.current.roadmapTitle).toBe("Old roadmap title");
       expect(result.current.saveStatus).toBe("error");
     });
   });

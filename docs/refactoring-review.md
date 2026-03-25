@@ -30,7 +30,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 ## 4. Delete Buttons
 
-**Current:** `DeleteNoteButton` and `DeleteProjectButton` share the same behaviour and UI: confirm (“Sure?” / Delete / Cancel), loading state, `fetch(DELETE)`, then `router.push(redirectTo)` or `router.refresh()`. Only the API URL differs (`/api/pages/${id}` vs `/api/projects/${id}`).
+**Current:** `DeleteNoteButton` and `DeleteProjectButton` share the same behaviour and UI: an accessible confirmation modal ("Confirm deletion"), loading state, `fetch(DELETE)`, then `router.push(redirectTo)` or `router.refresh()`. Only the API URL differs (`/api/pages/${id}` vs `/api/projects/${id}`).
 
 **Suggestion:** A single **ConfirmDeleteButton** (or **DeleteEntityButton**) that takes `deleteUrl`, `redirectTo?`, and optional `onPreventDefault` (for use in rows/cards where you need to stop link navigation). Both current buttons become one-liners that pass the right URL and redirect.
 
@@ -84,7 +84,7 @@ This document captures refactoring opportunities across the app to increase reus
 
 **Suggestion:** A **DetailPageHeader** component with props like `label`, `title`, and `metadata?: ReactNode`, and shared styles for label, title, and metadata container. Note detail passes tags + date; project detail passes only date. This keeps one place for typography and spacing.
 
-**Done:** Added **DetailPageHeader** in `components/public/DetailPageHeader.tsx` with shared style constants (`detailPageHeaderLabelStyle`, `detailPageHeaderTitleStyle`, `detailPageHeaderMetadataStyle`) and props `label`, `title`, `metadata?`. **NoteDetail** and **ProjectDetail** use it; **ProjectDetailHeader** removed. Note passes tags + date as metadata; project passes "Last updated" paragraph.
+**Done:** Added **DetailPageHeader** in `components/public/DetailPageHeader.tsx` with shared style constants (`detailPageHeaderLabelStyle`, `detailPageHeaderTitleStyle`, `detailPageHeaderMetadataStyle`) and props `label`, `title`, `tags`, `updatedAt`. The top row shows `label • updatedAt` (formatted date string); tag chips render below the title. **NoteDetail** passes note tags and the same locale date format as before; **ProjectDetail** passes `tags={[]}` and the project `updated_at` formatted the same way. **ProjectDetailHeader** removed.
 
 ---
 
@@ -116,7 +116,7 @@ Consider reusing **ProjectCard** (from `components/public/projects/ProjectCard.t
 
 **Suggestion:** A single set of “public page” design tokens (e.g. one file or a small hierarchy) for label, heading, tag, card, link row/base, “view all” link, and empty state. Home, projects, and Notes (if refactored) import from there. That reduces duplication and keeps the public look consistent.
 
-**Done:** Added **publicPageStyles** (`components/public/publicPageStyles.ts`) with unified tokens: label base → `sectionLabelStyle` / `pageHeaderLabelStyle`, `sectionHeadingStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`, `viewAllLinkStyle`, `tagStyle`, `cardSectionStyle` / `cardProjectStyle`, `linkRowStyle`, `linkBaseStyle`, `emptyMessageStyle`, `emptyStateWrapperStyle`. **HomeSection**, **NoteCard**, **ProjectCard**, **ProjectTechStackSection**, **PageHeader**, and **EmptyState** import from it. Removed `sectionStyles.ts` and `projectStyles.ts`; all public page styles now live in one file.
+**Done:** Added **publicPageStyles** (`components/public/publicPageStyles.ts`) with unified tokens: label base → `sectionLabelStyle` / `pageHeaderLabelStyle`, `sectionHeadingStyle`, `pageHeaderHeadingStyle`, `pageHeaderDescriptionStyle`, `cardSectionStyle` / `cardProjectStyle`, `linkRowStyle`, `linkBaseStyle`, `emptyMessageStyle`, `emptyStateWrapperStyle`. **HomeSection**, **NoteCard**, **ProjectCard**, **ProjectTechStackSection**, **PageHeader**, and **EmptyState** import from it. Removed `sectionStyles.ts` and `projectStyles.ts`; all public page styles now live in one file.
 
 ---
 

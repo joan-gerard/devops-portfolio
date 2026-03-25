@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Page } from "@/types/pages";
 import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
 import type { SaveStatus } from "@/lib/adminSave";
+import type { RoadmapItemStatus } from "@/types/roadmap";
 
 export type { SaveStatus } from "@/lib/adminSave";
 
@@ -23,11 +24,19 @@ export type { SaveStatus } from "@/lib/adminSave";
 export function useEditorPage(note: Page) {
   const [title, setTitle] = useState(note.title);
   const [slug, setSlug] = useState(note.slug);
+  const [summary, setSummary] = useState(note.summary ?? "");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(note.published);
+  const [roadmapItemId, setRoadmapItemId] = useState(note.roadmap_item_id ?? "");
+  const [linkedRoadmapItemId, setLinkedRoadmapItemId] = useState(note.roadmap_item_id ?? "");
+  const [roadmapStatus, setRoadmapStatus] = useState<RoadmapItemStatus | null>(
+    note.roadmap_item_status ?? null
+  );
+  const [roadmapTitle, setRoadmapTitle] = useState(note.roadmap_item_title ?? null);
 
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const summaryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function saveTitle(newTitle: string) {
     setSaveStatus("saving");
@@ -74,6 +83,21 @@ export function useEditorPage(note: Page) {
     }
   }
 
+  async function saveSummary(newSummary: string) {
+    setSaveStatus("saving");
+    try {
+      const res = await fetch(`/api/pages/${note.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summary: newSummary }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   async function togglePublished() {
     const newValue = !published;
     setPublished(newValue);
@@ -110,9 +134,70 @@ export function useEditorPage(note: Page) {
     slugTimer.current = setTimeout(() => saveSlugFromTitle(generatedSlug), DEBOUNCE_MS);
   }
 
+  function handleSummaryChange(newSummary: string) {
+    setSummary(newSummary);
+    if (summaryTimer.current) clearTimeout(summaryTimer.current);
+    summaryTimer.current = setTimeout(() => saveSummary(newSummary), DEBOUNCE_MS);
+  }
+
+  async function saveRoadmapLink(nextRoadmapItemIdRaw: string) {
+    const nextRoadmapItemId = nextRoadmapItemIdRaw.trim();
+    const previousRoadmapItemId = linkedRoadmapItemId.trim();
+    if (nextRoadmapItemId === previousRoadmapItemId) return;
+
+    setSaveStatus("saving");
+    try {
+      if (nextRoadmapItemId) {
+        const linkRes = await fetch(`/api/roadmap/${nextRoadmapItemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ linked_page_id: note.id }),
+        });
+        if (!linkRes.ok) throw new Error();
+
+        const linkedRoadmapItem = (await linkRes.json()) as {
+          status: RoadmapItemStatus;
+          title: string;
+        };
+
+        if (previousRoadmapItemId && previousRoadmapItemId !== nextRoadmapItemId) {
+          const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          });
+          if (!unlinkRes.ok) throw new Error();
+        }
+
+        setLinkedRoadmapItemId(nextRoadmapItemId);
+        setRoadmapItemId(nextRoadmapItemId);
+        setRoadmapStatus(linkedRoadmapItem.status);
+        setRoadmapTitle(linkedRoadmapItem.title);
+      } else {
+        if (previousRoadmapItemId) {
+          const unlinkRes = await fetch(`/api/roadmap/${previousRoadmapItemId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linked_page_id: null }),
+          });
+          if (!unlinkRes.ok) throw new Error();
+        }
+        setLinkedRoadmapItemId("");
+        setRoadmapItemId("");
+        setRoadmapStatus(null);
+        setRoadmapTitle(null);
+      }
+
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }
+
   return {
     title,
     slug,
+    summary,
     saveStatus,
     setSaveStatus,
     published,
@@ -121,6 +206,12 @@ export function useEditorPage(note: Page) {
     handleTitleChange,
     handleSlugChange,
     handleSlugRegenerate,
+    handleSummaryChange,
     togglePublished,
+    roadmapItemId,
+    roadmapStatus,
+    roadmapTitle,
+    setRoadmapItemId,
+    saveRoadmapLink,
   };
 }

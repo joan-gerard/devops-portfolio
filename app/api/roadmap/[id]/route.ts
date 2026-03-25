@@ -115,7 +115,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       u.completed_at,
       u.created_at,
       u.updated_at,
-      COALESCE(p.slug, pr.slug) AS linked_page_slug
+      COALESCE(p.slug, pr.slug) AS linked_page_slug,
+      CASE
+        WHEN p.id IS NOT NULL THEN 'note'
+        WHEN pr.id IS NOT NULL THEN 'project'
+        ELSE NULL
+      END AS linked_page_type
     FROM updated u
     LEFT JOIN pages p ON p.id = u.linked_page_id
     LEFT JOIN projects pr ON pr.id = u.linked_page_id

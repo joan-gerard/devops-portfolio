@@ -24,7 +24,7 @@ describe("project queries", () => {
   });
 
   describe("getAllProjects", () => {
-    it("returns full admin project list from sql ordered by updated_at DESC", async () => {
+    it("returns full admin project list from sql ordered by created_at ASC", async () => {
       const projects: Project[] = [
         {
           id: "1",

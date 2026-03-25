@@ -1,5 +1,5 @@
-import type { CSSProperties } from "react";
 import type { RoadmapItemStatus, RoadmapItemType } from "@/types/roadmap";
+import type { CSSProperties } from "react";
 
 export const ROADMAP_STATUS: RoadmapItemStatus[] = ["not_started", "in_progress", "completed"];
 
@@ -11,8 +11,8 @@ export const ROADMAP_STATUS_LABEL: Record<RoadmapItemStatus, string> = {
 
 export const ROADMAP_STATUS_COLORS: Record<RoadmapItemStatus, string> = {
   not_started: "var(--text-muted)",
-  in_progress: "var(--accent-2)",
-  completed: "var(--accent)",
+  in_progress: "var(--accent)",
+  completed: "var(--text-dim)",
 };
 
 export const ROADMAP_STATUS_ICON: Record<RoadmapItemStatus, string> = {
@@ -41,19 +41,19 @@ export const ROADMAP_STATUS_NODE_STYLES: Record<
     pulse: false,
   },
   in_progress: {
-    border: "var(--accent-2)",
-    labelColor: "var(--text)",
-    iconColor: "var(--accent-2)",
-    dot: "var(--accent-2)",
-    pillBg: "var(--accent-2-dim)",
-    pulse: true,
-  },
-  completed: {
     border: "var(--accent)",
-    labelColor: "var(--accent)",
+    labelColor: "var(--text)",
     iconColor: "var(--accent)",
     dot: "var(--accent)",
     pillBg: "var(--accent-dim)",
+    pulse: true,
+  },
+  completed: {
+    border: "var(--text-dim)",
+    labelColor: "var(--text-dim)",
+    iconColor: "var(--text)",
+    dot: "var(--text-dim)",
+    pillBg: "var(--accent-2-dim)",
     pulse: false,
   },
 };
@@ -68,17 +68,17 @@ export const ROADMAP_TYPE_CONFIG: Record<
 > = {
   learning: {
     label: "Learning",
-    badgeBg: "rgba(56, 189, 248, 0.16)",
-    badgeColor: "#0ea5e9",
+    badgeBg: "var(--accent-dim)",
+    badgeColor: "var(--accent)",
   },
   project: {
     label: "Project",
-    badgeBg: "rgba(129, 140, 248, 0.16)",
-    badgeColor: "#6366f1",
+    badgeBg: "var(--accent-2-dim)",
+    badgeColor: "var(--text-dim)",
   },
   group: {
     label: "Group",
-    badgeBg: "rgba(148, 163, 184, 0.16)",
+    badgeBg: "var(--surface-2)",
     badgeColor: "var(--text-muted)",
   },
 };
@@ -106,7 +106,7 @@ export const ROADMAP_PAGE_CONTAINER_STYLE: CSSProperties = {
 };
 
 export const ROADMAP_PAGE_HEADING_STYLE: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: 28,
   fontWeight: 800,
   color: "var(--text)",
@@ -170,7 +170,7 @@ export const ROADMAP_PANEL_HEADER_TITLE_CONTAINER_STYLE: CSSProperties = {
 };
 
 export const ROADMAP_PANEL_TITLE_STYLE: CSSProperties = {
-  fontFamily: "var(--font-syne)",
+  fontFamily: "var(--font-heading)",
   fontSize: 16,
   fontWeight: 700,
   color: "var(--text)",

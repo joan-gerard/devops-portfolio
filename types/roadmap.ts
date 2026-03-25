@@ -35,6 +35,7 @@ export interface RoadmapData {
 /** Roadmap item including resolved linked page slug for UI/query layer */
 export interface RoadmapItemWithSlug extends RoadmapItem {
   linked_page_slug: string | null;
+  linked_page_type: "note" | "project" | null;
 }
 
 /** Shape returned by roadmap query helpers that include slugs */
