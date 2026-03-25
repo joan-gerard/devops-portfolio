@@ -83,7 +83,10 @@ test.describe("Destructive operations", () => {
 
   async function createPublishedProject(page: Page) {
     await page.goto("/admin/projects");
-    await page.getByRole("button", { name: /new project/i }).click();
+    await page
+      .getByRole("region", { name: /your projects/i })
+      .getByRole("button", { name: /new project/i })
+      .click();
     await expect(page).toHaveURL(/\/admin\/projects\/[\w-]+/, { timeout: 10000 });
 
     const title = `E2E Destructive Project ${Date.now()}`;
