@@ -6,7 +6,7 @@ export function HeroSection() {
       <p
         style={{
           fontFamily: "var(--font-mono)",
-          fontSize: "12px",
+          fontSize: "14px",
           color: "var(--accent)",
           marginBottom: "16px",
           letterSpacing: "0.1em",
@@ -37,8 +37,7 @@ export function HeroSection() {
           marginBottom: "36px",
         }}
       >
-        Learning DevOps in public — documenting everything from CI/CD to cloud infrastructure as I
-        build real projects.
+        Learning DevOps by documenting CI/CD and cloud infrastructure as I build real projects.
       </p>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <Link
