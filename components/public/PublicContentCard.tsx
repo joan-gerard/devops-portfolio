@@ -95,7 +95,7 @@ export function PublicContentCard({
           height: "100%",
           cursor: "pointer",
         }}
-        className="u-border-accent-hover"
+        className="u-border-accent-hover u-bg-surface-hover"
         data-testid={testId}
       >
         <div style={topSectionStyle}>

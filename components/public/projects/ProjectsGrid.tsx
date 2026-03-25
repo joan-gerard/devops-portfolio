@@ -2,14 +2,9 @@ import type { PublishedProject } from "@/lib/queries/project";
 import { EmptyState } from "@/components/public/EmptyState";
 import { PublicContentCard } from "@/components/public/PublicContentCard";
 import { ROADMAP_STATUS_LABEL } from "@/components/roadmap/roadmapStyles";
+import styles from "@/components/public/home/HomeCardsGrid.module.css";
 
 type ProjectsGridProps = { projects: PublishedProject[] };
-
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))",
-  gap: "12px",
-};
 
 export function ProjectsGrid({ projects }: ProjectsGridProps) {
   if (projects.length === 0) {
@@ -17,7 +12,7 @@ export function ProjectsGrid({ projects }: ProjectsGridProps) {
   }
 
   return (
-    <div style={gridStyle}>
+    <div className={styles.grid}>
       {projects.map((project) => (
         <PublicContentCard
           key={project.id}

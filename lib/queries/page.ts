@@ -91,12 +91,26 @@ export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   return withPrerenderFallback<PublishedNotePreview[]>(
     () =>
       sql<PublishedNotePreview[]>`
-        SELECT id, title, slug, summary, tags, updated_at
-        FROM pages
-        WHERE published = true
-          AND slug != 'about'
-          ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
-        ORDER BY updated_at DESC
+        SELECT
+          p.id,
+          p.title,
+          p.slug,
+          p.summary,
+          p.tags,
+          p.updated_at,
+          r.status AS roadmap_item_status
+        FROM pages p
+        LEFT JOIN LATERAL (
+          SELECT id, status, title
+          FROM roadmap_items
+          WHERE linked_page_id = p.id
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 1
+        ) r ON true
+        WHERE p.published = true
+          AND p.slug != 'about'
+          ${isE2ETestRuntime ? sql`` : sql`AND p.e2e_only = false`}
+        ORDER BY p.updated_at DESC
       `,
     [],
     "[getAllPublishedNotes] DB unavailable during prerender build — returning empty list."
