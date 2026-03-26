@@ -31,6 +31,7 @@ export function TechStackSection() {
           </span>
         ))}
       </div>
+      <p className="mt-7">ADD A ARCHITECTURE DIAGRAM INSTEAD OF TECH STACK</p>
     </HomeSection>
   );
 }
