@@ -114,15 +114,19 @@ const aboutSlugChipStyle: React.CSSProperties = {
   padding: "1px 6px",
 };
 
-function AboutBody({ content, html }: AboutBodyProps) {
-  const hasContent = content && Object.keys(content).length > 0;
+export const subscribeNever = () => () => {};
 
-  const subscribeNever = () => () => {};
-  const isHydrated = useSyncExternalStore(
+export function useIsHydrated() {
+  return useSyncExternalStore(
     subscribeNever,
     () => true,
     () => false
   );
+}
+
+function AboutBody({ content, html }: AboutBodyProps) {
+  const hasContent = content && Object.keys(content).length > 0;
+  const isHydrated = useIsHydrated();
 
   const safeHtml = useMemo(() => {
     if (!hasContent || !html || !isHydrated) return "";

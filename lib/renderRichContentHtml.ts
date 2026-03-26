@@ -27,7 +27,11 @@ function getCodeLanguageLabel(language: string | undefined): string | null {
 }
 
 /**
- * Sanitizes editor HTML, applies code highlighting/badges, and strips serializer XML namespaces.
+ * Client-side only helper that sanitizes editor HTML, applies code highlighting/badges,
+ * and strips serializer XML namespaces.
+ *
+ * This function depends on browser-only APIs (`window`, `DOMParser`) and must not run
+ * during SSR. Callers should guard usage with hydration checks (for example, `isHydrated`).
  */
 export function renderRichContentHtml(html: string): string {
   const sanitized = createDOMPurify(window).sanitize(html);
