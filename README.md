@@ -71,3 +71,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Security
 
 See [docs/security.md](docs/security.md) for security practices and review notes.
+
+## Architecture and Operations
+
+- 12-factor alignment review: [docs/12-factor-assessment.md](docs/12-factor-assessment.md)
