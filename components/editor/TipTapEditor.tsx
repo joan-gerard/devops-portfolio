@@ -9,9 +9,10 @@ type Props = {
   noteId: string;
   content: Record<string, unknown> | undefined;
   onSave?: (status: "saving" | "saved" | "error") => void;
+  toolbarTopOffset?: string;
 };
 
-export default function TipTapEditor({ noteId, content, onSave }: Props) {
+export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const save = useCallback(
@@ -75,7 +76,11 @@ export default function TipTapEditor({ noteId, content, onSave }: Props) {
         /* overflow: visible so EditorToolbar position:sticky can stick to viewport */
       }}
     >
-      <EditorToolbar editor={editor} noteId={noteId} />
+      <EditorToolbar
+        editor={editor}
+        noteId={noteId}
+        stickyTopOffset={toolbarTopOffset ?? "var(--header-height)"}
+      />
       <div
         style={{
           overflow: "hidden",

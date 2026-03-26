@@ -3,7 +3,7 @@
 import { Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 
-type Props = { editor: Editor | null; noteId: string };
+type Props = { editor: Editor | null; noteId: string; stickyTopOffset?: string };
 
 type ToolbarButton = {
   label: string;
@@ -24,7 +24,11 @@ const CODE_LANGUAGES = [
 
 type CodeLanguageValue = (typeof CODE_LANGUAGES)[number]["value"];
 
-export default function EditorToolbar({ editor, noteId }: Props) {
+export default function EditorToolbar({
+  editor,
+  noteId,
+  stickyTopOffset = "var(--header-height)",
+}: Props) {
   const [uploading, setUploading] = useState(false);
   const [selectedCodeLanguage, setSelectedCodeLanguage] = useState<CodeLanguageValue>("plaintext");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,7 +163,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
     <div
       style={{
         position: "sticky",
-        top: "var(--header-height)",
+        top: stickyTopOffset,
         zIndex: 8,
         display: "flex",
         alignItems: "center",

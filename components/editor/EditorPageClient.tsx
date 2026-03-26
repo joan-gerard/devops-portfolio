@@ -59,6 +59,7 @@ export function EditorPageClient({ note }: { note: Page }) {
         published={published}
         onTogglePublished={togglePublished}
         deleteAction={<DeleteNoteButton id={note.id} redirectTo="/admin/notes" />}
+        sticky
       />
 
       <EditorTitleInput value={title} onChange={handleTitleChange} />
@@ -119,7 +120,12 @@ export function EditorPageClient({ note }: { note: Page }) {
         />
       </EditorFormField>
 
-      <TipTapEditor noteId={note.id} content={note.content} onSave={setSaveStatus} />
+      <TipTapEditor
+        noteId={note.id}
+        content={note.content}
+        onSave={setSaveStatus}
+        toolbarTopOffset="calc(var(--header-height) + 42px)"
+      />
     </div>
   );
 }
