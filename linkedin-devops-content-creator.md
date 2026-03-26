@@ -576,6 +576,21 @@ Project management background gives direct access to this. The PM-to-DevOps tran
 Content type: Transition narrative posts, decision posts that involve competing priorities.
 Example signal: "As a PM, I used to think deployments were an engineering problem. Learning DevOps showed me they're a coordination problem with an engineering solution."
 
+**Collaboration**
+DevOps work is cross-functional by default: platform, product, QA, and engineering all touch delivery outcomes. Content that highlights shared problem ownership, handoffs, and co-created solutions signals collaboration more credibly than saying "I work well in teams." Show where another perspective changed the approach and improved the result.
+Content type: Incident retrospectives, deployment improvement posts, transition narrative posts.
+Example signal: "The fix wasn't just changing CI config — QA helped isolate flaky scenarios and we adjusted the pipeline together."
+
+**Problem-solving**
+Strong problem-solving is visible in method, not heroics. Posts that show how you framed the problem, narrowed hypotheses, gathered evidence, and chose the least risky fix demonstrate engineering maturity. Focus on the process used under uncertainty, not just the final technical answer.
+Content type: Debugging posts, Things I got wrong posts, Course → Reality posts.
+Example signal: "I stopped chasing logs randomly, mapped failure points in the pipeline, and found the root cause in environment variable parsing."
+
+**Adaptability**
+Modern DevOps environments change quickly: tooling evolves, requirements shift, and constraints appear late. Content that shows how you revised plans, unlearned assumptions, or switched approaches when evidence changed signals adaptability. The key is to frame change as disciplined adjustment, not indecision.
+Content type: Decision reversal posts, phase retrospectives, migration and refactor posts.
+Example signal: "I started with static generation for simplicity, then moved to dynamic rendering once production data volatility made freshness non-negotiable."
+
 **Intellectual honesty**
 Posting about things you got wrong, decisions you reversed, or concepts you misunderstood for longer than you'd like to admit is a signal of intellectual honesty — a quality that correlates strongly with being good to work with. It also disarms imposter syndrome: no one with imposter syndrome willingly publishes their mistakes. Doing so signals confidence, not inexperience.
 Content type: Things I got wrong posts, Course → Reality posts, any post that involves reversing a previous position.
