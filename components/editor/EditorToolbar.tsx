@@ -18,6 +18,7 @@ const CODE_LANGUAGES = [
   { label: "Bash", value: "bash" },
   { label: "Dockerfile", value: "dockerfile" },
   { label: "JSON", value: "json" },
+  { label: "YAML", value: "yaml" },
   { label: "Python", value: "python" },
   { label: "SQL", value: "sql" },
 ] as const;
