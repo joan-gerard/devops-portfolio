@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import { render, screen, fireEvent } from "@/test/test-utils";
 import { EditMetaBar } from "./EditMetaBar";
+import Link from "next/link";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -172,9 +173,9 @@ describe("EditMetaBar", () => {
           statusLabel=""
           published={false}
           secondaryAction={
-            <a href="/admin/notes/preview/sample" data-testid="preview-action">
+            <Link href="/admin/notes/preview/sample" data-testid="preview-action">
               Preview
-            </a>
+            </Link>
           }
         />
       );
