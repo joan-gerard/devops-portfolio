@@ -236,6 +236,34 @@ body {
   background: var(--accent-dim);
 }
 
+.tiptap-editor .column-resize-handle,
+.note-content .column-resize-handle {
+  position: absolute;
+  top: -1px;
+  right: -3px;
+  width: 6px;
+  height: calc(100% + 2px);
+  cursor: col-resize;
+  pointer-events: auto;
+  background: transparent;
+  z-index: 2;
+}
+
+.tiptap-editor .column-resize-handle:hover,
+.tiptap-editor .column-resize-handle:active,
+.tiptap-editor .resize-cursor .column-resize-handle,
+.note-content .column-resize-handle:hover,
+.note-content .column-resize-handle:active,
+.note-content .resize-cursor .column-resize-handle {
+  background: color-mix(in oklab, var(--accent) 50%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 70%, transparent);
+}
+
+.tiptap-editor .resize-cursor,
+.note-content .resize-cursor {
+  cursor: col-resize;
+}
+
 .tiptap-image {
   max-width: 100%;
   height: auto;
