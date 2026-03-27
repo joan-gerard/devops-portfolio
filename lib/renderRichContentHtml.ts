@@ -61,6 +61,10 @@ export function renderRichContentHtml(html: string): string {
     if (languageLabel) {
       const preEl = block.closest("pre");
       if (preEl && !preEl.querySelector(".code-lang-badge")) {
+        if (!preEl.style.position || preEl.style.position === "static") {
+          preEl.style.position = "relative";
+        }
+
         const badge = document.createElement("div");
         badge.className = "code-lang-badge";
         badge.textContent = languageLabel;
