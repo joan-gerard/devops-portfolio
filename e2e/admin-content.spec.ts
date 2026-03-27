@@ -47,7 +47,10 @@ test.describe("Admin content lifecycle", () => {
     ).toBeVisible({ timeout: 20000 });
   });
 
-  test("note draft: anonymous gets 404, admin can open by slug", async ({ page, browser }) => {
+  test("note draft: anonymous gets 404 on public route, admin can open preview by slug", async ({
+    page,
+    browser,
+  }) => {
     test.skip(!hasE2ECredentials(), "E2E credentials required");
 
     await page.goto("/admin/notes");
@@ -71,8 +74,8 @@ test.describe("Admin content lifecycle", () => {
     await expect(anonymousPage.getByText(/not found|404/i)).toBeVisible({ timeout: 10000 });
     await anonymousContext.close();
 
-    await page.goto(`/notes/${noteSlug}`);
-    await expect(page).toHaveURL(`/notes/${noteSlug}`);
+    await page.goto(`/admin/notes/preview/${noteSlug}`);
+    await expect(page).toHaveURL(`/admin/notes/preview/${noteSlug}`);
     await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 20000 });
   });
 
