@@ -8,7 +8,7 @@ This document describes the admin authentication setup introduced on the `set-up
 - **Session**: JWT-based (`strategy: "jwt"`); no database session store.
 - **Credentials**: Single admin user defined via environment variables (`ADMIN_EMAIL` and a bcrypt-hashed `ADMIN_PASSWORD_HASH`).
 - **Authorization**: This is a single-admin app. API routes that perform or expose privileged actions (create/update/delete pages, or listing unpublished content) require an authenticated session via `getServerSession(authOptions)`; role-based checks are not used.
-- **Privileged draft reads**: On the public note detail route (`/notes/[slug]`), anonymous visitors can only view published notes, while authenticated admins can also view unpublished notes at the same slug URL.
+- **Privileged draft reads**: Public note slugs (`/notes/[slug]`) are strictly published-only for cacheability. Draft preview is provided on an authenticated admin route (`/admin/notes/preview/[slug]`) that uses `getServerSession(authOptions)` before allowing unpublished reads.
 - **Routes**: `/admin/login` (sign-in page), `/admin/dashboard` (protected). Unauthenticated access to the dashboard redirects to login; authenticated access to login redirects to the dashboard.
 
 ## Environment variables
@@ -73,7 +73,7 @@ All of these are re-exported from `components/auth/index.ts`.
 
 1. **Exporting `authOptions`**: The NextAuth route exports `authOptions` so that `getServerSession(authOptions)` can be used in Server Components (dashboard, login page, admin layout) for consistent session checks and redirects.
 2. **Session-based API authorization**: Privileged behaviour (e.g. in `/api/pages` and `/api/pages/[id]`) is gated on the presence of a valid session (`getServerSession`). There is only one admin identity; role-based checks are not used.
-3. **Session-based draft preview on public note slugs**: `app/(public)/notes/[slug]/page.tsx` checks `getServerSession(authOptions)` and allows unpublished note reads only when a valid admin session is present; anonymous requests continue to get the published-only behavior (404 for drafts).
+3. **Separate admin preview route for drafts**: `app/(public)/notes/[slug]/page.tsx` is published-only (cacheable ISR path), while `app/(admin)/admin/notes/preview/[slug]/page.tsx` performs `getServerSession(authOptions)` and can read unpublished notes for admin preview.
 4. **Centralized login logic**: Submit logic lives in `lib/login.ts` (`submitLogin`) so the form stays thin and the same error handling and result contract can be reused or tested.
 5. **Distinct messages for misconfiguration**: When `ADMIN_PASSWORD_HASH` is missing or bcrypt fails, the server returns `AUTH_ERROR_SERVICE_UNAVAILABLE` and the client shows “Sign-in is temporarily unavailable” instead of a credential error or stack trace.
 6. **Accessibility**: Auth error messages are announced via `role="alert"` and `aria-live="assertive"` on **`LoginError`**.

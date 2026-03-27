@@ -1,8 +1,6 @@
 import { NoteDetail } from "@/components/notes/NoteDetail";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getAllPublishedNotes, getNoteBySlug } from "@/lib/queries/page";
 import { getRelatedNotesByTagOverlap } from "@/lib/relatedNotes";
-import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 
 /**
@@ -14,8 +12,7 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const session = await getServerSession(authOptions);
-  const note = await getNoteBySlug(slug, { includeUnpublished: !!session });
+  const note = await getNoteBySlug(slug, { includeUnpublished: false });
   if (!note) return {};
   return {
     title: `${note.title} — DevOps Learning Portal`,
@@ -23,14 +20,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 /**
- * Note detail page. Unauthenticated users can only access published notes.
- * Authenticated admins can also access unpublished notes by slug.
+ * Public note detail page. Anonymous users can only access published notes.
+ * Draft previews are served via an authenticated admin preview route.
  */
 export default async function NoteDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const session = await getServerSession(authOptions);
   const [note, allPublishedNotes] = await Promise.all([
-    getNoteBySlug(slug, { includeUnpublished: !!session }),
+    getNoteBySlug(slug, { includeUnpublished: false }),
     getAllPublishedNotes(),
   ]);
   if (!note) notFound();

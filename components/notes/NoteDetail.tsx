@@ -14,13 +14,20 @@ import { useMemo, useSyncExternalStore } from "react";
 export type NoteDetailProps = {
   note: PublicNote;
   relatedNotes?: PublishedNotePreview[];
+  backHref?: string;
+  backLabel?: string;
 };
 
 /**
  * Presentational component for a single note's full detail view.
  * Used by the note slug page after data is fetched.
  */
-export function NoteDetail({ note, relatedNotes = [] }: NoteDetailProps) {
+export function NoteDetail({
+  note,
+  relatedNotes = [],
+  backHref = "/notes",
+  backLabel = "← All notes",
+}: NoteDetailProps) {
   const updatedAt = new Date(note.updated_at).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -36,7 +43,7 @@ export function NoteDetail({ note, relatedNotes = [] }: NoteDetailProps) {
 
   return (
     <PageContainer>
-      <BackLink href="/notes">← All notes</BackLink>
+      <BackLink href={backHref}>{backLabel}</BackLink>
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
         <div className="flex-1 min-w-0">
           <DetailPageHeader
@@ -51,7 +58,7 @@ export function NoteDetail({ note, relatedNotes = [] }: NoteDetailProps) {
           <NoteDetailContent content={note.content} html={output} />
         </div>
 
-        <RelatedNotesAside note={note} relatedNotes={relatedNotes} />
+        <RelatedNotesAside relatedNotes={relatedNotes} />
       </div>
     </PageContainer>
   );
@@ -70,11 +77,10 @@ const emptyContentStyle: CSSProperties = {
 };
 
 type RelatedNotesAsideProps = {
-  note: PublicNote;
   relatedNotes: PublishedNotePreview[];
 };
 
-function RelatedNotesAside({ note, relatedNotes }: RelatedNotesAsideProps) {
+function RelatedNotesAside({ relatedNotes }: RelatedNotesAsideProps) {
   if (relatedNotes.length === 0) return null;
 
   return (

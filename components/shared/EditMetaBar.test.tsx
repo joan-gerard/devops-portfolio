@@ -161,4 +161,26 @@ describe("EditMetaBar", () => {
       expect(screen.getByText("Delete")).toBeInTheDocument();
     });
   });
+
+  describe("secondary action", () => {
+    it("renders secondaryAction slot when provided", () => {
+      render(
+        <EditMetaBar
+          {...defaultProps}
+          saveStatus="idle"
+          statusColor="var(--text-muted)"
+          statusLabel=""
+          published={false}
+          secondaryAction={
+            <a href="/admin/notes/preview/sample" data-testid="preview-action">
+              Preview
+            </a>
+          }
+        />
+      );
+      const previewLink = screen.getByTestId("preview-action");
+      expect(previewLink).toBeInTheDocument();
+      expect(previewLink).toHaveAttribute("href", "/admin/notes/preview/sample");
+    });
+  });
 });

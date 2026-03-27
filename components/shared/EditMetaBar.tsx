@@ -12,6 +12,8 @@ export type EditMetaBarProps = {
   statusLabel: string;
   published: boolean;
   onTogglePublished: () => void;
+  /** Optional secondary action (e.g. preview link button). */
+  secondaryAction?: ReactNode;
   /** Delete button or link (e.g. DeleteNoteButton or DeleteProjectButton). */
   deleteAction: ReactNode;
   /** Bottom margin of the bar. Default "16px". */
@@ -36,6 +38,7 @@ export function EditMetaBar({
   statusLabel,
   published,
   onTogglePublished,
+  secondaryAction,
   deleteAction,
   marginBottom = "16px",
   sticky = false,
@@ -64,6 +67,7 @@ export function EditMetaBar({
         <span aria-live="polite" role="status" style={{ fontSize: "11px", color: statusColor }}>
           {saveStatus !== "idle" ? statusLabel : ""}
         </span>
+        {secondaryAction}
         <button
           type="button"
           onClick={onTogglePublished}
