@@ -43,7 +43,7 @@ Assessment scale used in this doc:
 
 ## 3) Config — Store config in the environment
 
-**Status:** `Partially aligned`
+**Status:** `Aligned`
 
 **Evidence in repo**
 
@@ -109,15 +109,14 @@ Assessment scale used in this doc:
 - App process itself is designed as a web service with persistent state in Postgres/R2.
 - NextAuth is configured for JWT session strategy (no DB session store), which supports stateless app instances.
 
-**Gaps**
+**Notes**
 
-- In-memory rate limiting (`loginAttempts`) may create inconsistent behavior across horizontally scaled instances unless backed by shared storage (DB/Redis). (If already DB-backed everywhere, document it as such.)
-- Any in-memory caches or transient process state should be audited and documented for horizontal scaling behavior.
+- Login rate limiting is DB-backed via `login_attempts` (`lib/queries/loginAttempts.ts`), so counters are shared across instances and remain consistent under horizontal scaling.
+- Current in-process usage appears limited to request-scoped memoization/derived data (for example React `cache()` and per-render `Map` usage), which is ephemeral and not used as cross-request durable state.
 
 **Recommendations**
 
-- Ensure all security-sensitive counters/locks are in shared storage.
-- Add a short statelessness note to operational docs (what is process memory only vs durable).
+- Add a short statelessness note to operational docs clarifying what is request-scoped/process memory vs durable shared state.
 
 ---
 
@@ -251,8 +250,8 @@ If you want the highest impact with least churn, tackle these first:
 
 ## Overall scorecard
 
-- **Aligned:** 4/12 (`Codebase`, `Dependencies`, `Backing services`, `Port binding`)
-- **Partially aligned:** 8/12
+- **Aligned:** 5/12 (`Codebase`, `Dependencies`, `Backing services`, `Processes`, `Port binding`)
+- **Partially aligned:** 7/12
 - **Gap:** 0/12 (no severe anti-patterns found, but several operational maturity gaps remain)
 
 The project already has a strong baseline for modern deployment workflows. Most remaining work is in operational clarity and consistency rather than major architectural rewrites.
