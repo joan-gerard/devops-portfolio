@@ -22,7 +22,9 @@ The public projects list is at `app/(public)/projects/page.tsx`. It uses `getAll
 
 The public About page is at `app/(public)/about/page.tsx`. It fetches the `about` note via `getNoteBySlug("about")` from `lib/queries/page.ts` and delegates rendering (header + rich text content/fallback) to `components/public/about/AboutPageContent.tsx`. A dedicated redirect route at `app/(public)/notes/about/page.tsx` ensures `/notes/about` requests are redirected to `/about`.
 
-Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. Code blocks support language metadata in the editor toolbar, and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
+The public note detail route is `app/(public)/notes/[slug]/page.tsx`. It is published-only (`includeUnpublished: false`) so anonymous traffic can be cached with ISR. Unpublished slugs return 404 on this public route. Draft previews are available on the authenticated admin route `app/(admin)/admin/notes/preview/[slug]/page.tsx`.
+
+Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. The editor supports code blocks (with language metadata), images, and tables (insert row/column/header controls in the toolbar), and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
 
 ## Branding and Theme
 
@@ -71,3 +73,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Security
 
 See [docs/security.md](docs/security.md) for security practices and review notes.
+
+## Architecture and Operations
+
+- 12-factor alignment review: [docs/12-factor-assessment.md](docs/12-factor-assessment.md)

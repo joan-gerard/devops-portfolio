@@ -254,8 +254,8 @@ describe("AdminRoadmapSidePanel", () => {
       expect(mockClipboardWriteText).toHaveBeenCalledWith("roadmap-item-copy-1");
     });
 
-    expect(screen.getByRole("button", { name: /Copy roadmap item ID/i })).toHaveTextContent(
-      "Copied"
-    );
+    await waitFor(() => {
+      expect(copyButton).toHaveTextContent("Copied");
+    });
   });
 });

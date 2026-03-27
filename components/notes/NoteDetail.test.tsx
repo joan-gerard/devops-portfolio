@@ -38,6 +38,18 @@ describe("NoteDetail", () => {
     expect(link).toHaveAttribute("href", "/notes");
   });
 
+  it("supports custom back link for preview context", () => {
+    render(
+      <NoteDetail
+        note={{ ...mockNote, content: undefined }}
+        backHref="/admin/editor/note-1"
+        backLabel="← Editor"
+      />
+    );
+    const link = screen.getByRole("link", { name: /← editor/i });
+    expect(link).toHaveAttribute("href", "/admin/editor/note-1");
+  });
+
   it("shows empty content message when note has no content", () => {
     render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
     expect(screen.getByText("No content yet.")).toBeInTheDocument();

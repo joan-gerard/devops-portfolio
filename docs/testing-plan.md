@@ -166,6 +166,8 @@ Using Playwright after basic tooling is in place.
 
 **Running E2E:** `pnpm test:e2e` (or `pnpm test:e2e:ui`). Install browsers once: `pnpm exec playwright install`. Admin and destructive specs require `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`; without them those tests are skipped. After the suite finishes, `globalTeardown` runs and deletes any `e2e_only` rows created during the run, guarded by `E2E_TEST=1`/`CI` so it only affects test environments.
 
+If E2E appears stuck (stale `:3001`, PID cleanup, kill/force-kill workflow), see `docs/e2e-troubleshooting.md`.
+
 You don’t need to start `pnpm dev:e2e` yourself for `pnpm test:e2e` to work.
 
 - **A good workflow is:**

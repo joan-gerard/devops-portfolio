@@ -1,6 +1,7 @@
 "use client";
 
 import { pageContainerBaseStyle } from "@/components/public/PageContainer";
+import { TECH_STACK } from "@/lib/constants/home";
 
 export function PublicFooter() {
   return (
@@ -33,7 +34,7 @@ export function PublicFooter() {
           }}
         >
           <span>Built with</span>
-          {["Next.js", "Neon", "Cloudflare R2", "Vercel"].map((tech, i, arr) => (
+          {TECH_STACK.map((tech, i, arr) => (
             <span key={tech}>
               <span style={{ color: "var(--text-dim)" }}>{tech}</span>
               {i < arr.length - 1 && (

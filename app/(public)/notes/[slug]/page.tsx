@@ -12,7 +12,7 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const note = await getNoteBySlug(slug);
+  const note = await getNoteBySlug(slug, { includeUnpublished: false });
   if (!note) return {};
   return {
     title: `${note.title} — DevOps Learning Portal`,
@@ -20,13 +20,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 /**
- * Note detail page. Only published notes are returned by getNoteBySlug;
- * both "not found" and "not published" yield 404 (no leak of draft existence).
+ * Public note detail page. Anonymous users can only access published notes.
+ * Draft previews are served via an authenticated admin preview route.
  */
 export default async function NoteDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [note, allPublishedNotes] = await Promise.all([
-    getNoteBySlug(slug),
+    getNoteBySlug(slug, { includeUnpublished: false }),
     getAllPublishedNotes(),
   ]);
   if (!note) notFound();

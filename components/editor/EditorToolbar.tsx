@@ -3,12 +3,13 @@
 import { Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 
-type Props = { editor: Editor | null; noteId: string };
+type Props = { editor: Editor | null; noteId: string; stickyTopOffset?: string };
 
 type ToolbarButton = {
   label: string;
   action: () => void;
   isActive?: boolean;
+  isDisabled?: boolean;
 };
 
 const CODE_LANGUAGES = [
@@ -18,13 +19,18 @@ const CODE_LANGUAGES = [
   { label: "Bash", value: "bash" },
   { label: "Dockerfile", value: "dockerfile" },
   { label: "JSON", value: "json" },
+  { label: "YAML", value: "yaml" },
   { label: "Python", value: "python" },
   { label: "SQL", value: "sql" },
 ] as const;
 
 type CodeLanguageValue = (typeof CODE_LANGUAGES)[number]["value"];
 
-export default function EditorToolbar({ editor, noteId }: Props) {
+export default function EditorToolbar({
+  editor,
+  noteId,
+  stickyTopOffset = "var(--header-height)",
+}: Props) {
   const [uploading, setUploading] = useState(false);
   const [selectedCodeLanguage, setSelectedCodeLanguage] = useState<CodeLanguageValue>("plaintext");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +64,14 @@ export default function EditorToolbar({ editor, noteId }: Props) {
   const handleCodeBlockToggle = () => {
     editor.chain().focus().setCodeBlock({ language: selectedCodeLanguage }).run();
   };
+
+  const canInsertTable = editor.can().chain().focus().insertTable({ rows: 3, cols: 3 }).run();
+  const canAddRowAfter = editor.can().chain().focus().addRowAfter().run();
+  const canDeleteRow = editor.can().chain().focus().deleteRow().run();
+  const canAddColumnAfter = editor.can().chain().focus().addColumnAfter().run();
+  const canDeleteColumn = editor.can().chain().focus().deleteColumn().run();
+  const canDeleteTable = editor.can().chain().focus().deleteTable().run();
+  const canToggleHeaderRow = editor.can().chain().focus().toggleHeaderRow().run();
 
   const groups: ToolbarButton[][] = [
     [
@@ -116,6 +130,44 @@ export default function EditorToolbar({ editor, noteId }: Props) {
         isActive: editor.isActive("codeBlock"),
       },
     ],
+    [
+      {
+        label: "Tbl",
+        action: () =>
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+        isDisabled: !canInsertTable,
+      },
+      {
+        label: "Row+",
+        action: () => editor.chain().focus().addRowAfter().run(),
+        isDisabled: !canAddRowAfter,
+      },
+      {
+        label: "Row-",
+        action: () => editor.chain().focus().deleteRow().run(),
+        isDisabled: !canDeleteRow,
+      },
+      {
+        label: "Col+",
+        action: () => editor.chain().focus().addColumnAfter().run(),
+        isDisabled: !canAddColumnAfter,
+      },
+      {
+        label: "Col-",
+        action: () => editor.chain().focus().deleteColumn().run(),
+        isDisabled: !canDeleteColumn,
+      },
+      {
+        label: "Hdr",
+        action: () => editor.chain().focus().toggleHeaderRow().run(),
+        isDisabled: !canToggleHeaderRow,
+      },
+      {
+        label: "Tbl-",
+        action: () => editor.chain().focus().deleteTable().run(),
+        isDisabled: !canDeleteTable,
+      },
+    ],
   ];
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -159,7 +211,7 @@ export default function EditorToolbar({ editor, noteId }: Props) {
     <div
       style={{
         position: "sticky",
-        top: "var(--header-height)",
+        top: stickyTopOffset,
         zIndex: 8,
         display: "flex",
         alignItems: "center",
@@ -180,19 +232,33 @@ export default function EditorToolbar({ editor, noteId }: Props) {
               key={btn.label}
               onClick={btn.action}
               title={btn.label}
+              disabled={btn.isDisabled}
               style={{
                 padding: "4px 8px",
                 borderRadius: "3px",
                 border: "none",
-                background: btn.isActive ? "var(--accent-dim)" : "transparent",
-                color: btn.isActive ? "var(--accent)" : "var(--text-muted)",
+                background: btn.isActive
+                  ? "var(--accent-dim)"
+                  : btn.isDisabled
+                    ? "var(--surface)"
+                    : "transparent",
+                color: btn.isActive
+                  ? "var(--accent)"
+                  : btn.isDisabled
+                    ? "var(--text-muted)"
+                    : "var(--text-muted)",
                 fontFamily: "var(--font-mono)",
                 fontSize: "11px",
                 fontWeight: btn.isActive ? "600" : "400",
-                cursor: "pointer",
+                cursor: btn.isDisabled ? "not-allowed" : "pointer",
+                opacity: btn.isDisabled ? 0.55 : 1,
                 transition: "background 0.1s, color 0.1s",
               }}
-              className={btn.isActive ? undefined : "u-bg-surface-hover u-text-muted-text-hover"}
+              className={
+                btn.isActive || btn.isDisabled
+                  ? undefined
+                  : "u-bg-surface-hover u-text-muted-text-hover"
+              }
             >
               {btn.label}
             </button>

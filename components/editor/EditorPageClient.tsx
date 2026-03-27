@@ -20,6 +20,7 @@ import { EditorSlugField } from "./EditorSlugField";
 import { EditorTitleInput } from "./EditorTitleInput";
 import { inputStyle } from "@/components/admin/formStyles";
 import { ROADMAP_STATUS_OPTIONS } from "@/components/roadmap/roadmapStyles";
+import Link from "next/link";
 
 export function EditorPageClient({ note }: { note: Page }) {
   const {
@@ -47,6 +48,11 @@ export function EditorPageClient({ note }: { note: Page }) {
       ? (ROADMAP_STATUS_OPTIONS.find((option) => option.value === roadmapStatus)?.label ??
         roadmapStatus)
       : null;
+  const previewSlug = slug.trim();
+  const hasPreviewSlug = previewSlug.length > 0;
+  const previewHref = hasPreviewSlug
+    ? `/admin/notes/preview/${encodeURIComponent(previewSlug)}`
+    : "/admin/notes";
 
   return (
     <div style={{ maxWidth: "860px", margin: "0 auto" }}>
@@ -58,7 +64,26 @@ export function EditorPageClient({ note }: { note: Page }) {
         statusLabel={statusLabel}
         published={published}
         onTogglePublished={togglePublished}
+        secondaryAction={
+          <Link
+            href={previewHref}
+            aria-disabled={!hasPreviewSlug}
+            style={{
+              ...inputStyle,
+              width: "auto",
+              padding: "5px 12px",
+              fontSize: "11px",
+              textDecoration: "none",
+              color: hasPreviewSlug ? "var(--text-muted)" : "var(--text-dim)",
+              pointerEvents: hasPreviewSlug ? "auto" : "none",
+              opacity: hasPreviewSlug ? 1 : 0.6,
+            }}
+          >
+            Preview
+          </Link>
+        }
         deleteAction={<DeleteNoteButton id={note.id} redirectTo="/admin/notes" />}
+        sticky
       />
 
       <EditorTitleInput value={title} onChange={handleTitleChange} />
@@ -119,7 +144,12 @@ export function EditorPageClient({ note }: { note: Page }) {
         />
       </EditorFormField>
 
-      <TipTapEditor noteId={note.id} content={note.content} onSave={setSaveStatus} />
+      <TipTapEditor
+        noteId={note.id}
+        content={note.content}
+        onSave={setSaveStatus}
+        toolbarTopOffset="calc(var(--header-height) + 42px)"
+      />
     </div>
   );
 }

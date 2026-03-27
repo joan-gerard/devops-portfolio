@@ -8,6 +8,8 @@ const mappings = [
   // Pattern B: swap in the dev/prod variant file that contains *literal*
   // segment config exports (e.g. `export const revalidate = 60;`) before
   // running `next build`.
+  // Note: the swapped `/notes/[slug]` variants must remain cacheable public
+  // pages (no auth session check) so ISR stays effective in production.
   ["app/(public)/page." + target + ".tsx", "app/(public)/page.tsx"],
   ["app/(public)/notes/page." + target + ".tsx", "app/(public)/notes/page.tsx"],
   ["app/(public)/projects/page." + target + ".tsx", "app/(public)/projects/page.tsx"],

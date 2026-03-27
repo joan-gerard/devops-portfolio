@@ -12,10 +12,18 @@ export type EditMetaBarProps = {
   statusLabel: string;
   published: boolean;
   onTogglePublished: () => void;
+  /** Optional secondary action (e.g. preview link button). */
+  secondaryAction?: ReactNode;
   /** Delete button or link (e.g. DeleteNoteButton or DeleteProjectButton). */
   deleteAction: ReactNode;
   /** Bottom margin of the bar. Default "16px". */
   marginBottom?: string;
+  /** Make the bar sticky under the fixed admin header. */
+  sticky?: boolean;
+  /** Sticky top offset. Default "var(--header-height)". */
+  stickyTop?: string;
+  /** Stacking context when sticky. */
+  stickyZIndex?: number;
 };
 
 /**
@@ -30,15 +38,25 @@ export function EditMetaBar({
   statusLabel,
   published,
   onTogglePublished,
+  secondaryAction,
   deleteAction,
   marginBottom = "16px",
+  sticky = false,
+  stickyTop = "var(--header-height)",
+  stickyZIndex = 8,
 }: EditMetaBarProps) {
   return (
     <div
       style={{
+        position: sticky ? "sticky" : "static",
+        top: sticky ? stickyTop : undefined,
+        zIndex: sticky ? stickyZIndex : undefined,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        padding: sticky ? "8px 0" : 0,
+        background: sticky ? "var(--bg)" : "transparent",
+        borderBottom: sticky ? "1px solid var(--border)" : "none",
         marginBottom,
       }}
     >
@@ -46,9 +64,10 @@ export function EditMetaBar({
         {backLabel}
       </BackLink>
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        {saveStatus !== "idle" && (
-          <span style={{ fontSize: "11px", color: statusColor }}>{statusLabel}</span>
-        )}
+        <span aria-live="polite" role="status" style={{ fontSize: "11px", color: statusColor }}>
+          {saveStatus !== "idle" ? statusLabel : ""}
+        </span>
+        {secondaryAction}
         <button
           type="button"
           onClick={onTogglePublished}

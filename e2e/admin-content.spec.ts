@@ -47,6 +47,38 @@ test.describe("Admin content lifecycle", () => {
     ).toBeVisible({ timeout: 20000 });
   });
 
+  test("note draft: anonymous gets 404 on public route, admin can open preview by slug", async ({
+    page,
+    browser,
+  }) => {
+    test.skip(!hasE2ECredentials(), "E2E credentials required");
+
+    await page.goto("/admin/notes");
+    await page.getByRole("button", { name: /new note/i }).click();
+    await expect(page).toHaveURL(/\/admin\/editor\/[\w-]+/, { timeout: 10000 });
+
+    const title = `E2E Draft Note ${Date.now()}`;
+    await page.getByLabel(/note title/i).fill(title);
+    await page.getByLabel(/note title/i).blur();
+    await expect(page.getByText(/saving|saved|save failed/i)).toBeVisible({ timeout: 12000 });
+
+    await page.getByRole("button", { name: /from title/i }).click();
+    await expect(page.getByText(/title slug saved/i)).toBeVisible({ timeout: 12000 });
+    await expect(page.getByRole("button", { name: /^publish$/i })).toBeVisible();
+
+    const noteSlug = (await page.getByLabel("Note URL slug").inputValue()).trim();
+
+    const anonymousContext = await browser.newContext();
+    const anonymousPage = await anonymousContext.newPage();
+    await anonymousPage.goto(`/notes/${noteSlug}`);
+    await expect(anonymousPage.getByText(/not found|404/i)).toBeVisible({ timeout: 10000 });
+    await anonymousContext.close();
+
+    await page.goto(`/admin/notes/preview/${noteSlug}`);
+    await expect(page).toHaveURL(`/admin/notes/preview/${noteSlug}`);
+    await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 20000 });
+  });
+
   test("project: create → edit → publish → visible on public URL with links", async ({ page }) => {
     test.skip(!hasE2ECredentials(), "E2E credentials required");
 

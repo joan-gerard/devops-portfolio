@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import { render, screen, fireEvent } from "@/test/test-utils";
 import { EditMetaBar } from "./EditMetaBar";
+import Link from "next/link";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -159,6 +160,28 @@ describe("EditMetaBar", () => {
       );
       expect(screen.getByTestId("delete-action")).toBeInTheDocument();
       expect(screen.getByText("Delete")).toBeInTheDocument();
+    });
+  });
+
+  describe("secondary action", () => {
+    it("renders secondaryAction slot when provided", () => {
+      render(
+        <EditMetaBar
+          {...defaultProps}
+          saveStatus="idle"
+          statusColor="var(--text-muted)"
+          statusLabel=""
+          published={false}
+          secondaryAction={
+            <Link href="/admin/notes/preview/sample" data-testid="preview-action">
+              Preview
+            </Link>
+          }
+        />
+      );
+      const previewLink = screen.getByTestId("preview-action");
+      expect(previewLink).toBeInTheDocument();
+      expect(previewLink).toHaveAttribute("href", "/admin/notes/preview/sample");
     });
   });
 });
