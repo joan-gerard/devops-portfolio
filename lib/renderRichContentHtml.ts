@@ -61,7 +61,8 @@ export function renderRichContentHtml(html: string): string {
     if (languageLabel) {
       const preEl = block.closest("pre");
       if (preEl && !preEl.querySelector(".code-lang-badge")) {
-        if (!preEl.style.position || preEl.style.position === "static") {
+        const computedPosition = window.getComputedStyle(preEl).position;
+        if (computedPosition === "" || computedPosition === "static") {
           preEl.style.position = "relative";
         }
 

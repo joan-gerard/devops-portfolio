@@ -75,16 +75,53 @@ describe("page queries", () => {
   });
 
   describe("getNoteBySlug", () => {
-    const getSqlFromCall = (call: unknown[]): string =>
-      Array.isArray(call[0]) ? (call[0] as string[]).join("") : String(call[0]);
-    const mockNoteQueryResult = (result: PublicNote | null) => {
-      mockSql.mockImplementation((strings: unknown) => {
-        const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
-        if (sqlText.includes("FROM pages")) {
-          return Promise.resolve(asSqlResult(result ? [result] : []));
+    type MockSqlFragment = { __mockSqlFragment: true; text: string };
+
+    const isMockSqlFragment = (value: unknown): value is MockSqlFragment =>
+      typeof value === "object" &&
+      value !== null &&
+      "__mockSqlFragment" in value &&
+      "text" in value &&
+      (value as { __mockSqlFragment?: unknown }).__mockSqlFragment === true;
+
+    const composeSqlText = (strings: readonly string[], values: readonly unknown[]): string => {
+      let text = "";
+      for (let i = 0; i < strings.length; i += 1) {
+        text += strings[i] ?? "";
+        if (i < values.length) {
+          const value = values[i];
+          text += isMockSqlFragment(value) ? value.text : String(value);
         }
-        return Promise.resolve(asSqlResult([]));
-      });
+      }
+      return text;
+    };
+
+    const getSqlFromCall = (call: unknown[]): string => {
+      const [strings, ...values] = call;
+      if (Array.isArray(strings)) {
+        return composeSqlText(strings as string[], values);
+      }
+      return String(strings);
+    };
+
+    const getOuterPagesQuerySql = (): string | undefined => {
+      const outerCall = mockSql.mock.calls.find((c) => getSqlFromCall(c).includes("FROM pages"));
+      return outerCall ? getSqlFromCall(outerCall) : undefined;
+    };
+
+    const mockNoteQueryResult = (result: PublicNote | null) => {
+      mockSql.mockImplementation(((strings: unknown, ...values: unknown[]) => {
+        const sqlText = Array.isArray(strings)
+          ? composeSqlText(strings as string[], values)
+          : String(strings);
+        if (sqlText.includes("FROM pages")) {
+          return Promise.resolve(asSqlResult(result ? [result] : [])) as ReturnType<typeof sql>;
+        }
+        return {
+          __mockSqlFragment: true,
+          text: sqlText,
+        } as unknown as ReturnType<typeof sql>;
+      }) as typeof sql);
     };
 
     it("returns published note when found", async () => {
@@ -116,10 +153,9 @@ describe("page queries", () => {
 
       await getNoteBySlug("published-note");
 
-      const publishedFilterCall = mockSql.mock.calls.find((c) =>
-        getSqlFromCall(c).includes("AND published = true")
-      );
-      expect(publishedFilterCall).toBeDefined();
+      const outerQuerySql = getOuterPagesQuerySql();
+      expect(outerQuerySql).toBeDefined();
+      expect(outerQuerySql).toContain("AND published = true");
     });
 
     it("omits published filter when includeUnpublished is true", async () => {
@@ -136,10 +172,9 @@ describe("page queries", () => {
       const result = await getNoteBySlug("draft-note", { includeUnpublished: true });
 
       expect(result).toEqual(draftNote);
-      const publishedFilterCall = mockSql.mock.calls.find((c) =>
-        getSqlFromCall(c).includes("AND published = true")
-      );
-      expect(publishedFilterCall).toBeUndefined();
+      const outerQuerySql = getOuterPagesQuerySql();
+      expect(outerQuerySql).toBeDefined();
+      expect(outerQuerySql).not.toContain("AND published = true");
     });
 
     it("returns null when no row", async () => {
@@ -155,13 +190,13 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockImplementation((strings: unknown) => {
+      mockSql.mockImplementation(((strings: unknown) => {
         const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
         if (sqlText.includes("FROM pages")) {
           return Promise.reject(err);
         }
         return Promise.resolve(asSqlResult([]));
-      });
+      }) as unknown as typeof sql);
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const result = await getNoteBySlug("about");
@@ -181,13 +216,13 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "false";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockImplementation((strings: unknown) => {
+      mockSql.mockImplementation(((strings: unknown) => {
         const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
         if (sqlText.includes("FROM pages")) {
           return Promise.reject(err);
         }
         return Promise.resolve(asSqlResult([]));
-      });
+      }) as unknown as typeof sql);
 
       await expect(getNoteBySlug("about")).rejects.toThrow("Connection refused");
 
