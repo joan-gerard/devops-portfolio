@@ -75,6 +75,18 @@ describe("page queries", () => {
   });
 
   describe("getNoteBySlug", () => {
+    const getSqlFromCall = (call: unknown[]): string =>
+      Array.isArray(call[0]) ? (call[0] as string[]).join("") : String(call[0]);
+    const mockNoteQueryResult = (result: PublicNote | null) => {
+      mockSql.mockImplementation((strings: unknown) => {
+        const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
+        if (sqlText.includes("FROM pages")) {
+          return Promise.resolve(asSqlResult(result ? [result] : []));
+        }
+        return Promise.resolve(asSqlResult([]));
+      });
+    };
+
     it("returns published note when found", async () => {
       const note: PublicNote = {
         id: "1",
@@ -84,16 +96,54 @@ describe("page queries", () => {
         tags: [],
         updated_at: "2024-06-01T00:00:00Z",
       };
-      // 2 calls: fragment (e2e_only) then main query
-      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([note]));
+      mockNoteQueryResult(note);
 
       const result = await getNoteBySlug("about");
 
       expect(result).toEqual(note);
     });
 
+    it("uses published filter by default", async () => {
+      const note: PublicNote = {
+        id: "published-note",
+        title: "Published",
+        slug: "published-note",
+        content: {},
+        tags: [],
+        updated_at: "2024-06-01T00:00:00Z",
+      };
+      mockNoteQueryResult(note);
+
+      await getNoteBySlug("published-note");
+
+      const publishedFilterCall = mockSql.mock.calls.find((c) =>
+        getSqlFromCall(c).includes("AND published = true")
+      );
+      expect(publishedFilterCall).toBeDefined();
+    });
+
+    it("omits published filter when includeUnpublished is true", async () => {
+      const draftNote: PublicNote = {
+        id: "draft-note",
+        title: "Draft",
+        slug: "draft-note",
+        content: {},
+        tags: [],
+        updated_at: "2024-06-01T00:00:00Z",
+      };
+      mockNoteQueryResult(draftNote);
+
+      const result = await getNoteBySlug("draft-note", { includeUnpublished: true });
+
+      expect(result).toEqual(draftNote);
+      const publishedFilterCall = mockSql.mock.calls.find((c) =>
+        getSqlFromCall(c).includes("AND published = true")
+      );
+      expect(publishedFilterCall).toBeUndefined();
+    });
+
     it("returns null when no row", async () => {
-      mockSql.mockResolvedValueOnce(asSqlResult([])).mockResolvedValueOnce(asSqlResult([]));
+      mockNoteQueryResult(null);
 
       const result = await getNoteBySlug("missing");
 
@@ -105,7 +155,13 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "true";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
+      mockSql.mockImplementation((strings: unknown) => {
+        const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
+        if (sqlText.includes("FROM pages")) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(asSqlResult([]));
+      });
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const result = await getNoteBySlug("about");
@@ -125,7 +181,13 @@ describe("page queries", () => {
       process.env.IS_PRERENDER_BUILD = "false";
       const err = new Error("Connection refused") as Error & { code?: string };
       err.code = "ECONNREFUSED";
-      mockSql.mockResolvedValueOnce(asSqlResult([])).mockRejectedValueOnce(err);
+      mockSql.mockImplementation((strings: unknown) => {
+        const sqlText = Array.isArray(strings) ? (strings as string[]).join("") : String(strings);
+        if (sqlText.includes("FROM pages")) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(asSqlResult([]));
+      });
 
       await expect(getNoteBySlug("about")).rejects.toThrow("Connection refused");
 

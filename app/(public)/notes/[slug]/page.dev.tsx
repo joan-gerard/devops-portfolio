@@ -1,6 +1,8 @@
 import { NoteDetail } from "@/components/notes/NoteDetail";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getAllPublishedNotes, getNoteBySlug } from "@/lib/queries/page";
 import { getRelatedNotesByTagOverlap } from "@/lib/relatedNotes";
+import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 
 /**
@@ -12,7 +14,8 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const note = await getNoteBySlug(slug);
+  const session = await getServerSession(authOptions);
+  const note = await getNoteBySlug(slug, { includeUnpublished: !!session });
   if (!note) return {};
   return {
     title: `${note.title} — DevOps Learning Portal`,
@@ -20,13 +23,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 /**
- * Note detail page. Only published notes are returned by getNoteBySlug;
- * both "not found" and "not published" yield 404 (no leak of draft existence).
+ * Note detail page. Unauthenticated users can only access published notes.
+ * Authenticated admins can also access unpublished notes by slug.
  */
 export default async function NoteDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const session = await getServerSession(authOptions);
   const [note, allPublishedNotes] = await Promise.all([
-    getNoteBySlug(slug),
+    getNoteBySlug(slug, { includeUnpublished: !!session }),
     getAllPublishedNotes(),
   ]);
   if (!note) notFound();

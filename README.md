@@ -22,6 +22,8 @@ The public projects list is at `app/(public)/projects/page.tsx`. It uses `getAll
 
 The public About page is at `app/(public)/about/page.tsx`. It fetches the `about` note via `getNoteBySlug("about")` from `lib/queries/page.ts` and delegates rendering (header + rich text content/fallback) to `components/public/about/AboutPageContent.tsx`. A dedicated redirect route at `app/(public)/notes/about/page.tsx` ensures `/notes/about` requests are redirected to `/about`.
 
+The public note detail route is `app/(public)/notes/[slug]/page.tsx`. Anonymous users can only view published notes at `/notes/[slug]`; unpublished slugs return 404. When an authenticated admin session is present, unpublished notes are also accessible at the same route for preview/edit verification without publishing.
+
 Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. Code blocks support language metadata in the editor toolbar, and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
 
 ## Branding and Theme

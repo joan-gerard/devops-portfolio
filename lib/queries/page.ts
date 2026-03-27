@@ -68,14 +68,18 @@ export async function getPageById(id: string): Promise<Page | null> {
  * is unavailable (connection or aggregate error), returns null so the page
  * can render its fallback state and the build succeeds.
  */
-export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | null> => {
+async function getNoteBySlugQuery(
+  slug: string,
+  options: { includeUnpublished?: boolean } = {}
+): Promise<PublicNote | null> {
+  const { includeUnpublished = false } = options;
   return withPrerenderFallback(
     async () => {
       const rows = await sql<PublicNote[]>`
         SELECT id, title, slug, summary, content, tags, updated_at
         FROM pages
         WHERE slug = ${slug}
-          AND published = true
+          ${includeUnpublished ? sql`` : sql`AND published = true`}
           ${isE2ETestRuntime ? sql`` : sql`AND e2e_only = false`}
         LIMIT 1
       `;
@@ -85,7 +89,23 @@ export const getNoteBySlug = cache(async (slug: string): Promise<PublicNote | nu
     null,
     `[getNoteBySlug] DB unavailable during prerender build — returning null. Slug: ${slug}.`
   );
+}
+
+const getPublishedNoteBySlugCached = cache(async (slug: string): Promise<PublicNote | null> => {
+  return getNoteBySlugQuery(slug);
 });
+
+export async function getNoteBySlug(
+  slug: string,
+  options: { includeUnpublished?: boolean } = {}
+): Promise<PublicNote | null> {
+  // Keep published-only reads cached for public traffic.
+  // Admin-inclusive reads are auth-dependent and must bypass shared cache.
+  if (options.includeUnpublished) {
+    return getNoteBySlugQuery(slug, { includeUnpublished: true });
+  }
+  return getPublishedNoteBySlugCached(slug);
+}
 
 export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   return withPrerenderFallback<PublishedNotePreview[]>(
