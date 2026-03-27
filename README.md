@@ -24,7 +24,7 @@ The public About page is at `app/(public)/about/page.tsx`. It fetches the `about
 
 The public note detail route is `app/(public)/notes/[slug]/page.tsx`. Anonymous users can only view published notes at `/notes/[slug]`; unpublished slugs return 404. When an authenticated admin session is present, unpublished notes are also accessible at the same route for preview/edit verification without publishing.
 
-Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. Code blocks support language metadata in the editor toolbar, and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
+Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. The editor supports code blocks (with language metadata), images, and tables (insert row/column/header controls in the toolbar), and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
 
 ## Branding and Theme
 

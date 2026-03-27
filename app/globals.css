@@ -188,6 +188,54 @@ body {
   height: 0;
 }
 
+.tiptap-editor .tableWrapper,
+.note-content .tableWrapper {
+  margin: 1.2em 0;
+  overflow-x: auto;
+}
+
+.tiptap-editor table,
+.note-content table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.tiptap-editor th,
+.tiptap-editor td,
+.note-content th,
+.note-content td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  vertical-align: top;
+  text-align: left;
+}
+
+.tiptap-editor th,
+.note-content th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.tiptap-editor td,
+.note-content td {
+  color: var(--text-dim);
+}
+
+.tiptap-editor .selectedCell {
+  position: relative;
+}
+
+.tiptap-editor .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--accent-dim);
+}
+
 .tiptap-image {
   max-width: 100%;
   height: auto;
