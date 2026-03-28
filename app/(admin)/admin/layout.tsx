@@ -13,11 +13,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const cookieStore = await cookies();
   const cookieRaw = cookieStore.get(ADMIN_SIDEBAR_COOKIE_NAME)?.value;
-  const initialSidebarOpen = parseSidebarCookie(cookieRaw) ?? true;
+  const parsedCookie = parseSidebarCookie(cookieRaw);
+  const hadCookie = parsedCookie !== null;
+  const initialSidebarOpen = parsedCookie ?? true;
 
   return (
     <AuthSessionProvider session={session}>
-      <AdminShell appVersion={packageJson.version} initialSidebarOpen={initialSidebarOpen}>
+      <AdminShell
+        appVersion={packageJson.version}
+        hadCookie={hadCookie}
+        initialSidebarOpen={initialSidebarOpen}
+      >
         {children}
       </AdminShell>
     </AuthSessionProvider>

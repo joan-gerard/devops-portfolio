@@ -20,6 +20,18 @@ export function writeSidebarCookieClient(open: boolean): void {
   document.cookie = `${ADMIN_SIDEBAR_COOKIE_NAME}=${v}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
+/**
+ * Initial open/closed for the admin shell. When no cookie was sent, prefer localStorage if set
+ * (legacy). When a cookie exists, it wins over localStorage so SSR matches the request.
+ */
+export function computeInitialSidebarOpen(hadCookie: boolean, fromServer: boolean): boolean {
+  if (typeof window === "undefined") return fromServer;
+  const stored = readSidebarOpenFromStorage();
+  if (stored === null) return fromServer;
+  if (!hadCookie) return stored;
+  return fromServer;
+}
+
 export function readSidebarOpenFromStorage(): boolean | null {
   if (typeof window === "undefined") return null;
   try {

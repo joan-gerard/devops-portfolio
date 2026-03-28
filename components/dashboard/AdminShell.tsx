@@ -2,6 +2,7 @@
 
 import {
   ADMIN_SIDEBAR_STORAGE_KEY,
+  computeInitialSidebarOpen,
   readSidebarOpenFromStorage,
   writeSidebarCookieClient,
   writeSidebarOpenToStorage,
@@ -15,26 +16,35 @@ const ADMIN_SIDEBAR_ID = "admin-sidebar";
 
 type AdminShellProps = {
   appVersion: string;
+  /** True when the request included our sidebar cookie (so we trust `initialSidebarOpen` over localStorage). */
+  hadCookie?: boolean;
   /** From server cookie so SSR matches saved preference (avoids open flash when localStorage says closed). */
   initialSidebarOpen?: boolean;
   children: React.ReactNode;
 };
 
-export function AdminShell({ appVersion, initialSidebarOpen = true, children }: AdminShellProps) {
-  const [sidebarOpen, setSidebarOpenState] = useState(initialSidebarOpen);
+export function AdminShell({
+  appVersion,
+  hadCookie = false,
+  initialSidebarOpen = true,
+  children,
+}: AdminShellProps) {
+  const [sidebarOpen, setSidebarOpenState] = useState(() =>
+    computeInitialSidebarOpen(hadCookie, initialSidebarOpen)
+  );
 
   useLayoutEffect(() => {
     const stored = readSidebarOpenFromStorage();
     if (stored === null) {
-      writeSidebarOpenToStorage(initialSidebarOpen);
-      writeSidebarCookieClient(initialSidebarOpen);
+      writeSidebarOpenToStorage(sidebarOpen);
+      writeSidebarCookieClient(sidebarOpen);
       return;
     }
-    if (stored !== initialSidebarOpen) {
-      setSidebarOpenState(stored);
-      writeSidebarCookieClient(stored);
+    if (stored !== sidebarOpen) {
+      writeSidebarOpenToStorage(sidebarOpen);
+      writeSidebarCookieClient(sidebarOpen);
     }
-  }, [initialSidebarOpen]);
+  }, [sidebarOpen]);
 
   useEffect(() => {
     function onStorage(e: StorageEvent) {
@@ -65,6 +75,7 @@ export function AdminShell({ appVersion, initialSidebarOpen = true, children }: 
 
   return (
     <div
+      suppressHydrationWarning
       style={
         {
           display: "flex",

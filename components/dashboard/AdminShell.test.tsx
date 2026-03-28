@@ -76,7 +76,7 @@ describe("AdminShell", () => {
 
   it("renders closed sidebar when server passes initialSidebarOpen false (cookie)", () => {
     render(
-      <AdminShell appVersion="1.0.0" initialSidebarOpen={false}>
+      <AdminShell appVersion="1.0.0" hadCookie initialSidebarOpen={false}>
         <p>child</p>
       </AdminShell>
     );
