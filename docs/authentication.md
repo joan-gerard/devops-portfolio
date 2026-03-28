@@ -47,6 +47,7 @@ These must be set in `.env.local` (or your deployment environment). In productio
 ### Admin layout and session: `app/(admin)/admin/layout.tsx`
 
 - Server Component that calls `getServerSession(authOptions)` and wraps children in **`AuthSessionProvider`** with that session so client components under `/admin` can use `useSession()`.
+- After auth, the layout renders **`AdminShell`** (`components/dashboard/AdminShell.tsx`), a client component that lays out the fixed **`AdminSidebar`**, **`AdminHeader`**, and main content. The header includes a control to collapse or expand the sidebar (shared `--admin-sidebar-offset`); the sidebar uses the `inert` attribute when collapsed so focus does not move into hidden navigation.
 
 ### Auth session provider: `components/providers/AuthSessionProvider.tsx`
 

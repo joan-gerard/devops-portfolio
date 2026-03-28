@@ -88,13 +88,18 @@ const navItems = [
 
 interface AdminSidebarProps {
   appVersion: string;
+  open: boolean;
+  id: string;
 }
 
-export function AdminSidebar({ appVersion }: AdminSidebarProps) {
+export function AdminSidebar({ appVersion, open, id }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
+      id={id}
+      inert={!open}
+      className="admin-sidebar"
       style={{
         position: "fixed",
         top: 0,
@@ -106,6 +111,8 @@ export function AdminSidebar({ appVersion }: AdminSidebarProps) {
         display: "flex",
         flexDirection: "column",
         zIndex: 10,
+        transform: open ? "none" : "translateX(-100%)",
+        pointerEvents: open ? "auto" : "none",
       }}
     >
       {/* Logo */}

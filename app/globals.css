@@ -29,6 +29,33 @@
 
   --sidebar-width: 220px;
   --header-height: 52px;
+
+  /* Admin shell: sidebar + content move together */
+  --admin-layout-duration: 0.36s;
+  --admin-layout-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-sidebar {
+  transition: transform var(--admin-layout-duration) var(--admin-layout-ease);
+}
+
+.admin-shell__main {
+  transition: margin-left var(--admin-layout-duration) var(--admin-layout-ease);
+}
+
+.admin-shell__header {
+  transition: left var(--admin-layout-duration) var(--admin-layout-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar {
+    transition: none;
+  }
+
+  .admin-shell__main,
+  .admin-shell__header {
+    transition: none;
+  }
 }
 
 html {
