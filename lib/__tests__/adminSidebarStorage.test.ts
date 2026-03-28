@@ -1,6 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { computeInitialSidebarOpen, parseSidebarCookie } from "../adminSidebarStorage";
+import {
+  ADMIN_SIDEBAR_COOKIE_NAME,
+  computeInitialSidebarOpen,
+  parseSidebarCookie,
+  writeSidebarCookieClient,
+} from "../adminSidebarStorage";
 
 describe("adminSidebarStorage", () => {
   beforeEach(() => {
@@ -37,6 +42,49 @@ describe("adminSidebarStorage", () => {
       expect(parseSidebarCookie(undefined)).toBeNull();
       expect(parseSidebarCookie("")).toBeNull();
       expect(parseSidebarCookie("yes")).toBeNull();
+    });
+  });
+
+  describe("writeSidebarCookieClient", () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      Reflect.deleteProperty(document, "cookie");
+    });
+
+    it("sets cookie without Secure on http", () => {
+      vi.stubGlobal("location", { protocol: "http:" } as Location);
+      let written = "";
+      Object.defineProperty(document, "cookie", {
+        configurable: true,
+        set(value: string) {
+          written = value;
+        },
+        get() {
+          return "";
+        },
+      });
+      writeSidebarCookieClient(true);
+      expect(written).toBe(
+        `${ADMIN_SIDEBAR_COOKIE_NAME}=1; Path=/; Max-Age=31536000; SameSite=Lax`
+      );
+    });
+
+    it("appends Secure on https", () => {
+      vi.stubGlobal("location", { protocol: "https:" } as Location);
+      let written = "";
+      Object.defineProperty(document, "cookie", {
+        configurable: true,
+        set(value: string) {
+          written = value;
+        },
+        get() {
+          return "";
+        },
+      });
+      writeSidebarCookieClient(false);
+      expect(written).toBe(
+        `${ADMIN_SIDEBAR_COOKIE_NAME}=0; Path=/; Max-Age=31536000; SameSite=Lax; Secure`
+      );
     });
   });
 });

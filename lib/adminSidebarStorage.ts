@@ -17,7 +17,11 @@ export function parseSidebarCookie(value: string | undefined): boolean | null {
 export function writeSidebarCookieClient(open: boolean): void {
   if (typeof document === "undefined") return;
   const v = open ? COOKIE_OPEN : COOKIE_CLOSED;
-  document.cookie = `${ADMIN_SIDEBAR_COOKIE_NAME}=${v}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  let cookie = `${ADMIN_SIDEBAR_COOKIE_NAME}=${v}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    cookie += "; Secure";
+  }
+  document.cookie = cookie;
 }
 
 /**
