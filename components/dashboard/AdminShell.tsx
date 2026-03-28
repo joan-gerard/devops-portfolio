@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import {
+  ADMIN_SIDEBAR_STORAGE_KEY,
+  readSidebarOpenFromStorage,
+  writeSidebarCookieClient,
+  writeSidebarOpenToStorage,
+} from "@/lib/adminSidebarStorage";
+import { useCallback, useEffect, useLayoutEffect, useState, type CSSProperties } from "react";
 
 import { AdminHeader } from "./AdminHeader";
 import { AdminSidebar } from "./AdminSidebar";
@@ -9,13 +15,51 @@ const ADMIN_SIDEBAR_ID = "admin-sidebar";
 
 type AdminShellProps = {
   appVersion: string;
+  /** From server cookie so SSR matches saved preference (avoids open flash when localStorage says closed). */
+  initialSidebarOpen?: boolean;
   children: React.ReactNode;
 };
 
-export function AdminShell({ appVersion, children }: AdminShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+export function AdminShell({ appVersion, initialSidebarOpen = true, children }: AdminShellProps) {
+  const [sidebarOpen, setSidebarOpenState] = useState(initialSidebarOpen);
 
-  const toggleSidebar = () => setSidebarOpen((open) => !open);
+  useLayoutEffect(() => {
+    const stored = readSidebarOpenFromStorage();
+    if (stored === null) {
+      writeSidebarOpenToStorage(initialSidebarOpen);
+      writeSidebarCookieClient(initialSidebarOpen);
+      return;
+    }
+    if (stored !== initialSidebarOpen) {
+      setSidebarOpenState(stored);
+      writeSidebarCookieClient(stored);
+    }
+  }, [initialSidebarOpen]);
+
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key !== ADMIN_SIDEBAR_STORAGE_KEY || e.storageArea !== window.localStorage) {
+        return;
+      }
+      if (e.newValue === "true") setSidebarOpenState(true);
+      else if (e.newValue === "false") setSidebarOpenState(false);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const setSidebarOpen = useCallback((update: boolean | ((prev: boolean) => boolean)) => {
+    setSidebarOpenState((prev) => {
+      const next = typeof update === "function" ? update(prev) : update;
+      writeSidebarOpenToStorage(next);
+      writeSidebarCookieClient(next);
+      return next;
+    });
+  }, []);
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarOpen((open) => !open);
+  }, [setSidebarOpen]);
 
   const sidebarOffset = sidebarOpen ? "var(--sidebar-width)" : "0px";
 
