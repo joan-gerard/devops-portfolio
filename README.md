@@ -24,7 +24,7 @@ The public About page is at `app/(public)/about/page.tsx`. It fetches the `about
 
 The public note detail route is `app/(public)/notes/[slug]/page.tsx`. It is published-only (`includeUnpublished: false`) so anonymous traffic can be cached with ISR. Unpublished slugs return 404 on this public route. Draft previews are available on the authenticated admin route `app/(admin)/admin/notes/preview/[slug]/page.tsx`.
 
-Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. The editor supports code blocks (with language metadata), images, and tables (insert row/column/header controls in the toolbar), and public rendering applies syntax token colors plus a small language badge on the top-right of each code block.
+Notes content editing/rendering uses TipTap shared extensions (`lib/tipTapExtensions.ts`) for consistency between admin and public views. The editor supports code blocks (with language metadata), images, tables (insert row/column/header controls in the toolbar), and heading levels H2-H4 (the page title remains the single H1). A live table of contents is powered by `@tiptap/extension-table-of-contents`, and public note rendering applies syntax token colors, a small language badge on each code block, plus a right-side TOC that uses the same heading ID generation logic as the editor.
 
 ## Branding and Theme
 

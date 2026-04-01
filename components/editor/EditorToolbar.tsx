@@ -76,11 +76,6 @@ export default function EditorToolbar({
   const groups: ToolbarButton[][] = [
     [
       {
-        label: "H1",
-        action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-        isActive: editor.isActive("heading", { level: 1 }),
-      },
-      {
         label: "H2",
         action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
         isActive: editor.isActive("heading", { level: 2 }),
@@ -89,6 +84,11 @@ export default function EditorToolbar({
         label: "H3",
         action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
         isActive: editor.isActive("heading", { level: 3 }),
+      },
+      {
+        label: "H4",
+        action: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
+        isActive: editor.isActive("heading", { level: 4 }),
       },
     ],
     [

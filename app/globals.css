@@ -87,7 +87,8 @@ body {
 
 :is(.tiptap-editor, .note-content) h1,
 :is(.tiptap-editor, .note-content) h2,
-:is(.tiptap-editor, .note-content) h3 {
+:is(.tiptap-editor, .note-content) h3,
+:is(.tiptap-editor, .note-content) h4 {
   font-family: var(--font-heading);
   font-weight: 700;
   color: var(--text);
@@ -111,6 +112,13 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: var(--text-dim);
+}
+
+:is(.tiptap-editor, .note-content) h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0;
 }
 
 :is(.tiptap-editor, .note-content) p {
@@ -336,6 +344,11 @@ body {
   font-weight: 600;
 }
 
+/* Ensure in-page anchor jumps are not hidden behind sticky page chrome. */
+.note-content :is(h1, h2, h3)[id] {
+  scroll-margin-top: calc(var(--header-height) + 20px);
+}
+
 /* ── Shared back link (admin + public) ────────────────────────────────────── */
 .back-link {
   font-family: var(--font-mono);
@@ -372,6 +385,45 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   pointer-events: none;
+}
+
+/* Public note table of contents */
+.note-toc {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.note-toc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.note-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.note-toc-link {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.note-toc-link:hover,
+.note-toc-link:focus-visible {
+  color: var(--accent);
 }
 
 /* ── Reusable hover/focus utilities ───────────────────────────────────────── */

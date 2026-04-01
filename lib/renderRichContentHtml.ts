@@ -2,6 +2,7 @@ import createDOMPurify from "dompurify";
 import hljs from "highlight.js/lib/common";
 
 import { stripXmlnsAttributes } from "@/lib/stripXmlnsAttributes";
+import { createUniqueHeadingId, DEFAULT_TOC_HEADING_LEVELS, type TocItem } from "@/lib/toc";
 
 function getCodeLanguageLabel(language: string | undefined): string | null {
   if (!language || language === "plaintext") return null;
@@ -36,9 +37,30 @@ function getCodeLanguageLabel(language: string | undefined): string | null {
  * during SSR. Callers should guard usage with hydration checks (for example, `isHydrated`).
  */
 export function renderRichContentHtml(html: string): string {
+  return renderRichContentHtmlWithToc(html).html;
+}
+
+export function renderRichContentHtmlWithToc(html: string): {
+  html: string;
+  toc: TocItem[];
+} {
   const sanitized = createDOMPurify(window).sanitize(html);
   const document = new DOMParser().parseFromString(sanitized, "text/html");
   const codeBlocks = document.querySelectorAll("pre code");
+  const seenHeadingIds = new Map<string, number>();
+  const toc: TocItem[] = [];
+
+  const headingElements = document.querySelectorAll("h2, h3, h4");
+  headingElements.forEach((heading) => {
+    const text = heading.textContent?.trim() ?? "";
+    if (!text) return;
+    const id = createUniqueHeadingId(text, seenHeadingIds);
+    heading.setAttribute("id", id);
+
+    const level = Number.parseInt(heading.tagName.replace("H", ""), 10);
+    if (Number.isNaN(level) || !DEFAULT_TOC_HEADING_LEVELS.includes(level)) return;
+    toc.push({ id, text, level });
+  });
 
   codeBlocks.forEach((block) => {
     const classNames = block.className.split(/\s+/).filter(Boolean);
@@ -91,5 +113,8 @@ export function renderRichContentHtml(html: string): string {
 
   stripXmlnsAttributes(document);
 
-  return document.body.innerHTML;
+  return {
+    html: document.body.innerHTML,
+    toc,
+  };
 }

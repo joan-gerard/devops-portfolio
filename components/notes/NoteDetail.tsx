@@ -6,8 +6,9 @@ import Link from "next/link";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { PageContainer } from "@/components/public/PageContainer";
 import { BackLink } from "@/components/shared/BackLink";
-import { renderRichContentHtml } from "@/lib/renderRichContentHtml";
+import { renderRichContentHtmlWithToc } from "@/lib/renderRichContentHtml";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
+import type { TocItem } from "@/lib/toc";
 import type { CSSProperties } from "react";
 import { useMemo, useSyncExternalStore } from "react";
 
@@ -28,6 +29,7 @@ export function NoteDetail({
   backHref = "/notes",
   backLabel = "← All notes",
 }: NoteDetailProps) {
+  const isHydrated = useIsHydrated();
   const updatedAt = new Date(note.updated_at).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -40,6 +42,12 @@ export function NoteDetail({
     if (!content || Object.keys(content).length === 0) return "";
     return generateHTML(content as Parameters<typeof generateHTML>[0], getSharedExtensions());
   }, [note.content]);
+
+  const hasContent = Boolean(note.content && Object.keys(note.content).length > 0);
+  const rendered = useMemo(() => {
+    if (!hasContent || !output || !isHydrated) return { html: "", toc: [] as TocItem[] };
+    return renderRichContentHtmlWithToc(output);
+  }, [hasContent, isHydrated, output]);
 
   return (
     <PageContainer>
@@ -55,18 +63,24 @@ export function NoteDetail({
           <hr
             style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0 0 40px" }}
           />
-          <NoteDetailContent content={note.content} html={output} />
+          <NoteDetailContent hasContent={hasContent} safeHtml={rendered.html} />
         </div>
 
-        <RelatedNotesAside relatedNotes={relatedNotes} />
+        <aside
+          className="w-full lg:w-[320px] lg:sticky lg:top-24"
+          style={{ display: "grid", gap: "28px" }}
+        >
+          <TableOfContentsAside toc={rendered.toc} />
+          <RelatedNotesAside relatedNotes={relatedNotes} />
+        </aside>
       </div>
     </PageContainer>
   );
 }
 
 type NoteDetailContentProps = {
-  content: Record<string, unknown> | undefined;
-  html: string;
+  hasContent: boolean;
+  safeHtml: string;
 };
 
 const emptyContentStyle: CSSProperties = {
@@ -84,7 +98,7 @@ function RelatedNotesAside({ relatedNotes }: RelatedNotesAsideProps) {
   if (relatedNotes.length === 0) return null;
 
   return (
-    <aside aria-label="Related notes" className="w-full lg:w-[320px] lg:sticky lg:top-24">
+    <section aria-label="Related notes">
       <div
         style={{
           borderRadius: "6px",
@@ -153,7 +167,7 @@ function RelatedNotesAside({ relatedNotes }: RelatedNotesAsideProps) {
           })}
         </div>
       </div>
-    </aside>
+    </section>
   );
 }
 
@@ -167,14 +181,7 @@ function useIsHydrated() {
   );
 }
 
-function NoteDetailContent({ content, html }: NoteDetailContentProps) {
-  const hasContent = content && Object.keys(content).length > 0;
-  const isHydrated = useIsHydrated();
-  const safeHtml = useMemo(() => {
-    if (!hasContent || !html || !isHydrated) return "";
-    return renderRichContentHtml(html);
-  }, [hasContent, html, isHydrated]);
-
+function NoteDetailContent({ hasContent, safeHtml }: NoteDetailContentProps) {
   if (hasContent && safeHtml) {
     return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
   }
@@ -183,4 +190,30 @@ function NoteDetailContent({ content, html }: NoteDetailContentProps) {
     return <div className="note-content" aria-live="polite" />;
   }
   return <p style={emptyContentStyle}>No content yet.</p>;
+}
+
+type TableOfContentsAsideProps = {
+  toc: TocItem[];
+};
+
+function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
+  if (toc.length === 0) return null;
+  return (
+    <nav aria-label="Table of contents" className="note-toc">
+      <div className="note-toc-label">On this page</div>
+      <ol className="note-toc-list">
+        {toc.map((item) => (
+          <li key={item.id}>
+            <a
+              href={`#${item.id}`}
+              className="note-toc-link"
+              style={{ paddingLeft: `${Math.max(item.level - 1, 0) * 12}px` }}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
 }
