@@ -6,6 +6,7 @@ import Link from "next/link";
 import { DetailPageHeader } from "@/components/public/DetailPageHeader";
 import { PageContainer } from "@/components/public/PageContainer";
 import { BackLink } from "@/components/shared/BackLink";
+import { BackToTopButton } from "@/components/shared/BackToTopButton";
 import { renderRichContentHtmlWithToc } from "@/lib/renderRichContentHtml";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import type { TocItem } from "@/lib/toc";
@@ -74,6 +75,7 @@ export function NoteDetail({
           <RelatedNotesAside relatedNotes={relatedNotes} />
         </aside>
       </div>
+      <BackToTopButton />
     </PageContainer>
   );
 }

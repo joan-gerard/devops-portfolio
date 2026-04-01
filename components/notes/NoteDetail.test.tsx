@@ -11,6 +11,11 @@ const mockNote: PublicNote = {
 };
 
 describe("NoteDetail", () => {
+  it("renders the back-to-top control", () => {
+    const { container } = render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
+    expect(container.querySelector(".back-to-top-btn")).toBeInTheDocument();
+  });
+
   it("shows the note title", () => {
     render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("My Test Note");
