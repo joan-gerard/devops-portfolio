@@ -426,6 +426,10 @@ body {
   color: var(--accent);
 }
 
+.note-toc-link--active {
+  color: var(--accent);
+}
+
 /* ── Reusable hover/focus utilities ───────────────────────────────────────── */
 .u-border-accent-hover {
   border-color: var(--border);

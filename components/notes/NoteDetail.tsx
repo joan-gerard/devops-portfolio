@@ -10,7 +10,7 @@ import { renderRichContentHtmlWithToc } from "@/lib/renderRichContentHtml";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import type { TocItem } from "@/lib/toc";
 import type { CSSProperties } from "react";
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 export type NoteDetailProps = {
   note: PublicNote;
@@ -197,6 +197,44 @@ type TableOfContentsAsideProps = {
 };
 
 function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (toc.length === 0) {
+      setActiveId(null);
+      return;
+    }
+
+    const computeActiveId = () => {
+      const headerOffset = 120;
+      let bestId: string | null = null;
+      let bestDistance = Number.POSITIVE_INFINITY;
+
+      for (const item of toc) {
+        const element = document.getElementById(item.id);
+        if (!element) continue;
+        const distance = Math.abs(element.getBoundingClientRect().top - headerOffset);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestId = item.id;
+        }
+      }
+
+      setActiveId(bestId);
+    };
+
+    computeActiveId();
+    window.addEventListener("scroll", computeActiveId, { passive: true });
+    window.addEventListener("resize", computeActiveId);
+    window.addEventListener("hashchange", computeActiveId);
+
+    return () => {
+      window.removeEventListener("scroll", computeActiveId);
+      window.removeEventListener("resize", computeActiveId);
+      window.removeEventListener("hashchange", computeActiveId);
+    };
+  }, [toc]);
+
   if (toc.length === 0) return null;
   return (
     <nav aria-label="Table of contents" className="note-toc">
@@ -206,7 +244,7 @@ function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className="note-toc-link"
+              className={`note-toc-link${activeId === item.id ? " note-toc-link--active" : ""}`}
               style={{ paddingLeft: `${Math.max(item.level - 1, 0) * 12}px` }}
             >
               {item.text}
