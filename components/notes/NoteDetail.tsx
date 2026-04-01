@@ -198,10 +198,10 @@ type TableOfContentsAsideProps = {
 
 function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const currentActiveId = toc.length === 0 ? null : activeId;
 
   useEffect(() => {
-    if (toc.length === 0) {
-      setActiveId(null);
+    if (toc.length === 0 || typeof window === "undefined") {
       return;
     }
 
@@ -223,12 +223,13 @@ function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
       setActiveId(bestId);
     };
 
-    computeActiveId();
+    const frame = window.requestAnimationFrame(computeActiveId);
     window.addEventListener("scroll", computeActiveId, { passive: true });
     window.addEventListener("resize", computeActiveId);
     window.addEventListener("hashchange", computeActiveId);
 
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", computeActiveId);
       window.removeEventListener("resize", computeActiveId);
       window.removeEventListener("hashchange", computeActiveId);
@@ -244,7 +245,7 @@ function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className={`note-toc-link${activeId === item.id ? " note-toc-link--active" : ""}`}
+              className={`note-toc-link${currentActiveId === item.id ? " note-toc-link--active" : ""}`}
               style={{ paddingLeft: `${Math.max(item.level - 1, 0) * 12}px` }}
             >
               {item.text}
