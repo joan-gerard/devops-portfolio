@@ -22,6 +22,8 @@ function getCodeLanguageLabel(language: string | undefined): string | null {
       return "JSON";
     case "yaml":
       return "YAML";
+    case "xml":
+      return "XML";
     case "python":
       return "Python";
     case "sql":

@@ -21,6 +21,7 @@ const CODE_LANGUAGES = [
   { label: "Java", value: "java" },
   { label: "JSON", value: "json" },
   { label: "YAML", value: "yaml" },
+  { label: "XML", value: "xml" },
   { label: "Python", value: "python" },
   { label: "SQL", value: "sql" },
 ] as const;
