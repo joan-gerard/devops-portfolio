@@ -16,6 +16,8 @@ function getCodeLanguageLabel(language: string | undefined): string | null {
       return "Bash";
     case "dockerfile":
       return "Dockerfile";
+    case "java":
+      return "Java";
     case "json":
       return "JSON";
     case "yaml":

@@ -18,6 +18,7 @@ const CODE_LANGUAGES = [
   { label: "JS/JSX", value: "javascript" },
   { label: "Bash", value: "bash" },
   { label: "Dockerfile", value: "dockerfile" },
+  { label: "Java", value: "java" },
   { label: "JSON", value: "json" },
   { label: "YAML", value: "yaml" },
   { label: "Python", value: "python" },
