@@ -11,6 +11,11 @@ const mockNote: PublicNote = {
 };
 
 describe("NoteDetail", () => {
+  it("renders the back-to-top control", () => {
+    const { container } = render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
+    expect(container.querySelector(".back-to-top-btn")).toBeInTheDocument();
+  });
+
   it("shows the note title", () => {
     render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("My Test Note");
@@ -53,5 +58,48 @@ describe("NoteDetail", () => {
   it("shows empty content message when note has no content", () => {
     render(<NoteDetail note={{ ...mockNote, content: undefined }} />);
     expect(screen.getByText("No content yet.")).toBeInTheDocument();
+  });
+
+  it("renders table of contents links for heading content", () => {
+    render(
+      <NoteDetail
+        note={{
+          ...mockNote,
+          content: {
+            type: "doc",
+            content: [
+              {
+                type: "heading",
+                attrs: { level: 2 },
+                content: [{ type: "text", text: "Overview" }],
+              },
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Some content" }],
+              },
+              {
+                type: "heading",
+                attrs: { level: 3 },
+                content: [{ type: "text", text: "Overview" }],
+              },
+              {
+                type: "heading",
+                attrs: { level: 4 },
+                content: [{ type: "text", text: "Deep dive" }],
+              },
+            ],
+          },
+        }}
+      />
+    );
+
+    const toc = screen.getByRole("navigation", { name: /table of contents/i });
+    expect(toc).toBeInTheDocument();
+
+    const links = screen.getAllByRole("link", { name: "Overview" });
+    expect(links.length).toBeGreaterThanOrEqual(2);
+    expect(links[0]).toHaveAttribute("href", "#overview");
+    expect(links[1]).toHaveAttribute("href", "#overview-2");
+    expect(screen.getByRole("link", { name: "Deep dive" })).toHaveAttribute("href", "#deep-dive");
   });
 });

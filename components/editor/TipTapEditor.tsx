@@ -1,9 +1,11 @@
 "use client";
 
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useCallback, useEffect, useRef } from "react";
+import type { TableOfContentData } from "@tiptap/extension-table-of-contents";
+import { useCallback, useEffect, useRef, useState } from "react";
 import EditorToolbar from "./EditorToolbar";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
+import { createHeadingBaseId } from "@/lib/toc";
 
 type Props = {
   noteId: string;
@@ -14,6 +16,7 @@ type Props = {
 
 export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [tocAnchors, setTocAnchors] = useState<TableOfContentData>([]);
 
   const save = useCallback(
     async (json: Record<string, unknown>) => {
@@ -35,7 +38,12 @@ export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: getSharedExtensions(),
+    extensions: getSharedExtensions({
+      tableOfContents: {
+        getId: createHeadingBaseId,
+        onUpdate: setTocAnchors,
+      },
+    }),
     content: content && Object.keys(content).length > 0 ? content : undefined,
     editorProps: {
       attributes: {
@@ -90,6 +98,52 @@ export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset
       >
         <EditorContent editor={editor} />
       </div>
+      {tocAnchors.length > 0 ? (
+        <aside
+          aria-label="Editor table of contents"
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "12px 16px",
+            background: "var(--surface)",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "10px",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "var(--text-muted)",
+              margin: "0 0 8px",
+            }}
+          >
+            Table of contents
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {tocAnchors.map((anchor) => (
+              <button
+                key={`${anchor.id}-${anchor.pos}`}
+                type="button"
+                onClick={() => {
+                  if (!editor) return;
+                  editor.commands.focus(anchor.pos);
+                  editor.commands.setTextSelection(anchor.pos);
+                }}
+                style={{
+                  textAlign: "left",
+                  border: "none",
+                  background: "transparent",
+                  color: anchor.isActive ? "var(--accent)" : "var(--text-dim)",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  marginLeft: `${Math.max(anchor.level - 1, 0) * 10}px`,
+                }}
+              >
+                {anchor.textContent}
+              </button>
+            ))}
+          </div>
+        </aside>
+      ) : null}
     </div>
   );
 }

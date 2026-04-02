@@ -25,19 +25,20 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1001.0",
     "@sentry/nextjs": "^10.45.0",
-    "@tiptap/core": "^3.20.1",
-    "@tiptap/extension-code-block-lowlight": "^3.20.0",
-    "@tiptap/extension-image": "^3.20.0",
-    "@tiptap/extension-placeholder": "^3.20.0",
-    "@tiptap/extension-table": "^3.20.0",
-    "@tiptap/extension-table-cell": "^3.20.0",
-    "@tiptap/extension-table-header": "^3.20.0",
-    "@tiptap/extension-table-row": "^3.20.0",
-    "@tiptap/extension-typography": "^3.20.0",
-    "@tiptap/html": "^3.20.1",
-    "@tiptap/pm": "^3.20.0",
-    "@tiptap/react": "^3.20.0",
-    "@tiptap/starter-kit": "^3.20.0",
+    "@tiptap/core": "^3.22.0",
+    "@tiptap/extension-code-block-lowlight": "^3.22.0",
+    "@tiptap/extension-image": "^3.22.0",
+    "@tiptap/extension-placeholder": "^3.22.0",
+    "@tiptap/extension-table": "^3.22.0",
+    "@tiptap/extension-table-cell": "^3.22.0",
+    "@tiptap/extension-table-header": "^3.22.0",
+    "@tiptap/extension-table-of-contents": "^3.22.0",
+    "@tiptap/extension-table-row": "^3.22.0",
+    "@tiptap/extension-typography": "^3.22.0",
+    "@tiptap/html": "^3.22.0",
+    "@tiptap/pm": "^3.22.0",
+    "@tiptap/react": "^3.22.0",
+    "@tiptap/starter-kit": "^3.22.0",
     "@xyflow/react": "^12.10.1",
     "bcryptjs": "^3.0.3",
     "dompurify": "^3.3.2",
@@ -79,7 +80,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@tiptap/core": "3.20.1"
+      "@tiptap/core": "3.22.1",
+      "@tiptap/pm": "3.22.1"
     }
   }
 }
