@@ -212,14 +212,14 @@ function TableOfContentsAside({ toc }: TableOfContentsAsideProps) {
     const computeActiveId = () => {
       const headerOffset = 120;
       let bestId: string | null = null;
-      let bestDistance = Number.POSITIVE_INFINITY;
+      let bestTop = Number.NEGATIVE_INFINITY;
 
       for (const item of toc) {
         const element = document.getElementById(item.id);
         if (!element) continue;
-        const distance = Math.abs(element.getBoundingClientRect().top - headerOffset);
-        if (distance < bestDistance) {
-          bestDistance = distance;
+        const top = element.getBoundingClientRect().top;
+        if (top <= headerOffset && top > bestTop) {
+          bestTop = top;
           bestId = item.id;
         }
       }
