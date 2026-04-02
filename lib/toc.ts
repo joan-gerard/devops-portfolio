@@ -41,7 +41,7 @@ function collectNodeText(node: TipTapContentNode | undefined): string {
   if (!node) return "";
   const ownText = typeof node.text === "string" ? node.text : "";
   const childText = (node.content ?? []).map((child) => collectNodeText(child)).join("");
-  return `${ownText}${childText}`.trim();
+  return `${ownText}${childText}`;
 }
 
 function walkForHeadings(
@@ -53,7 +53,7 @@ function walkForHeadings(
   if (node.type === "heading") {
     const level = typeof node.attrs?.level === "number" ? node.attrs.level : 0;
     if (includeLevels.has(level)) {
-      const text = collectNodeText(node);
+      const text = collectNodeText(node).trim();
       if (text.length > 0) {
         output.push({
           id: createUniqueHeadingId(text, seenIds),

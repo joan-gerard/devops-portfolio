@@ -56,4 +56,24 @@ describe("toc helpers", () => {
       { id: "overview-2", text: "Overview", level: 2 },
     ]);
   });
+
+  it("preserves spaces between adjacent text nodes (no recursive trim)", () => {
+    const doc = {
+      type: "doc",
+      content: [
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [
+            { type: "text", text: "Hello " },
+            { type: "text", text: "world" },
+          ],
+        },
+      ],
+    };
+
+    expect(extractTocItemsFromTipTapContent(doc)).toEqual([
+      { id: "hello-world", text: "Hello world", level: 2 },
+    ]);
+  });
 });
