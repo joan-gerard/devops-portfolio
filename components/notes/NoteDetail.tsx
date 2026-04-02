@@ -11,7 +11,7 @@ import { renderRichContentHtmlWithToc } from "@/lib/renderRichContentHtml";
 import { getSharedExtensions } from "@/lib/tipTapExtensions";
 import type { TocItem } from "@/lib/toc";
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type NoteDetailProps = {
   note: PublicNote;
@@ -30,7 +30,6 @@ export function NoteDetail({
   backHref = "/notes",
   backLabel = "← All notes",
 }: NoteDetailProps) {
-  const isHydrated = useIsHydrated();
   const updatedAt = new Date(note.updated_at).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -46,9 +45,14 @@ export function NoteDetail({
 
   const hasContent = Boolean(note.content && Object.keys(note.content).length > 0);
   const rendered = useMemo(() => {
-    if (!hasContent || !output || !isHydrated) return { html: "", toc: [] as TocItem[] };
+    if (!hasContent || !output) return { html: "", toc: [] as TocItem[] };
+    if (typeof window === "undefined") {
+      return { html: output, toc: [] };
+    }
     return renderRichContentHtmlWithToc(output);
-  }, [hasContent, isHydrated, output]);
+  }, [hasContent, output]);
+
+  const showRightRail = rendered.toc.length > 0 || relatedNotes.length > 0;
 
   return (
     <PageContainer>
@@ -67,13 +71,15 @@ export function NoteDetail({
           <NoteDetailContent hasContent={hasContent} safeHtml={rendered.html} />
         </div>
 
-        <aside
-          className="w-full lg:w-[320px] lg:sticky lg:top-24"
-          style={{ display: "grid", gap: "28px" }}
-        >
-          <TableOfContentsAside toc={rendered.toc} />
-          <RelatedNotesAside relatedNotes={relatedNotes} />
-        </aside>
+        {showRightRail ? (
+          <aside
+            className="w-full lg:w-[320px] lg:sticky lg:top-24"
+            style={{ display: "grid", gap: "28px" }}
+          >
+            <TableOfContentsAside toc={rendered.toc} />
+            <RelatedNotesAside relatedNotes={relatedNotes} />
+          </aside>
+        ) : null}
       </div>
       <BackToTopButton />
     </PageContainer>
@@ -173,19 +179,15 @@ function RelatedNotesAside({ relatedNotes }: RelatedNotesAsideProps) {
   );
 }
 
-const subscribeNever = () => () => {};
-
-function useIsHydrated() {
-  return useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false
-  );
-}
-
 function NoteDetailContent({ hasContent, safeHtml }: NoteDetailContentProps) {
   if (hasContent && safeHtml) {
-    return <div className="note-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />;
+    return (
+      <div
+        className="note-content"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
+      />
+    );
   }
   if (hasContent) {
     // Keep server and initial client render identical; hydrate content after mount.

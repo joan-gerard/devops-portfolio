@@ -89,7 +89,7 @@ _Generated for review. No code changes were made during this scan._
 ### 12. **Public note rendering**
 
 - **Where**: Public note pages at `app/(public)/notes/[slug]/page.tsx` are rendered with TipTap's `generateHTML(content, extensions)`.
-- **Status**: Implemented. Content is generated with the shared TipTap extension set from `lib/tipTapExtensions.ts` (same schema as the editor: StarterKit with codeBlock disabled, CodeBlockLowlight, Image, Placeholder, Typography); only published notes are returned by `getNoteBySlug`. The HTML is sanitized with DOMPurify (`dompurify`) before being passed to `dangerouslySetInnerHTML` in `NoteDetailContent`, so only safe markup is rendered (no raw stored HTML), reducing XSS risk. The about page (`AboutPageContent`) uses the same TipTap pipeline and shared extensions but does not use DOMPurify; content there is first-party only from the single admin.
+- **Status**: Implemented. Content is generated with the shared TipTap extension set from `lib/tipTapExtensions.ts` (same schema as the editor: StarterKit with codeBlock disabled, CodeBlockLowlight, Image, Placeholder, Typography); only published notes are returned by `getNoteBySlug`. In the browser, `renderRichContentHtmlWithToc` sanitizes with DOMPurify (`dompurify`) before `dangerouslySetInnerHTML` in `NoteDetailContent`; the server-rendered note body uses the schema-generated HTML until that client pass (same trust model: no raw arbitrary HTML stored). The about page (`AboutPageContent`) uses the same TipTap pipeline and shared extensions but does not use DOMPurify; content there is first-party only from the single admin.
 
 ### 13. **Static HTML in docs (informational)**
 
