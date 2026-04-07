@@ -508,6 +508,13 @@ body {
   background: var(--surface);
 }
 
+.admin-header__sidebar-toggle:hover,
+.admin-header__sidebar-toggle:focus-visible {
+  background: color-mix(in oklab, var(--accent) 14%, var(--surface-2)) !important;
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border)) !important;
+  color: var(--text) !important;
+}
+
 .u-text-muted-accent-hover {
   color: var(--text-muted);
   transition: color 0.15s;
