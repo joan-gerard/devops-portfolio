@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { FiSun, FiMoon } from "react-icons/fi";
+
+const noop = () => () => {};
+const getTrue = () => true;
+const getFalse = () => false;
 
 const BUTTON_STYLE: React.CSSProperties = {
   display: "inline-flex",
@@ -26,9 +30,7 @@ const BUTTON_STYLE: React.CSSProperties = {
  */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(noop, getTrue, getFalse);
 
   if (!mounted) {
     return <span style={{ ...BUTTON_STYLE, visibility: "hidden" }} aria-hidden />;
