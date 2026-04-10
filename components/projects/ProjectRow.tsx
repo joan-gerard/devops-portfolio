@@ -61,7 +61,7 @@ export function ProjectRow({ project, isLast }: ProjectRowProps) {
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             background: project.published ? "var(--accent)" : "var(--surface-2)",
-            color: project.published ? "#000" : "var(--text-muted)",
+            color: project.published ? "var(--accent-contrast)" : "var(--text-muted)",
             border: `1px solid ${project.published ? "var(--accent)" : "var(--border)"}`,
             whiteSpace: "nowrap",
             justifySelf: "start",
