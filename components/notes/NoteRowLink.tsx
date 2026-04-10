@@ -61,7 +61,7 @@ export function NoteRowLink({ note, isLast }: Props) {
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             background: note.published ? "var(--accent)" : "var(--surface-2)",
-            color: note.published ? "#000" : "var(--text-muted)",
+            color: note.published ? "var(--accent-contrast)" : "var(--text-muted)",
             border: `1px solid ${note.published ? "var(--accent)" : "var(--border)"}`,
             whiteSpace: "nowrap",
             justifySelf: "start",

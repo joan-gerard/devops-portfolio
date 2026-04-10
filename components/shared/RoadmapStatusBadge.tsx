@@ -12,7 +12,7 @@ function getBadgeColors(normalizedStatus: string): CSSProperties {
     return {
       border: "0.5px solid var(--accent)",
       background: "var(--accent)",
-      color: "#000",
+      color: "var(--accent-contrast)",
     };
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { pageContainerBaseStyle } from "@/components/public/PageContainer";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -49,7 +50,7 @@ export function PublicNav() {
           Joan Gerard
         </Link>
 
-        {/* Nav links */}
+        {/* Nav links + theme toggle */}
         <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = pathname === href || pathname.startsWith(href + "/");
@@ -73,6 +74,9 @@ export function PublicNav() {
               </Link>
             );
           })}
+          <div style={{ marginLeft: "8px" }}>
+            <ThemeToggle />
+          </div>
         </nav>
       </div>
     </header>

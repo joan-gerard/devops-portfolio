@@ -1,6 +1,7 @@
 "use client";
 
 import { SignOutButton } from "@/components/auth";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { usePathname } from "next/navigation";
 
 const pageTitles: Record<string, string> = {
@@ -122,6 +123,7 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar, sidebarId }: AdminHe
           />
           Live
         </div>
+        <ThemeToggle />
         <SignOutButton />
       </div>
     </header>
