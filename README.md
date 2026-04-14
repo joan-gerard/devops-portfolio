@@ -77,3 +77,4 @@ See [docs/security.md](docs/security.md) for security practices and review notes
 ## Architecture and Operations
 
 - 12-factor alignment review: [docs/12-factor-assessment.md](docs/12-factor-assessment.md)
+- Safe monitoring setup (Neon-aware): [docs/monitoring-safe-setup.md](docs/monitoring-safe-setup.md)
