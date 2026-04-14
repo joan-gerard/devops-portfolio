@@ -3,6 +3,11 @@ import sql from "@/lib/db";
 const WINDOW_MINUTES = 15;
 const MAX_ATTEMPTS = 5;
 
+type LoginAttemptRow = {
+  attempts: number;
+  window_start: string | Date;
+};
+
 /**
  * Atomically check and increment the login attempt count for an IP.
  * Uses INSERT ... ON CONFLICT DO UPDATE to avoid race conditions when
@@ -17,7 +22,7 @@ export async function checkRateLimit(
 
   const windowCutoff = new Date(now.getTime() - WINDOW_MINUTES * 60 * 1000);
 
-  const [row] = await sql`
+  const [row] = await sql<LoginAttemptRow>`
     INSERT INTO login_attempts (ip, attempts, window_start)
     VALUES (${ip}, 1, ${now})
     ON CONFLICT (ip) DO UPDATE SET
