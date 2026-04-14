@@ -16,11 +16,11 @@ function getDatabaseUrl(): string {
 }
 
 type SqlTag = {
-  <TRow extends Record<string, unknown> = Record<string, unknown>>(
+  <TRow extends object = Record<string, unknown>>(
     strings: TemplateStringsArray,
     ...params: unknown[]
   ): Promise<TRow[]>;
-  query<TRow extends Record<string, unknown> = Record<string, unknown>>(
+  query<TRow extends object = Record<string, unknown>>(
     query: string,
     params?: unknown[]
   ): Promise<TRow[]>;
@@ -38,12 +38,12 @@ function getClient(): NeonQueryFunction<false, false> {
 }
 
 const sql: SqlTag = Object.assign(
-  <TRow extends Record<string, unknown> = Record<string, unknown>>(
+  <TRow extends object = Record<string, unknown>>(
     strings: TemplateStringsArray,
     ...params: unknown[]
   ): Promise<TRow[]> => getClient()(strings, ...params) as unknown as Promise<TRow[]>,
   {
-    query: <TRow extends Record<string, unknown> = Record<string, unknown>>(
+    query: <TRow extends object = Record<string, unknown>>(
       query: string,
       params: unknown[] = []
     ): Promise<TRow[]> => getClient().query(query, params) as unknown as Promise<TRow[]>,
