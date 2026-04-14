@@ -5,7 +5,12 @@ import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { JSONValue } from "postgres";
+
+type PageRow = {
+  id: string;
+  slug: string;
+  published: boolean;
+};
 
 /**
  * Fetches a page by ID, returning unpublished pages only to authenticated users.
@@ -20,14 +25,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
     const [page] = isAuthenticated
-      ? await sql`
+      ? await sql<PageRow>`
           SELECT * FROM pages WHERE id = ${id}
         `
       : isE2ETestRuntime
-        ? await sql`
+        ? await sql<PageRow>`
           SELECT * FROM pages WHERE id = ${id} AND published = true
         `
-        : await sql`
+        : await sql<PageRow>`
           SELECT * FROM pages WHERE id = ${id} AND published = true AND e2e_only = false
         `;
 
@@ -96,12 +101,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
   try {
-    const [page] = await sql`
+    const [page] = await sql<PageRow>`
       UPDATE pages SET
         title     = COALESCE(${title ?? null},     title),
         slug      = COALESCE(${slugToWrite ?? null}, slug),
         summary   = COALESCE(${summary ?? null},   summary),
-        content   = COALESCE(${content ? sql.json(content as JSONValue) : null}, content),
+        content   = COALESCE(${content ? sql.json(content) : null}::jsonb, content),
         tags      = COALESCE(${tags ?? null},      tags),
         published = COALESCE(${published ?? null}, published),
         e2e_only  = COALESCE(
@@ -155,7 +160,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 
   try {
-    const [deleted] = await sql`
+    const [deleted] = await sql<{ id: string }>`
       DELETE FROM pages
       WHERE id = ${id}
       RETURNING id

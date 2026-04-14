@@ -1,4 +1,4 @@
-import postgres from "postgres";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
 function getDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
@@ -15,30 +15,41 @@ function getDatabaseUrl(): string {
   return url.trim();
 }
 
-function shouldRequireSsl(databaseUrl: string): boolean {
-  // Neon URLs in your .env include sslmode=require (and channel_binding=require)
-  return /sslmode=require/i.test(databaseUrl);
-}
+type SqlTag = {
+  <TRow extends Record<string, unknown> = Record<string, unknown>>(
+    strings: TemplateStringsArray,
+    ...params: unknown[]
+  ): Promise<TRow[]>;
+  query<TRow extends Record<string, unknown> = Record<string, unknown>>(
+    query: string,
+    params?: unknown[]
+  ): Promise<TRow[]>;
+  unsafe: NeonQueryFunction<false, false>["unsafe"];
+  json(value: unknown): string;
+};
 
-let _sql: ReturnType<typeof postgres> | null = null;
+let _sql: NeonQueryFunction<false, false> | null = null;
 
-function getClient(): ReturnType<typeof postgres> {
+function getClient(): NeonQueryFunction<false, false> {
   if (!_sql) {
-    const url = getDatabaseUrl();
-    const useSsl = shouldRequireSsl(url);
-    _sql = postgres(url, useSsl ? { ssl: "require" } : undefined);
+    _sql = neon(getDatabaseUrl());
   }
   return _sql;
 }
 
-const sql = new Proxy(function () {} as unknown as ReturnType<typeof postgres>, {
-  get(_target, prop) {
-    const client = getClient();
-    return client[prop as keyof typeof client];
-  },
-  apply(_target, _thisArg, args) {
-    return (getClient() as unknown as (...args: unknown[]) => unknown)(...args);
-  },
-});
+const sql: SqlTag = Object.assign(
+  <TRow extends Record<string, unknown> = Record<string, unknown>>(
+    strings: TemplateStringsArray,
+    ...params: unknown[]
+  ): Promise<TRow[]> => getClient()(strings, ...params) as unknown as Promise<TRow[]>,
+  {
+    query: <TRow extends Record<string, unknown> = Record<string, unknown>>(
+      query: string,
+      params: unknown[] = []
+    ): Promise<TRow[]> => getClient().query(query, params) as unknown as Promise<TRow[]>,
+    unsafe: (rawSql: string) => getClient().unsafe(rawSql),
+    json: (value: unknown): string => JSON.stringify(value),
+  }
+);
 
 export default sql;

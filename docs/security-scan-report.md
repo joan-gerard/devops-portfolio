@@ -8,7 +8,7 @@ _Generated for review. No code changes were made during this scan._
 
 - **Secrets**: `.env*` is in `.gitignore`; no secrets are committed.
 - **Auth**: Credentials are validated against a bcrypt hash; misconfiguration and bcrypt errors are mapped to a generic `SERVICE_UNAVAILABLE` message so server details are not exposed.
-- **Database**: `DATABASE_URL` is validated at load time; `ssl: "require"` is used; all SQL uses parameterized queries (postgres.js tagged templates). `handleDbError` maps invalid UUID (e.g. from route `[id]`) to 404 so no internals are leaked.
+- **Database**: `DATABASE_URL` is validated lazily; the app uses Neon's serverless HTTP driver (`@neondatabase/serverless`); all SQL uses parameterized queries (tagged templates). `handleDbError` maps invalid UUID (e.g. from route `[id]`) to 404 so no internals are leaked.
 - **API authorization**: Admin-only mutations (pages, projects, media upload) check session and role; public GETs filter by `published` where needed.
 - **Media upload**: Route is auth-protected; file type whitelist (JPEG, PNG, WebP, GIF) and size limit; server-side magic-byte validation (`lib/validateFileBytes.ts`) so declared type must match actual content; unique object keys; R2 credentials from env. R2 env vars are validated before upload (503 if incomplete); `linked_to` is validated as UUID or null; DB insert failure triggers R2 object deletion. See [R2 file upload workflow](r2-file-upload-workflow.md).
 - **Dependencies**: Run `pnpm audit` regularly; address any reported vulnerabilities.
