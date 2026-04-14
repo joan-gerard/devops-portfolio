@@ -6,7 +6,7 @@ import { cache } from "react";
 const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
 export async function getAllProjects() {
-  return sql<Project[]>`
+  return sql<Project>`
     SELECT
       p.id,
       p.title,
@@ -64,7 +64,7 @@ export type PublishedProject = Pick<
 export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
   return withPrerenderFallback<PublishedProject[]>(
     () =>
-      sql<PublishedProject[]>`
+      sql<PublishedProject>`
         SELECT
           p.id,
           p.title,
@@ -94,7 +94,7 @@ export async function getAllPublishedProjects(): Promise<PublishedProject[]> {
 }
 
 export async function getProjectById(id: string) {
-  const [project] = await sql<Project[]>`
+  const [project] = await sql<Project>`
     SELECT
       p.*,
       r.id AS roadmap_item_id,
@@ -114,7 +114,7 @@ export async function getProjectById(id: string) {
 }
 
 export const getProjectBySlug = cache(async (slug: string): Promise<PublicProject | null> => {
-  const rows = await sql<PublicProject[]>`
+  const rows = await sql<PublicProject>`
     SELECT id, title, slug, summary, description, tech_stack, github_url, live_url, updated_at
     FROM projects
     WHERE slug = ${slug}

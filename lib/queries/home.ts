@@ -19,7 +19,7 @@ export async function getHomepageData(): Promise<{
   return withPrerenderFallback(
     () =>
       Promise.all([
-        sql<RecentNote[]>`
+        sql<RecentNote>`
           SELECT
             p.id,
             p.title,
@@ -42,7 +42,7 @@ export async function getHomepageData(): Promise<{
           ORDER BY p.updated_at DESC
           LIMIT 3
         `,
-        sql<FeaturedProject[]>`
+        sql<FeaturedProject>`
           SELECT
             p.id,
             p.title,

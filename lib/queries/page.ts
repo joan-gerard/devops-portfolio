@@ -6,7 +6,7 @@ import { cache } from "react";
 const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
 export async function getAllPages() {
-  return sql<Page[]>`
+  return sql<Page>`
     SELECT
       p.id,
       p.title,
@@ -32,7 +32,7 @@ export async function getAllPages() {
 }
 
 export async function getPageById(id: string): Promise<Page | null> {
-  const rows = await sql<Page[]>`
+  const rows = await sql<Page>`
     SELECT
       p.id,
       p.title,
@@ -75,7 +75,7 @@ async function getNoteBySlugQuery(
   const { includeUnpublished = false } = options;
   return withPrerenderFallback(
     async () => {
-      const rows = await sql<PublicNote[]>`
+      const rows = await sql<PublicNote>`
         SELECT id, title, slug, summary, content, tags, updated_at
         FROM pages
         WHERE slug = ${slug}
@@ -110,7 +110,7 @@ export async function getNoteBySlug(
 export async function getAllPublishedNotes(): Promise<PublishedNotePreview[]> {
   return withPrerenderFallback<PublishedNotePreview[]>(
     () =>
-      sql<PublishedNotePreview[]>`
+      sql<PublishedNotePreview>`
         SELECT
           p.id,
           p.title,

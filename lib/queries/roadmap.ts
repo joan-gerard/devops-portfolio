@@ -19,7 +19,7 @@ export async function getRoadmapData(): Promise<RoadmapDataWithSlug> {
   return withPrerenderFallback<RoadmapDataWithSlug>(
     async () => {
       const [items, edges] = await Promise.all([
-        sql<RoadmapItemWithSlug[]>`
+        sql<RoadmapItemWithSlug>`
           SELECT
             r.id,
             r.title,
@@ -46,7 +46,7 @@ export async function getRoadmapData(): Promise<RoadmapDataWithSlug> {
           ${isE2ETestRuntime ? sql`` : sql`WHERE r.e2e_only = false`}
           ORDER BY r.created_at ASC
         `,
-        sql<RoadmapEdge[]>`
+        sql<RoadmapEdge>`
           SELECT id, source_id, target_id, source_handle, target_handle, created_at
           FROM roadmap_edges
           ORDER BY created_at ASC
