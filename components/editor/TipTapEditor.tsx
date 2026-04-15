@@ -14,6 +14,8 @@ type Props = {
   toolbarTopOffset?: string;
 };
 
+const CONTENT_AUTOSAVE_DEBOUNCE_MS = 5000;
+
 export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset }: Props) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [tocAnchors, setTocAnchors] = useState<TableOfContentData>([]);
@@ -51,11 +53,11 @@ export default function TipTapEditor({ noteId, content, onSave, toolbarTopOffset
       },
     },
     onUpdate: ({ editor }) => {
-      // Debounced autosave — fires 1.5s after the user stops typing
+      // Debounced autosave — fires 5s after the user stops typing
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
         save(editor.getJSON() as Record<string, unknown>);
-      }, 1500);
+      }, CONTENT_AUTOSAVE_DEBOUNCE_MS);
     },
   });
 
