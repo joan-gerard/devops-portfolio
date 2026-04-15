@@ -27,6 +27,7 @@ export function EditorPageClient({ note }: { note: Page }) {
     title,
     slug,
     summary,
+    tags,
     saveStatus,
     setSaveStatus,
     published,
@@ -36,6 +37,7 @@ export function EditorPageClient({ note }: { note: Page }) {
     handleSlugChange,
     handleSlugRegenerate,
     handleSummaryChange,
+    handleTagsChange,
     togglePublished,
     roadmapItemId,
     roadmapStatus,
@@ -113,10 +115,11 @@ export function EditorPageClient({ note }: { note: Page }) {
       <EditorFormField label="Tags">
         <TagInput
           noteId={note.id}
-          initial={note.tags}
+          initial={tags}
           onSave={setSaveStatus}
           fieldName="tags"
           apiPath="pages"
+          onTagsChange={handleTagsChange}
         />
       </EditorFormField>
 

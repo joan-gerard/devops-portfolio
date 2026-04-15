@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Page } from "@/types/pages";
 import { DEBOUNCE_MS, STATUS_COLOR, STATUS_LABEL } from "@/lib/adminSave";
 import type { SaveStatus } from "@/lib/adminSave";
@@ -12,9 +12,9 @@ export type { SaveStatus } from "@/lib/adminSave";
  * Hook for editing a single page (note) in the editor: local state, debounced
  * persistence, and save status.
  *
- * Title and slug are persisted via debounced PATCH to `/api/pages/:id`. Published
- * is toggled immediately with no debounce. Exposes status color/label for the
- * editor meta bar.
+ * Metadata fields (title, slug, summary, tags) are persisted via a single
+ * debounced PATCH to `/api/pages/:id`. Published is toggled immediately with no
+ * debounce. Exposes status color/label for the editor meta bar.
  *
  * @param note - The page to edit (used as initial state and for API calls).
  * @returns Local title/slug state, saveStatus, statusColor/statusLabel, and
@@ -25,6 +25,7 @@ export function useEditorPage(note: Page) {
   const [title, setTitle] = useState(note.title);
   const [slug, setSlug] = useState(note.slug);
   const [summary, setSummary] = useState(note.summary ?? "");
+  const [tags, setTags] = useState(note.tags ?? []);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [published, setPublished] = useState(note.published);
   const [roadmapItemId, setRoadmapItemId] = useState(note.roadmap_item_id ?? "");
@@ -34,68 +35,47 @@ export function useEditorPage(note: Page) {
   );
   const [roadmapTitle, setRoadmapTitle] = useState(note.roadmap_item_title ?? null);
 
-  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const slugTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const summaryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const metadataTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingMetadataPatchRef = useRef<
+    Partial<Pick<Page, "title" | "slug" | "summary" | "tags">>
+  >({});
+  const metadataSuccessStatusRef = useRef<"saved" | "slugSaved">("saved");
 
-  async function saveTitle(newTitle: string) {
-    setSaveStatus("saving");
+  async function flushMetadataSave() {
+    const patch = pendingMetadataPatchRef.current;
+    if (Object.keys(patch).length === 0) return;
+
+    pendingMetadataPatchRef.current = {};
+    const successStatus = metadataSuccessStatusRef.current;
+    metadataSuccessStatusRef.current = "saved";
+
     try {
       const res = await fetch(`/api/pages/${note.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle }),
+        body: JSON.stringify(patch),
       });
       if (!res.ok) throw new Error();
-      setSaveStatus("saved");
+      setSaveStatus(successStatus);
     } catch {
       setSaveStatus("error");
     }
   }
 
-  async function saveSlugFromInput(newSlug: string) {
-    setSaveStatus("saving");
-    try {
-      const res = await fetch(`/api/pages/${note.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: newSlug }),
-      });
-      if (!res.ok) throw new Error();
-      setSaveStatus("saved");
-    } catch {
-      setSaveStatus("error");
-    }
-  }
+  function queueMetadataSave(
+    patch: Partial<Pick<Page, "title" | "slug" | "summary" | "tags">>,
+    successStatus: "saved" | "slugSaved" = "saved"
+  ) {
+    pendingMetadataPatchRef.current = {
+      ...pendingMetadataPatchRef.current,
+      ...patch,
+    };
+    metadataSuccessStatusRef.current = successStatus;
 
-  async function saveSlugFromTitle(newSlug: string) {
-    setSaveStatus("slugSaving");
-    try {
-      const res = await fetch(`/api/pages/${note.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: newSlug }),
-      });
-      if (!res.ok) throw new Error();
-      setSaveStatus("slugSaved");
-    } catch {
-      setSaveStatus("error");
-    }
-  }
-
-  async function saveSummary(newSummary: string) {
-    setSaveStatus("saving");
-    try {
-      const res = await fetch(`/api/pages/${note.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summary: newSummary }),
-      });
-      if (!res.ok) throw new Error();
-      setSaveStatus("saved");
-    } catch {
-      setSaveStatus("error");
-    }
+    if (metadataTimer.current) clearTimeout(metadataTimer.current);
+    metadataTimer.current = setTimeout(() => {
+      void flushMetadataSave();
+    }, DEBOUNCE_MS);
   }
 
   async function togglePublished() {
@@ -118,26 +98,32 @@ export function useEditorPage(note: Page) {
 
   function handleTitleChange(newTitle: string) {
     setTitle(newTitle);
-    if (titleTimer.current) clearTimeout(titleTimer.current);
-    titleTimer.current = setTimeout(() => saveTitle(newTitle), DEBOUNCE_MS);
+    setSaveStatus("saving");
+    queueMetadataSave({ title: newTitle });
   }
 
   function handleSlugChange(newSlug: string) {
     setSlug(newSlug);
-    if (slugTimer.current) clearTimeout(slugTimer.current);
-    slugTimer.current = setTimeout(() => saveSlugFromInput(newSlug), DEBOUNCE_MS);
+    setSaveStatus("saving");
+    queueMetadataSave({ slug: newSlug });
   }
 
   function handleSlugRegenerate(generatedSlug: string) {
     setSlug(generatedSlug);
-    if (slugTimer.current) clearTimeout(slugTimer.current);
-    slugTimer.current = setTimeout(() => saveSlugFromTitle(generatedSlug), DEBOUNCE_MS);
+    setSaveStatus("slugSaving");
+    queueMetadataSave({ slug: generatedSlug }, "slugSaved");
   }
 
   function handleSummaryChange(newSummary: string) {
     setSummary(newSummary);
-    if (summaryTimer.current) clearTimeout(summaryTimer.current);
-    summaryTimer.current = setTimeout(() => saveSummary(newSummary), DEBOUNCE_MS);
+    setSaveStatus("saving");
+    queueMetadataSave({ summary: newSummary });
+  }
+
+  function handleTagsChange(newTags: string[]) {
+    setTags(newTags);
+    setSaveStatus("saving");
+    queueMetadataSave({ tags: newTags });
   }
 
   async function saveRoadmapLink(nextRoadmapItemIdRaw: string) {
@@ -194,10 +180,17 @@ export function useEditorPage(note: Page) {
     }
   }
 
+  useEffect(() => {
+    return () => {
+      if (metadataTimer.current) clearTimeout(metadataTimer.current);
+    };
+  }, []);
+
   return {
     title,
     slug,
     summary,
+    tags,
     saveStatus,
     setSaveStatus,
     published,
@@ -207,6 +200,7 @@ export function useEditorPage(note: Page) {
     handleSlugChange,
     handleSlugRegenerate,
     handleSummaryChange,
+    handleTagsChange,
     togglePublished,
     roadmapItemId,
     roadmapStatus,
