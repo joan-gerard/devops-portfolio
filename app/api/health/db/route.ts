@@ -1,6 +1,7 @@
 import sql from "@/lib/db";
 import { version } from "@/package.json";
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 
 /**
  * GET /api/health/db
@@ -23,7 +24,12 @@ function isAuthorised(request: Request): boolean {
 
   const incomingToken = request.headers.get(MONITOR_TOKEN_HEADER);
   if (!incomingToken) return false;
-  return incomingToken === expectedToken;
+
+  const incomingBuffer = Buffer.from(incomingToken, "utf8");
+  const expectedBuffer = Buffer.from(expectedToken, "utf8");
+
+  if (incomingBuffer.length !== expectedBuffer.length) return false;
+  return timingSafeEqual(incomingBuffer, expectedBuffer);
 }
 
 export async function GET(request: Request) {

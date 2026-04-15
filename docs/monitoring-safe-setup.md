@@ -10,7 +10,7 @@ This guide documents a monitoring setup for `devops-portfolio` that keeps reliab
 
 ## Why the Current Pattern Is Risky
 
-`app/api/health/route.ts` currently runs a live DB probe (`SELECT 1`) and is intended to be hit every minute.
+`/api/health` (`app/api/health/route.ts`) is app-only and does not run a live DB probe. DB liveness checks are handled by `/api/health/db`.
 
 When an external monitor checks this endpoint every 60 seconds, Neon compute can stay continuously active. On usage-based plans, that can consume monthly CU-hours much faster than expected.
 
