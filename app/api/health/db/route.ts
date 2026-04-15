@@ -48,12 +48,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    await Promise.race([
-      sql`SELECT 1`,
-      new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error("DB probe timed out")), DB_TIMEOUT_MS);
-      }),
-    ]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        sql`SELECT 1`,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error("DB probe timed out")), DB_TIMEOUT_MS);
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
 
     return NextResponse.json(
       {
