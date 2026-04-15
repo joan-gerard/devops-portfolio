@@ -45,6 +45,10 @@ Expected status:
 - `200` when app is up.
 - `503` only for true app-level failure.
 
+Implementation in this repo:
+
+- `app/api/health/route.ts` is app-only and does not query Postgres.
+
 ### 2) `/api/health/db` (restricted, low-frequency)
 
 Use for dependency checks every 10-15 minutes (or on-demand during incidents).
@@ -64,6 +68,11 @@ Expected status:
 
 - `200` when DB is reachable.
 - `503` when DB check fails or times out.
+
+Implementation in this repo:
+
+- `app/api/health/db/route.ts` runs `SELECT 1` with a 3s timeout.
+- Endpoint requires `x-monitor-token` header matching `HEALTH_DB_MONITOR_TOKEN`.
 
 ## Suggested Probe Intervals
 
@@ -115,9 +124,9 @@ When an alert fires:
 
 ## Implementation Checklist
 
-- [ ] Keep `/api/health` lightweight and DB-free.
-- [ ] Introduce `/api/health/db` for low-frequency DB checks.
-- [ ] Restrict `/api/health/db` access (token or allowlist).
+- [x] Keep `/api/health` lightweight and DB-free.
+- [x] Introduce `/api/health/db` for low-frequency DB checks.
+- [x] Restrict `/api/health/db` access (token or allowlist).
 - [ ] Update monitor definitions in Better Stack.
 - [ ] Add alert routes/channels and escalation policy.
 - [ ] Document owner and response expectations.
@@ -125,5 +134,6 @@ When an alert fires:
 
 ## Notes for This Repo
 
-- `app/api/health/route.ts` currently includes a DB probe and is documented as being pinged every minute.
-- For Neon cost control, move that DB probe logic to a separate low-frequency endpoint and keep `/api/health` app-only.
+- `app/api/health/route.ts` is now app-only for minute-level uptime checks.
+- `app/api/health/db/route.ts` handles low-frequency DB probes and is token-protected.
+- Required environment variable: `HEALTH_DB_MONITOR_TOKEN`.
