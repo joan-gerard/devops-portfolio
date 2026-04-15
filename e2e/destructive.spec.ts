@@ -22,6 +22,11 @@ test.describe("Destructive operations", () => {
     await titleInput.fill(title);
     await titleInput.blur();
     await expect(page.getByText(/saving|saved|save failed/i)).toBeVisible({ timeout: 12000 });
+    // Metadata fields are debounced; ensure title save has completed before publish/navigation.
+    const DEBOUNCE_MS = 1000;
+    const SAVE_BUFFER_MS = 2500;
+    await page.waitForTimeout(DEBOUNCE_MS + SAVE_BUFFER_MS);
+    await expect(page.getByText(/Saved|Save failed/)).toBeVisible({ timeout: 8000 });
 
     await page.getByRole("button", { name: /^publish$/i }).click();
     await page.waitForResponse(

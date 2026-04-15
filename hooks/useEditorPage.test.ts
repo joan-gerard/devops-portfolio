@@ -63,7 +63,7 @@ describe("useEditorPage", () => {
 
       act(() => result.current.handleTitleChange("New Title"));
       expect(result.current.title).toBe("New Title");
-      expect(result.current.saveStatus).toBe("idle");
+      expect(result.current.saveStatus).toBe("saving");
       expect(global.fetch).not.toHaveBeenCalled();
 
       await act(async () => {
@@ -145,6 +145,43 @@ describe("useEditorPage", () => {
         expect.objectContaining({
           method: "PATCH",
           body: JSON.stringify({ summary: "Updated summary" }),
+        })
+      );
+      expect(result.current.saveStatus).toBe("saved");
+    });
+  });
+
+  describe("batched metadata save", () => {
+    it("sends one PATCH when title, slug, summary, and tags change within one debounce window", async () => {
+      const { result } = renderHook(() => useEditorPage(mockNote));
+
+      act(() => {
+        result.current.handleTitleChange("Batch Title");
+        result.current.handleSlugChange("batch-slug");
+        result.current.handleSummaryChange("Batch summary");
+        result.current.handleTagsChange(["devops", "monitoring"]);
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/pages/note-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({
+            title: "Batch Title",
+            slug: "batch-slug",
+            summary: "Batch summary",
+            tags: ["devops", "monitoring"],
+          }),
         })
       );
       expect(result.current.saveStatus).toBe("saved");

@@ -8,9 +8,10 @@ type Props = {
   onSave?: (status: "saving" | "saved" | "error") => void;
   fieldName: string;
   apiPath: string;
+  onTagsChange?: (updated: string[]) => void;
 };
 
-export function TagInput({ noteId, initial, onSave, fieldName, apiPath }: Props) {
+export function TagInput({ noteId, initial, onSave, fieldName, apiPath, onTagsChange }: Props) {
   const [tags, setTags] = useState<string[]>(initial ?? []);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -42,12 +43,20 @@ export function TagInput({ noteId, initial, onSave, fieldName, apiPath }: Props)
     const updated = [...tags, tag];
     setTags(updated);
     setInput("");
+    if (onTagsChange) {
+      onTagsChange(updated);
+      return;
+    }
     saveTags(updated);
   }
 
   function removeTag(tag: string) {
     const updated = tags.filter((t) => t !== tag);
     setTags(updated);
+    if (onTagsChange) {
+      onTagsChange(updated);
+      return;
+    }
     saveTags(updated);
   }
 
