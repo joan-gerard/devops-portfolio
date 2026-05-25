@@ -4,8 +4,13 @@ import { getRelatedNotesByTagOverlap } from "@/lib/relatedNotes";
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
-  const notes = await getAllPublishedNotes();
-  return notes.map(({ slug }) => ({ slug }));
+  try {
+    const notes = await getAllPublishedNotes();
+    return notes.map(({ slug }) => ({ slug }));
+  } catch {
+    // DB unavailable at build time — fall back to on-demand ISR for all slugs.
+    return [];
+  }
 }
 
 /**

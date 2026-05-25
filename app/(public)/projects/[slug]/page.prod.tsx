@@ -5,8 +5,13 @@ import { getAllPublishedProjects, getProjectBySlug } from "@/lib/queries/project
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
-  const projects = await getAllPublishedProjects();
-  return projects.map(({ slug }) => ({ slug }));
+  try {
+    const projects = await getAllPublishedProjects();
+    return projects.map(({ slug }) => ({ slug }));
+  } catch {
+    // DB unavailable at build time — fall back to on-demand ISR for all slugs.
+    return [];
+  }
 }
 
 /**
