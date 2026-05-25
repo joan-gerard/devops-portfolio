@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/public/PageHeader";
 import { ProjectsGrid } from "@/components/public/projects";
 import { getAllPublishedProjects } from "@/lib/queries/project";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 export const metadata = {
   title: "Projects — DevOps Learning Portal",

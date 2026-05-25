@@ -4,6 +4,7 @@ import sql from "@/lib/db";
 import { getSlugValidationError, normalizeSlug } from "@/lib/validateSlug";
 import { isAllowedProjectUrlScheme, normalizeProjectUrl } from "@/lib/validateProjectUrl";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 /**
@@ -124,6 +125,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+
+    const resultingPublished = published ?? project.published;
+
+    // Always revalidate the project's own detail page on any content change.
+    revalidatePath(`/projects/${project.slug}`);
+
+    // When the slug changed the old URL is now stale — clear the whole projects tree.
+    if (slugToWrite !== undefined) {
+      revalidatePath("/projects", "layout");
+    }
+
+    // Revalidate list pages and homepage whenever visibility could have changed.
+    if (resultingPublished || published === false) {
+      revalidatePath("/projects");
+      revalidatePath("/");
+    }
+
     return NextResponse.json(project);
   } catch (error: unknown) {
     return handleDbError(error, {
@@ -153,6 +171,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (!deleted) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+
+    revalidatePath("/projects", "layout");
+    revalidatePath("/");
+
     return NextResponse.json({ deleted: true, id });
   } catch (error: unknown) {
     return handleDbError(error, {

@@ -118,12 +118,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const resultingPublished = published ?? page.published;
 
-    if (slugToWrite !== undefined || published !== undefined) {
-      revalidatePath(`/notes/${page.slug}`);
+    // Always revalidate the note's own detail page on any content change.
+    revalidatePath(`/notes/${page.slug}`);
+
+    // When the slug changed the old URL is now stale — clear the whole notes tree.
+    if (slugToWrite !== undefined) {
+      revalidatePath("/notes", "layout");
     }
 
+    // Revalidate list pages and homepage whenever visibility could have changed.
     if (resultingPublished || published === false) {
       revalidatePath("/notes");
+      revalidatePath("/");
+    }
+
+    // /about is backed by the note whose slug is "about".
+    if (page.slug === "about") {
+      revalidatePath("/about");
     }
 
     return NextResponse.json(page);
@@ -163,6 +174,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (!deleted) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
+
+    revalidatePath("/notes", "layout");
+    revalidatePath("/");
+
     return NextResponse.json({ deleted: true, id });
   } catch (error: unknown) {
     return handleDbError(error, {

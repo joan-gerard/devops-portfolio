@@ -3,12 +3,17 @@ import { getAllPublishedNotes, getNoteBySlug } from "@/lib/queries/page";
 import { getRelatedNotesByTagOverlap } from "@/lib/relatedNotes";
 import { notFound } from "next/navigation";
 
+export async function generateStaticParams() {
+  const notes = await getAllPublishedNotes();
+  return notes.map(({ slug }) => ({ slug }));
+}
+
 /**
  * ISR (revalidate 60) so a Neon cold start serves a cached snapshot instead of an empty page.
  * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
  * Segment config must be static; conditional dynamic/revalidate is not supported.
  */
-export const revalidate = 3600;
+export const revalidate = false;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -1,15 +1,20 @@
 // app/(public)/projects/[slug]/page.tsx
 
 import { ProjectDetail } from "@/components/public/projects/ProjectDetail";
-import { getProjectBySlug } from "@/lib/queries/project";
+import { getAllPublishedProjects, getProjectBySlug } from "@/lib/queries/project";
 import { notFound } from "next/navigation";
+
+export async function generateStaticParams() {
+  const projects = await getAllPublishedProjects();
+  return projects.map(({ slug }) => ({ slug }));
+}
 
 /**
  * ISR (revalidate 3600) so a Neon cold start serves a cached snapshot instead of an empty page.
  * In dev (next dev), Next.js renders on-demand and does not cache, so E2E still sees new content immediately.
  * Segment config must be static; conditional dynamic/revalidate is not supported.
  */
-export const revalidate = 3600;
+export const revalidate = false;
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

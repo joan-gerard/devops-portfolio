@@ -7,6 +7,7 @@ import {
 } from "@/lib/api/roadmap-validation";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 /**
@@ -38,6 +39,8 @@ export async function POST(request: Request) {
       VALUES (${source_id}, ${target_id}, ${source_handle ?? null}, ${target_handle ?? null})
       RETURNING id, source_id, target_id, source_handle, target_handle, created_at
     `;
+    revalidatePath("/roadmap");
+
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error: unknown) {
     return handleDbError(error, {

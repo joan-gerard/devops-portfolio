@@ -2,6 +2,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleDbError } from "@/lib/api/postgres-errors";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 /**
@@ -24,6 +25,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (rows.length === 0) {
       return NextResponse.json({ error: "Edge not found" }, { status: 404 });
     }
+
+    revalidatePath("/roadmap");
 
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
