@@ -7,6 +7,7 @@ import {
 } from "@/lib/api/roadmap-validation";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 /**
@@ -130,6 +131,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Roadmap item not found" }, { status: 404 });
     }
 
+    revalidatePath("/roadmap");
+
     return NextResponse.json(rows[0]);
   } catch (error: unknown) {
     return handleDbError(error, {
@@ -160,6 +163,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (rows.length === 0) {
       return NextResponse.json({ error: "Roadmap item not found" }, { status: 404 });
     }
+
+    revalidatePath("/roadmap");
 
     return new Response(null, { status: 204 });
   } catch (error: unknown) {

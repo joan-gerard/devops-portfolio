@@ -1,7 +1,7 @@
 import { PublicRoadmapLayout } from "@/components/roadmap/public";
 import { getRoadmapData } from "@/lib/queries/roadmap";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 export const metadata = {
   title: "Roadmap — DevOps Learning Portal",

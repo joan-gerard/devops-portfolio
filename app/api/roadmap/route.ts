@@ -7,6 +7,7 @@ import {
 import { getRoadmapData } from "@/lib/queries/roadmap";
 import sql from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 
@@ -72,6 +73,8 @@ export async function POST(request: Request) {
         created_at, updated_at,
         e2e_only
     `;
+    revalidatePath("/roadmap");
+
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error: unknown) {
     return handleDbError(error, {
