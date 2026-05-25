@@ -96,6 +96,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const isE2ETestRuntime = process.env.E2E_TEST === "1";
 
   try {
+    // Capture the slug before updating so a rename away from "about" still revalidates /about.
+    const [existing] = await sql<{ slug: string }[]>`
+      SELECT slug FROM pages WHERE id = ${id}
+    `;
+    const previousSlug = existing?.slug;
+
     const [page] = await sql`
       UPDATE pages SET
         title     = COALESCE(${title ?? null},     title),
@@ -133,7 +139,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     // /about is backed by the note whose slug is "about".
-    if (page.slug === "about") {
+    // Check both slugs: the new one (content update) and the previous one (rename away from "about").
+    if (page.slug === "about" || previousSlug === "about") {
       revalidatePath("/about");
     }
 
@@ -166,10 +173,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 
   try {
-    const [deleted] = await sql`
+    const [deleted] = await sql<{ id: string; slug: string }[]>`
       DELETE FROM pages
       WHERE id = ${id}
-      RETURNING id
+      RETURNING id, slug
     `;
     if (!deleted) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
@@ -177,6 +184,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     revalidatePath("/notes", "layout");
     revalidatePath("/");
+
+    if (deleted.slug === "about") {
+      revalidatePath("/about");
+    }
 
     return NextResponse.json({ deleted: true, id });
   } catch (error: unknown) {
